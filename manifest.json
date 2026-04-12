@@ -1,0 +1,25 @@
+{
+  "name": "La Ciudadela de los Confines",
+  "short_name": "La Ciudadela",
+  "description": "Agenda de mesas de juegos de rol — Lima 575, CABA",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#1a1208",
+  "theme_color": "#1a1208",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

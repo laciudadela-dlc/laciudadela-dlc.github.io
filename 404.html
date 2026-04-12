@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script>
+  // GitHub Pages 404 redirect trick
+  // Redirects /calendario/ to /calendario/index.html
+  const path = window.location.pathname;
+  const base = '/calendario/';
+  if (path === base || path === base.slice(0,-1)) {
+    window.location.replace(base + 'index.html');
+  } else {
+    window.location.replace(base + 'index.html');
+  }
+</script>
+</head>
+<body></body>
+</html>
