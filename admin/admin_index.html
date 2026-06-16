@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · La Ciudadela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#c4a030;--gold-dark:#8a6a1a;
+  --bg-dark:#1a1208;--bg-darker:#0e0a04;--bg-panel:#221508;
+  --red:#7a1515;--green:#1a5a1a;--blue:#1a2a5a;
+  --brd:rgba(196,160,48,.2);--brd-strong:rgba(196,160,48,.5);
+}
+html,body{min-height:100%;background:var(--bg-darker);font-family:'Nunito',sans-serif;color:#fff;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.admin-header{
+  background:var(--bg-dark);border-bottom:2px solid var(--gold);
+  padding:12px 20px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:100;
+}
+.admin-header-logo{height:38px;filter:invert(1) brightness(1.1);}
+.admin-header-titles{flex:1;}
+.admin-header-name{font-family:'Cinzel Decorative',serif;font-size:13px;color:#fff;letter-spacing:.04em;}
+.admin-header-sub{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-top:2px;}
+.admin-header-back{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold);padding:6px 12px;text-decoration:none;
+  transition:all .15s;
+}
+.admin-header-back:hover{background:var(--gold);color:var(--bg-dark);}
+.admin-user-info{display:flex;align-items:center;gap:8px;}
+.admin-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;}
+.admin-name{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.06em;}
+
+/* ── NAV TABS ── */
+.admin-nav{
+  background:var(--bg-dark);border-bottom:1px solid var(--brd);
+  display:flex;padding:0 20px;gap:0;overflow-x:auto;
+}
+.admin-tab{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 18px;color:#888;cursor:pointer;border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all .15s;
+}
+.admin-tab:hover{color:var(--gold);}
+.admin-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ── CONTENIDO ── */
+.admin-body{padding:24px 20px;max-width:900px;margin:0 auto;}
+
+/* ── PANEL CARD ── */
+.panel-card{
+  background:var(--bg-panel);border:1px solid var(--brd);
+  padding:20px;margin-bottom:16px;
+}
+.panel-card-title{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:16px;
+  padding-bottom:10px;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+/* ── TABLA USUARIOS ── */
+.users-table{width:100%;border-collapse:collapse;}
+.users-table th{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--gold);padding:8px 10px;
+  border-bottom:1px solid var(--brd);text-align:left;
+}
+.users-table td{
+  font-family:'Nunito',sans-serif;font-size:12px;color:#ccc;
+  padding:10px 10px;border-bottom:1px solid rgba(196,160,48,.08);
+  vertical-align:middle;
+}
+.users-table tr:hover td{background:rgba(196,160,48,.04);}
+.user-avatar-sm{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);object-fit:cover;vertical-align:middle;}
+.user-name{font-weight:700;color:#fff;margin-left:8px;}
+.user-email{font-size:11px;color:#888;}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-block;font-family:'Cinzel',serif;font-size:7px;
+  letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
+  border-radius:2px;margin:1px;
+}
+.badge-admin{background:var(--red);color:#fcc;}
+.badge-dm{background:var(--blue);color:#ccf;}
+.badge-jugador{background:var(--green);color:#cfc;}
+.badge-custom{background:#3a3a1a;color:#ffc;}
+.badge-inactivo{background:#333;color:#666;}
+
+/* ── BOTONES ── */
+.btn{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;
+  text-transform:uppercase;padding:6px 12px;cursor:pointer;
+  border:1px solid;transition:all .15s;
+}
+.btn-gold{border-color:var(--gold);color:var(--gold);background:transparent;}
+.btn-gold:hover{background:var(--gold);color:var(--bg-dark);}
+.btn-red{border-color:var(--red);color:#faa;background:transparent;}
+.btn-red:hover{background:var(--red);color:#fff;}
+.btn-green{border-color:#2a8a2a;color:#afa;background:transparent;}
+.btn-green:hover{background:#2a8a2a;color:#fff;}
+.btn-sm{padding:4px 8px;font-size:7px;}
+
+/* ── ROLES ── */
+.roles-grid{display:flex;flex-wrap:wrap;gap:12px;}
+.role-card{
+  background:rgba(196,160,48,.06);border:1px solid var(--brd);
+  padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:160px;
+}
+.role-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.role-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;color:#fff;flex:1;}
+.role-count{font-size:11px;color:#888;}
+
+/* ── FORM NUEVO ROL ── */
+.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
+.form-input{
+  background:#111;border:1px solid var(--brd);color:#fff;
+  padding:8px 10px;font-family:'Nunito',sans-serif;font-size:12px;
+  outline:none;min-width:160px;
+}
+.form-input:focus{border-color:var(--gold);}
+.color-picker-wrap{display:flex;align-items:center;gap:8px;}
+input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd);background:#111;cursor:pointer;}
+
+/* ── DIFUSIÓN ── */
+.difusion-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;}
+@media(max-width:700px){.difusion-layout{grid-template-columns:1fr;}}
+.difusion-form{display:flex;flex-direction:column;gap:12px;}
+.form-textarea{
+  background:#111;border:1px solid var(--brd);color:#fff;
+  padding:10px;font-family:'Nunito',sans-serif;font-size:13px;
+  outline:none;resize:vertical;min-height:100px;
+}
+.form-textarea:focus{border-color:var(--gold);}
+.destinatarios-panel{background:rgba(0,0,0,.3);border:1px solid var(--brd);padding:14px;}
+.dest-header{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.dest-filter{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.dest-filter-btn{
+  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;
+  text-transform:uppercase;padding:3px 8px;cursor:pointer;
+  border:1px solid var(--brd);color:#888;background:transparent;transition:all .15s;
+}
+.dest-filter-btn:hover,.dest-filter-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(196,160,48,.1);}
+.dest-list{max-height:280px;overflow-y:auto;}
+.dest-item{
+  display:flex;align-items:center;gap:8px;padding:6px 0;
+  border-bottom:1px solid rgba(196,160,48,.06);cursor:pointer;
+}
+.dest-item:hover{background:rgba(196,160,48,.05);}
+.dest-item input[type=checkbox]{accent-color:var(--gold);width:14px;height:14px;}
+.dest-item-avatar{width:22px;height:22px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
+.dest-item-name{font-size:11px;color:#ccc;flex:1;}
+.dest-item-role{font-size:9px;color:#888;}
+.dest-count{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.08em;}
+
+/* ── LOADING / EMPTY ── */
+.loading{text-align:center;padding:32px;color:#666;font-size:13px;}
+.empty{text-align:center;padding:32px;color:#555;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.1em;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--bg-dark);border:1px solid var(--gold);
+  padding:12px 20px;font-family:'Cinzel',serif;font-size:10px;
+  letter-spacing:.08em;color:var(--gold);
+  transform:translateY(80px);opacity:0;transition:all .3s;
+  pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-color:var(--red);color:#faa;}
+
+/* ── MODAL ROLES USUARIO ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:500;align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex;}
+.modal-box{
+  background:var(--bg-dark);border:1px solid var(--gold);
+  padding:28px;width:90%;max-width:380px;
+}
+.modal-title{font-family:'Cinzel',serif;font-size:13px;color:#fff;letter-spacing:.06em;margin-bottom:6px;}
+.modal-sub{font-size:12px;color:#888;margin-bottom:20px;}
+.roles-check-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.role-check-item{display:flex;align-items:center;gap:10px;}
+.role-check-item input{accent-color:var(--gold);width:15px;height:15px;}
+.role-check-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#ccc;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+/* ── SECCIÓN OCULTA ── */
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── NOTIF BADGE ── */
+.notif-info{
+  background:rgba(196,160,48,.08);border:1px solid var(--brd);
+  padding:10px 14px;margin-bottom:12px;font-size:12px;color:#aaa;
+}
+.notif-info strong{color:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── MODAL EDITAR ROLES ── -->
+<div class="modal-bg" id="rolesModal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalUserName">Usuario</div>
+    <div class="modal-sub" id="modalUserEmail"></div>
+    <div class="roles-check-list" id="rolesCheckList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-red btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="saveRoles()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HEADER ── -->
+<header class="admin-header">
+  <img class="admin-header-logo" src="https://laciudadela-dlc.github.io/img/logo.png"
+    onerror="this.style.display='none'" alt="">
+  <div class="admin-header-titles">
+    <div class="admin-header-name">Panel de Administración</div>
+    <div class="admin-header-sub">La Ciudadela de los Confines</div>
+  </div>
+  <div class="admin-user-info" id="adminUserInfo"></div>
+  <a class="admin-header-back" href="../">← Portal</a>
+</header>
+
+<!-- ── NAV ── -->
+<nav class="admin-nav">
+  <div class="admin-tab active" onclick="showSection('usuarios')">👥 Usuarios</div>
+  <div class="admin-tab" onclick="showSection('roles')">🏷 Roles</div>
+  <div class="admin-tab" onclick="showSection('difusion')">📢 Difusión</div>
+</nav>
+
+<!-- ── BODY ── -->
+<div class="admin-body">
+
+  <!-- ── SECCIÓN USUARIOS ── -->
+  <div class="section active" id="sec-usuarios">
+    <div class="panel-card">
+      <div class="panel-card-title">
+        <span>Usuarios registrados</span>
+        <span class="dest-count" id="usersCount">—</span>
+      </div>
+      <div id="usersTableWrap">
+        <div class="loading">Cargando usuarios…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECCIÓN ROLES ── -->
+  <div class="section" id="sec-roles">
+    <div class="panel-card">
+      <div class="panel-card-title">Roles del sistema</div>
+      <div class="roles-grid" id="rolesGrid">
+        <div class="loading">Cargando roles…</div>
+      </div>
+      <div class="form-row" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--brd);">
+        <div class="form-group">
+          <label class="form-label">Nombre del rol</label>
+          <input class="form-input" id="newRoleLabel" placeholder="ej: organizador" maxlength="30">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-picker-wrap">
+            <input type="color" id="newRoleColor" value="#c4a030">
+          </div>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <button class="btn btn-gold" onclick="createRole()">+ Crear rol</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECCIÓN DIFUSIÓN ── -->
+  <div class="section" id="sec-difusion">
+    <div class="notif-info">
+      Los mensajes se guardan en <strong>notificaciones/{uid}/items</strong> de cada destinatario y aparecerán como notificaciones en su perfil.
+    </div>
+    <div class="difusion-layout">
+      <!-- Formulario -->
+      <div class="panel-card">
+        <div class="panel-card-title">Redactar mensaje</div>
+        <div class="difusion-form">
+          <div class="form-group">
+            <label class="form-label">Título</label>
+            <input class="form-input" id="msgTitulo" placeholder="Ej: Recordatorio de mesa">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cuerpo del mensaje</label>
+            <textarea class="form-textarea" id="msgCuerpo" placeholder="Escribí el contenido del mensaje…"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Enlace (opcional)</label>
+            <input class="form-input" id="msgLink" placeholder="https://…">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span class="dest-count" id="selectedCount">0 destinatarios seleccionados</span>
+            <button class="btn btn-gold" onclick="enviarMensaje()">📢 Enviar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Destinatarios -->
+      <div class="panel-card">
+        <div class="panel-card-title">
+          <span>Destinatarios</span>
+        </div>
+        <div class="dest-filter" id="destFilter">
+          <button class="dest-filter-btn active" onclick="filtrarDest('todos',this)">Todos</button>
+          <button class="dest-filter-btn" onclick="filtrarDest('admin',this)">Admin</button>
+          <button class="dest-filter-btn" onclick="filtrarDest('dm',this)">DM</button>
+          <button class="dest-filter-btn" onclick="filtrarDest('jugador',this)">Jugador</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button class="btn btn-gold btn-sm" onclick="selectAllVisible(true)">Seleccionar todos</button>
+          <button class="btn btn-red btn-sm" onclick="selectAllVisible(false)">Ninguno</button>
+        </div>
+        <div class="dest-list" id="destList">
+          <div class="loading">Cargando…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /admin-body -->
+
+<!-- ── FIREBASE SDK ── -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ── FIREBASE ──────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
+  authDomain:"ciudadela-portal-88111.firebaseapp.com",
+  projectId:"ciudadela-portal-88111",
+  storageBucket:"ciudadela-portal-88111.firebasestorage.app",
+  messagingSenderId:"629290273583",
+  appId:"1:629290273583:web:47e321d389fb0e49a6afda"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── ESTADO ───────────────────────────────────────────
+let allUsers   = [];
+let allRoles   = [];
+let editingUid = null;
+let currentFilter = 'todos';
+
+// ── NAVEGACIÓN ───────────────────────────────────────
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── TOAST ────────────────────────────────────────────
+function toast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError?' error':'');
+  setTimeout(()=> t.classList.remove('show'), 3200);
+}
+
+// ── GUARD: solo admin ─────────────────────────────────
+auth.onAuthStateChanged(async function(user){
+  if(!user){ location.href='../'; return; }
+
+  const snap = await db.collection('usuarios').doc(user.uid).get();
+  if(!snap.exists || !snap.data().roles || !snap.data().roles.includes('admin')){
+    location.href='../';
+    return;
+  }
+
+  // Header usuario
+  const name = (user.displayName||user.email).split(' ')[0];
+  document.getElementById('adminUserInfo').innerHTML = `
+    <img class="admin-avatar" src="${user.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=c4a030&color=1a1208'}" alt="">
+    <span class="admin-name">${name}</span>`;
+
+  // Cargar datos
+  loadUsers();
+  loadRoles();
+});
+
+// ── USUARIOS ─────────────────────────────────────────
+async function loadUsers(){
+  const wrap = document.getElementById('usersTableWrap');
+  wrap.innerHTML = '<div class="loading">Cargando…</div>';
+  try {
+    const snap = await db.collection('usuarios').orderBy('creadoEn','desc').get();
+    allUsers = snap.docs.map(d=>({uid:d.id,...d.data()}));
+    document.getElementById('usersCount').textContent = allUsers.length + ' usuarios';
+    renderUsers();
+    renderDestList();
+  } catch(e){
+    wrap.innerHTML = '<div class="empty">Error al cargar usuarios</div>';
+  }
+}
+
+function renderUsers(){
+  const wrap = document.getElementById('usersTableWrap');
+  if(!allUsers.length){ wrap.innerHTML='<div class="empty">Sin usuarios aún</div>'; return; }
+
+  wrap.innerHTML = `
+  <div style="overflow-x:auto;">
+  <table class="users-table">
+    <thead><tr>
+      <th>Usuario</th>
+      <th>Email</th>
+      <th>Roles</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr></thead>
+    <tbody>
+    ${allUsers.map(u=>`
+      <tr>
+        <td>
+          <img class="user-avatar-sm" src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'?')+'&background=3a2000&color=c4a030&size=28'}" alt="">
+          <span class="user-name">${u.displayName||'(sin nombre)'}</span>
+        </td>
+        <td><span class="user-email">${u.email||''}</span></td>
+        <td>${renderBadges(u.roles||[])}</td>
+        <td>
+          ${u.activo!==false
+            ? '<span class="badge badge-jugador">Activo</span>'
+            : '<span class="badge badge-inactivo">Inactivo</span>'}
+        </td>
+        <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;">
+          <button class="btn btn-gold btn-sm" onclick="openRolesModal('${u.uid}')">Roles</button>
+          ${u.activo!==false
+            ? `<button class="btn btn-red btn-sm" onclick="toggleActivo('${u.uid}',false)">Desactivar</button>`
+            : `<button class="btn btn-green btn-sm" onclick="toggleActivo('${u.uid}',true)">Activar</button>`}
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  </div>`;
+}
+
+function renderBadges(roles){
+  if(!roles||!roles.length) return '<span class="badge badge-inactivo">sin rol</span>';
+  return roles.map(r=>{
+    const cls = r==='admin'?'badge-admin':r==='dm'?'badge-dm':r==='jugador'?'badge-jugador':'badge-custom';
+    return `<span class="badge ${cls}">${r}</span>`;
+  }).join('');
+}
+
+async function toggleActivo(uid, activo){
+  try {
+    await db.collection('usuarios').doc(uid).update({activo});
+    const u = allUsers.find(u=>u.uid===uid);
+    if(u) u.activo = activo;
+    renderUsers();
+    renderDestList();
+    toast(activo ? 'Usuario activado' : 'Usuario desactivado');
+  } catch(e){ toast('Error al actualizar', true); }
+}
+
+// ── MODAL ROLES ───────────────────────────────────────
+function openRolesModal(uid){
+  editingUid = uid;
+  const user = allUsers.find(u=>u.uid===uid);
+  document.getElementById('modalUserName').textContent = user.displayName||'Usuario';
+  document.getElementById('modalUserEmail').textContent = user.email||'';
+
+  const currentRoles = user.roles||[];
+  // Roles disponibles: fijos + custom
+  const availableRoles = ['admin','dm','jugador',...allRoles.map(r=>r.id)];
+  const unique = [...new Set(availableRoles)];
+
+  document.getElementById('rolesCheckList').innerHTML = unique.map(r=>`
+    <div class="role-check-item">
+      <input type="checkbox" id="rc_${r}" value="${r}" ${currentRoles.includes(r)?'checked':''}>
+      <label class="role-check-label" for="rc_${r}">${r}</label>
+    </div>`).join('');
+
+  document.getElementById('rolesModal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('rolesModal').classList.remove('open');
+  editingUid = null;
+}
+
+async function saveRoles(){
+  if(!editingUid) return;
+  const checks = document.querySelectorAll('#rolesCheckList input[type=checkbox]');
+  const newRoles = Array.from(checks).filter(c=>c.checked).map(c=>c.value);
+  try {
+    await db.collection('usuarios').doc(editingUid).update({roles:newRoles});
+    const u = allUsers.find(u=>u.uid===editingUid);
+    if(u) u.roles = newRoles;
+    renderUsers();
+    renderDestList();
+    closeModal();
+    toast('Roles actualizados');
+  } catch(e){ toast('Error al guardar roles', true); }
+}
+
+// ── ROLES ─────────────────────────────────────────────
+async function loadRoles(){
+  try {
+    const snap = await db.collection('roles').get();
+    allRoles = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderRoles();
+  } catch(e){
+    document.getElementById('rolesGrid').innerHTML='<div class="empty">Error al cargar roles</div>';
+  }
+}
+
+function renderRoles(){
+  const grid = document.getElementById('rolesGrid');
+  const fixed = [
+    {id:'jugador',label:'Jugador',color:'#2a8a2a'},
+    {id:'dm',label:'DM',color:'#2a2a8a'},
+    {id:'admin',label:'Admin',color:'#8a1515'}
+  ];
+  const all = [...fixed,...allRoles];
+  grid.innerHTML = all.map(r=>{
+    const count = allUsers.filter(u=>(u.roles||[]).includes(r.id)).length;
+    return `
+    <div class="role-card">
+      <div class="role-dot" style="background:${r.color||'#c4a030'}"></div>
+      <span class="role-name">${r.label||r.id}</span>
+      <span class="role-count">${count} usuarios</span>
+    </div>`;
+  }).join('');
+}
+
+async function createRole(){
+  const label = document.getElementById('newRoleLabel').value.trim().toLowerCase();
+  const color = document.getElementById('newRoleColor').value;
+  if(!label){ toast('Ingresá un nombre para el rol', true); return; }
+  if(['admin','dm','jugador'].includes(label)){ toast('Ese rol ya existe como rol fijo', true); return; }
+  try {
+    await db.collection('roles').doc(label).set({label, color, creadoEn: firebase.firestore.FieldValue.serverTimestamp()});
+    allRoles.push({id:label,label,color});
+    renderRoles();
+    document.getElementById('newRoleLabel').value='';
+    toast('Rol "'+label+'" creado');
+  } catch(e){ toast('Error al crear rol', true); }
+}
+
+// ── DIFUSIÓN ──────────────────────────────────────────
+function renderDestList(){
+  const list = document.getElementById('destList');
+  const users = currentFilter==='todos'
+    ? allUsers
+    : allUsers.filter(u=>(u.roles||[]).includes(currentFilter));
+
+  if(!users.length){ list.innerHTML='<div class="empty">Sin usuarios para este filtro</div>'; return; }
+
+  list.innerHTML = users.map(u=>`
+    <div class="dest-item" onclick="toggleDest('${u.uid}')">
+      <input type="checkbox" id="dest_${u.uid}" class="dest-check" data-uid="${u.uid}" data-roles='${JSON.stringify(u.roles||[])}'>
+      <img class="dest-item-avatar"
+        src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'?')+'&background=3a2000&color=c4a030&size=22'}" alt="">
+      <span class="dest-item-name">${u.displayName||u.email||u.uid}</span>
+      <span class="dest-item-role">${(u.roles||['jugador'])[0]}</span>
+    </div>`).join('');
+
+  updateSelectedCount();
+}
+
+function toggleDest(uid){
+  const cb = document.querySelector(`#dest_${uid}`);
+  if(cb){ cb.checked = !cb.checked; updateSelectedCount(); }
+}
+
+function updateSelectedCount(){
+  const n = document.querySelectorAll('.dest-check:checked').length;
+  document.getElementById('selectedCount').textContent = n + ' destinatario' + (n===1?'':'s') + ' seleccionado' + (n===1?'':'s');
+}
+
+function filtrarDest(filtro, btn){
+  currentFilter = filtro;
+  document.querySelectorAll('.dest-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDestList();
+}
+
+function selectAllVisible(select){
+  document.querySelectorAll('.dest-check').forEach(cb=>cb.checked=select);
+  updateSelectedCount();
+}
+
+async function enviarMensaje(){
+  const titulo = document.getElementById('msgTitulo').value.trim();
+  const cuerpo = document.getElementById('msgCuerpo').value.trim();
+  const link   = document.getElementById('msgLink').value.trim();
+  if(!titulo){ toast('El título es obligatorio', true); return; }
+  if(!cuerpo){ toast('El mensaje no puede estar vacío', true); return; }
+
+  const seleccionados = Array.from(document.querySelectorAll('.dest-check:checked'))
+    .map(cb=>cb.dataset.uid);
+  if(!seleccionados.length){ toast('Seleccioná al menos un destinatario', true); return; }
+
+  try {
+    const ahora = firebase.firestore.FieldValue.serverTimestamp();
+    const batch = db.batch();
+    seleccionados.forEach(uid=>{
+      const ref = db.collection('notificaciones').doc(uid).collection('items').doc();
+      batch.set(ref,{
+        tipo:'difusion',titulo,cuerpo,
+        link: link||null,
+        leida:false,
+        creadoEn:ahora
+      });
+    });
+    await batch.commit();
+    toast(`✓ Mensaje enviado a ${seleccionados.length} destinatario${seleccionados.length===1?'':'s'}`);
+    document.getElementById('msgTitulo').value='';
+    document.getElementById('msgCuerpo').value='';
+    document.getElementById('msgLink').value='';
+    selectAllVisible(false);
+  } catch(e){
+    console.error(e);
+    toast('Error al enviar', true);
+  }
+}
+</script>
+</body>
+</html>
