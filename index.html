@@ -15,341 +15,247 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --ink:#111;
-  --gold:#c4a030;
-  --gold-dark:#8a6a1a;
+  --gold:#c4a030;--gold-dark:#8a6a1a;
   --parchment:#f2e8d0;
-  --bg-dark:#1a1208;
-  --bg-darker:#0e0a04;
-  --red:#7a1515;
-  --brd:#3a2000;
+  --bg-dark:#1a1208;--bg-darker:#0e0a04;--bg-panel:#221508;
+  --red:#7a1515;--green:#1a5a1a;--blue:#1a2a5a;
+  --brd:rgba(196,160,48,.2);--brd-strong:rgba(196,160,48,.5);
 }
-html,body{
-  min-height:100%;
-  background:var(--bg-darker);
-  font-family:'Nunito',sans-serif;
-  color:#fff;
-  overflow-x:hidden;
-}
+html,body{min-height:100%;background:var(--bg-darker);font-family:'Nunito',sans-serif;color:#fff;overflow-x:hidden;}
 
-/* ── HEADER ─────────────────────────────────────────── */
+/* ── HEADER ── */
 .portal-header{
-  background:var(--bg-dark);
-  border-bottom:2px solid var(--gold);
-  padding:16px 20px 14px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  position:sticky;
-  top:0;
-  z-index:100;
+  background:var(--bg-dark);border-bottom:2px solid var(--gold);
+  padding:16px 20px 14px;display:flex;flex-direction:column;
+  align-items:center;gap:10px;position:sticky;top:0;z-index:100;
 }
-.header-top{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  width:100%;
-  max-width:600px;
-}
-.header-logo{
-  height:50px;
-  width:auto;
-  filter:invert(1) brightness(1.1);
-  flex-shrink:0;
-}
+.header-top{display:flex;align-items:center;gap:14px;width:100%;max-width:600px;}
+.header-logo{height:50px;width:auto;filter:invert(1) brightness(1.1);flex-shrink:0;}
 .header-titles{flex:1;}
-.header-name{
-  font-family:'Cinzel Decorative',serif;
-  font-weight:700;
-  font-size:clamp(11px,3vw,17px);
-  color:#fff;
-  letter-spacing:.04em;
-  line-height:1.2;
-}
-.header-sub{
-  font-family:'Cinzel',serif;
-  font-size:clamp(7px,2vw,10px);
-  letter-spacing:.18em;
-  color:var(--gold);
-  text-transform:uppercase;
-  margin-top:3px;
-}
+.header-name{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:clamp(11px,3vw,17px);color:#fff;letter-spacing:.04em;line-height:1.2;}
+.header-sub{font-family:'Cinzel',serif;font-size:clamp(7px,2vw,10px);letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-top:3px;}
 
-/* ── AUTH ZONA ───────────────────────────────────────── */
-.auth-zone{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-shrink:0;
-}
+/* ── AUTH ZONA ── */
+.auth-zone{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .auth-btn{
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  background:transparent;
-  border:1px solid var(--gold);
-  color:var(--gold);
-  padding:7px 14px;
-  cursor:pointer;
-  text-decoration:none;
-  transition:all .15s;
-  white-space:nowrap;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--gold);color:var(--gold);
+  padding:7px 14px;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;
 }
 .auth-btn:hover{background:var(--gold);color:var(--bg-dark);}
-.auth-btn.primary{background:var(--gold);color:var(--bg-dark);}
-.auth-btn.primary:hover{background:#e8bc38;}
-
-/* Avatar + menú */
 .auth-user-menu{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;}
-.auth-avatar{
-  width:36px;height:36px;
-  border-radius:50%;
-  border:2px solid var(--gold);
-  object-fit:cover;
-}
-.auth-name{
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.08em;
-  color:var(--gold);
-  max-width:80px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.auth-role-badge{
-  font-family:'Cinzel',serif;
-  font-size:7px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  padding:2px 6px;
-  border-radius:2px;
-  background:var(--gold);
-  color:var(--bg-dark);
-  font-weight:700;
-}
+.auth-avatar{width:36px;height:36px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;}
+.auth-name{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.08em;color:var(--gold);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.auth-role-badge{font-family:'Cinzel',serif;font-size:7px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:var(--gold);color:var(--bg-dark);font-weight:700;}
 .auth-role-badge.jugador{background:#2a6a2a;color:#cfc;}
 .auth-role-badge.dm{background:#3a2a8a;color:#ccf;}
-
 .auth-dropdown{
-  display:none;
-  position:absolute;
-  top:calc(100% + 8px);
-  right:0;
-  min-width:150px;
-  background:var(--bg-dark);
-  border:1px solid var(--gold);
-  z-index:200;
-  flex-direction:column;
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  min-width:160px;background:var(--bg-dark);border:1px solid var(--gold);
+  z-index:200;flex-direction:column;
 }
 .auth-dropdown.open{display:flex;}
 .auth-dropdown a{
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--gold);
-  padding:10px 14px;
-  text-decoration:none;
-  border-bottom:1px solid rgba(196,160,48,.15);
-  transition:background .12s;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--gold);padding:10px 14px;text-decoration:none;
+  border-bottom:1px solid rgba(196,160,48,.15);transition:background .12s;
+  display:flex;align-items:center;gap:8px;
 }
 .auth-dropdown a:last-child{border-bottom:none;}
 .auth-dropdown a:hover{background:rgba(196,160,48,.12);}
 
-/* ── MODAL LOGIN ─────────────────────────────────────── */
-.auth-modal-bg{
-  display:none;
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.75);
-  z-index:500;
-  align-items:center;
-  justify-content:center;
+/* ── NOTIF BADGE ── */
+.notif-btn{
+  position:relative;cursor:pointer;padding:6px;
+  color:var(--gold);font-size:18px;line-height:1;
+  border:1px solid transparent;transition:border-color .15s;
 }
-.auth-modal-bg.open{display:flex;}
-.auth-modal{
-  background:var(--bg-dark);
-  border:1px solid var(--gold);
-  padding:32px 28px;
-  width:90%;max-width:340px;
-  text-align:center;
+.notif-btn:hover{border-color:var(--brd);}
+.notif-badge{
+  position:absolute;top:0;right:0;
+  min-width:16px;height:16px;border-radius:8px;
+  background:var(--red);color:#fff;
+  font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 3px;display:none;
 }
-.auth-modal-title{
-  font-family:'Cinzel Decorative',serif;
-  font-size:16px;
-  color:#fff;
-  margin-bottom:6px;
-}
-.auth-modal-sub{
-  font-family:'Nunito',sans-serif;
-  font-size:12px;
-  color:#aaa;
-  margin-bottom:24px;
-  line-height:1.5;
-}
-.auth-google-btn{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  width:100%;
-  background:#fff;
-  color:#333;
-  border:none;
-  padding:12px;
-  cursor:pointer;
-  font-family:'Nunito',sans-serif;
-  font-size:13px;
-  font-weight:700;
-  transition:background .15s;
-}
-.auth-google-btn:hover{background:#eee;}
-.auth-google-btn svg{width:18px;height:18px;}
-.auth-modal-cancel{
-  display:block;
-  margin-top:14px;
-  font-family:'Cinzel',serif;
-  font-size:8px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:#555;
-  cursor:pointer;
-  text-decoration:none;
-}
-.auth-modal-cancel:hover{color:#999;}
+.notif-badge.visible{display:flex;}
 
-/* ── BANNER ADMIN ────────────────────────────────────── */
-.banner-admin{
-  display:none;
-  background:linear-gradient(135deg,#1a0a0a,#2a1208);
-  border:1px solid var(--red);
+/* ── MODAL LOGIN ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg-dark);border:1px solid var(--gold);padding:32px 28px;width:90%;max-width:340px;text-align:center;}
+.modal-title{font-family:'Cinzel Decorative',serif;font-size:16px;color:#fff;margin-bottom:6px;}
+.modal-sub{font-family:'Nunito',sans-serif;font-size:12px;color:#aaa;margin-bottom:24px;line-height:1.5;}
+.google-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;background:#fff;color:#333;border:none;padding:12px;
+  cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;transition:background .15s;
 }
+.google-btn:hover{background:#eee;}
+.google-btn svg{width:18px;height:18px;}
+.modal-cancel{display:block;margin-top:14px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#555;cursor:pointer;text-decoration:none;}
+.modal-cancel:hover{color:#999;}
+
+/* ── PANEL LATERAL (notif + mensajes) ── */
+.side-panel{
+  position:fixed;top:0;right:-100%;width:min(380px,100vw);height:100%;
+  background:var(--bg-dark);border-left:1px solid var(--gold);
+  z-index:400;transition:right .3s;display:flex;flex-direction:column;
+}
+.side-panel.open{right:0;}
+.side-panel-header{
+  display:flex;align-items:center;padding:16px;
+  border-bottom:1px solid var(--brd);gap:10px;flex-shrink:0;
+}
+.side-panel-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);flex:1;}
+.side-panel-close{
+  font-size:18px;cursor:pointer;color:#888;padding:4px;
+  line-height:1;transition:color .15s;
+}
+.side-panel-close:hover{color:var(--gold);}
+.side-panel-tabs{display:flex;border-bottom:1px solid var(--brd);flex-shrink:0;}
+.side-tab{
+  flex:1;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;
+  text-transform:uppercase;padding:10px;text-align:center;cursor:pointer;
+  color:#888;border-bottom:2px solid transparent;transition:all .15s;
+}
+.side-tab:hover{color:var(--gold);}
+.side-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.side-tab-count{
+  display:inline-block;background:var(--red);color:#fff;
+  font-size:8px;padding:1px 4px;border-radius:6px;margin-left:4px;
+}
+.side-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.side-section{display:none;flex:1;flex-direction:column;}
+.side-section.active{display:flex;}
+
+/* ── NOTIFICACIONES ── */
+.notif-list{flex:1;overflow-y:auto;}
+.notif-item{
+  padding:14px 16px;border-bottom:1px solid var(--brd);cursor:pointer;
+  transition:background .12s;position:relative;
+}
+.notif-item:hover{background:rgba(196,160,48,.05);}
+.notif-item.unread{background:rgba(196,160,48,.07);}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
+.notif-item-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.06em;color:#fff;margin-bottom:4px;}
+.notif-item-body{font-size:12px;color:#aaa;line-height:1.4;}
+.notif-item-time{font-size:10px;color:#555;margin-top:4px;}
+.notif-actions{padding:12px 16px;border-top:1px solid var(--brd);flex-shrink:0;}
+.notif-mark-all{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);cursor:pointer;background:none;border:none;padding:0;}
+.notif-mark-all:hover{text-decoration:underline;}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#444;padding:32px;}
+.empty-state-icon{font-size:36px;opacity:.4;}
+.empty-state-text{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
+
+/* ── MENSAJERÍA ── */
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:1px solid var(--brd);
+  cursor:pointer;transition:background .12s;
+}
+.conv-item:hover{background:rgba(196,160,48,.05);}
+.conv-item.active{background:rgba(196,160,48,.1);}
+.conv-avatar{width:36px;height:36px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;flex-shrink:0;}
+.conv-info{flex:1;min-width:0;}
+.conv-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.06em;color:#fff;}
+.conv-last{font-size:11px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.conv-time{font-size:9px;color:#555;}
+.conv-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+
+/* Chat window */
+.chat-window{display:none;flex:1;flex-direction:column;}
+.chat-window.open{display:flex;}
+.chat-header{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:1px solid var(--brd);flex-shrink:0;
+}
+.chat-back{font-size:16px;cursor:pointer;color:#888;transition:color .15s;}
+.chat-back:hover{color:var(--gold);}
+.chat-partner-avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
+.chat-partner-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.06em;color:#fff;flex:1;}
+.chat-messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+.msg-bubble{max-width:80%;padding:10px 12px;line-height:1.4;}
+.msg-bubble.mine{align-self:flex-end;background:rgba(196,160,48,.15);border:1px solid var(--brd);}
+.msg-bubble.theirs{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);}
+.msg-text{font-size:13px;color:#ddd;}
+.msg-time{font-size:9px;color:#555;margin-top:4px;text-align:right;}
+.chat-input-area{
+  display:flex;gap:8px;padding:12px 16px;
+  border-top:1px solid var(--brd);flex-shrink:0;
+}
+.chat-input{
+  flex:1;background:#111;border:1px solid var(--brd);color:#fff;
+  padding:10px 12px;font-family:'Nunito',sans-serif;font-size:13px;
+  outline:none;resize:none;max-height:100px;
+}
+.chat-input:focus{border-color:var(--gold);}
+.chat-send{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--gold);color:var(--bg-dark);border:none;
+  padding:10px 14px;cursor:pointer;align-self:flex-end;transition:background .15s;flex-shrink:0;
+}
+.chat-send:hover{background:#e8bc38;}
+
+/* Nueva conversación */
+.new-conv-btn{
+  margin:12px 16px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;
+  text-transform:uppercase;background:transparent;border:1px solid var(--gold);
+  color:var(--gold);padding:8px;cursor:pointer;width:calc(100% - 32px);
+  transition:all .15s;
+}
+.new-conv-btn:hover{background:var(--gold);color:var(--bg-dark);}
+.new-conv-panel{display:none;padding:12px 16px;border-bottom:1px solid var(--brd);flex-direction:column;gap:8px;}
+.new-conv-panel.open{display:flex;}
+.new-conv-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
+.contact-list{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;}
+.contact-item{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;
+  border:1px solid transparent;transition:all .15s;
+}
+.contact-item:hover{border-color:var(--brd);background:rgba(196,160,48,.05);}
+.contact-item.selected{border-color:var(--gold);background:rgba(196,160,48,.1);}
+.contact-avatar{width:26px;height:26px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
+.contact-name{font-size:12px;color:#ccc;flex:1;}
+.contact-role{font-size:9px;color:#888;}
+
+/* ── OVERLAY FONDO ── */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:399;}
+.panel-overlay.open{display:block;}
+
+/* ── BANNER ADMIN ── */
+.banner-admin{display:none;background:linear-gradient(135deg,#1a0a0a,#2a1208);border:1px solid var(--red);}
 .banner-admin .banner-bg{background:linear-gradient(135deg,#3a0808,#1a0a04);}
 .banner-admin .banner-title{color:#ff9999;}
 .banner-admin .banner-status{background:var(--red);color:#fff;}
 
-/* ── HERO ────────────────────────────────────────────── */
-.portal-hero{
-  background:var(--bg-dark);
-  padding:28px 20px 24px;
-  text-align:center;
-  border-bottom:1px solid #2a1a08;
-  position:relative;
-  overflow:hidden;
-}
-.portal-hero::before{
-  content:'';
-  position:absolute;inset:0;
-  background:
-    repeating-linear-gradient(0deg,transparent,transparent 32px,rgba(196,160,48,.04) 32px,rgba(196,160,48,.04) 33px),
-    repeating-linear-gradient(90deg,transparent,transparent 32px,rgba(196,160,48,.03) 32px,rgba(196,160,48,.03) 33px);
-  pointer-events:none;
-}
-.hero-ornament{
-  font-family:'Cinzel',serif;
-  color:var(--gold);
-  font-size:11px;
-  letter-spacing:6px;
-  margin-bottom:8px;
-  opacity:.7;
-}
-.hero-title{
-  font-family:'Cinzel Decorative',serif;
-  font-weight:700;
-  font-size:clamp(20px,6vw,38px);
-  color:#fff;
-  letter-spacing:.04em;
-  line-height:1.15;
-  margin-bottom:8px;
-}
+/* ── HERO ── */
+.portal-hero{background:var(--bg-dark);padding:28px 20px 24px;text-align:center;border-bottom:1px solid #2a1a08;position:relative;overflow:hidden;}
+.portal-hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 32px,rgba(196,160,48,.04) 32px,rgba(196,160,48,.04) 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,rgba(196,160,48,.03) 32px,rgba(196,160,48,.03) 33px);pointer-events:none;}
+.hero-ornament{font-family:'Cinzel',serif;color:var(--gold);font-size:11px;letter-spacing:6px;margin-bottom:8px;opacity:.7;}
+.hero-title{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:clamp(20px,6vw,38px);color:#fff;letter-spacing:.04em;line-height:1.15;margin-bottom:8px;}
 .hero-title span{color:var(--gold);}
-.hero-desc{
-  font-family:'Nunito',sans-serif;
-  font-size:clamp(13px,3vw,15px);
-  color:#aaa;
-  max-width:480px;
-  margin:0 auto;
-  line-height:1.6;
-}
+.hero-desc{font-family:'Nunito',sans-serif;font-size:clamp(13px,3vw,15px);color:#aaa;max-width:480px;margin:0 auto;line-height:1.6;}
+.section-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding:14px 20px 8px;opacity:.8;max-width:600px;margin:0 auto;width:100%;}
 
-/* ── SECTION TITLE ───────────────────────────────────── */
-.section-label{
-  font-family:'Cinzel',serif;
-  font-size:9px;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:var(--gold);
-  padding:14px 20px 8px;
-  opacity:.8;
-  max-width:600px;
-  margin:0 auto;
-  width:100%;
-}
-
-/* ── BANNER GRID ─────────────────────────────────────── */
-.banners{
-  padding:0 16px 24px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  max-width:600px;
-  margin:0 auto;
-  width:100%;
-}
-.banner{
-  border-radius:8px;
-  overflow:hidden;
-  position:relative;
-  cursor:pointer;
-  text-decoration:none;
-  display:block;
-  height:110px;
-  transition:transform .18s, box-shadow .18s;
-  border:1px solid rgba(196,160,48,.2);
-}
-.banner:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 24px rgba(0,0,0,.5);
-  border-color:rgba(196,160,48,.5);
-}
+/* ── BANNERS ── */
+.banners{padding:0 16px 24px;display:flex;flex-direction:column;gap:12px;max-width:600px;margin:0 auto;width:100%;}
+.banner{border-radius:8px;overflow:hidden;position:relative;cursor:pointer;text-decoration:none;display:block;height:110px;transition:transform .18s, box-shadow .18s;border:1px solid rgba(196,160,48,.2);}
+.banner:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.5);border-color:rgba(196,160,48,.5);}
 .banner.disabled{cursor:default;}
 .banner.disabled:hover{transform:none;box-shadow:none;}
-
-.banner-bg{
-  position:absolute;inset:0;
-  background-size:cover;
-  background-position:center;
-  transition:transform .3s;
-}
+.banner-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .3s;}
 .banner:hover .banner-bg{transform:scale(1.03);}
 .banner.disabled:hover .banner-bg{transform:none;}
-
-.banner-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(90deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.4) 60%, rgba(0,0,0,.15) 100%);
-}
-.banner-content{
-  position:relative;z-index:2;
-  padding:16px 20px;
-  height:100%;
-  display:flex;flex-direction:column;justify-content:center;
-}
+.banner-overlay{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.4) 60%, rgba(0,0,0,.15) 100%);}
+.banner-content{position:relative;z-index:2;padding:16px 20px;height:100%;display:flex;flex-direction:column;justify-content:center;}
 .banner-icon{font-size:22px;margin-bottom:4px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
-.banner-title{
-  font-family:'Cinzel',serif;
-  font-weight:700;font-size:18px;
-  color:#fff;letter-spacing:.04em;line-height:1.2;
-  text-shadow:0 2px 8px rgba(0,0,0,.7);
-}
-.banner-desc{
-  font-family:'Nunito',sans-serif;font-size:11px;
-  color:rgba(255,255,255,.75);margin-top:3px;
-  text-shadow:0 1px 4px rgba(0,0,0,.7);
-}
-.banner-status{
-  position:absolute;top:12px;right:14px;z-index:3;
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;
-  text-transform:uppercase;padding:4px 10px;border-radius:2px;
-}
+.banner-title{font-family:'Cinzel',serif;font-weight:700;font-size:18px;color:#fff;letter-spacing:.04em;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.7);}
+.banner-desc{font-family:'Nunito',sans-serif;font-size:11px;color:rgba(255,255,255,.75);margin-top:3px;text-shadow:0 1px 4px rgba(0,0,0,.7);}
+.banner-status{position:absolute;top:12px;right:14px;z-index:3;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:2px;}
 .status-active{background:var(--gold);color:var(--bg-dark);font-weight:700;}
 .status-soon{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.2);}
 .status-admin{background:var(--red);color:#fff;font-weight:700;}
@@ -362,41 +268,14 @@ html,body{
 .bg-perfil{background-image:url("https://laciudadela-dlc.github.io/img/botprofile.png");background-size:cover;background-position:center;}
 .bg-admin{background:linear-gradient(135deg,#2a0808 0%,#1a0a04 100%);}
 
-/* ── FOOTER ──────────────────────────────────────────── */
-.portal-footer{
-  text-align:center;
-  padding:16px;
-  font-family:'Cinzel',serif;
-  font-size:8px;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:#3a2a10;
-  border-top:1px solid #1a1208;
-}
+.portal-footer{text-align:center;padding:16px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#3a2a10;border-top:1px solid #1a1208;}
 
-/* ── DESKTOP ─────────────────────────────────────────── */
-@media(min-width:600px){
-  .banner{height:130px;}
-  .banner-title{font-size:22px;}
-  .banner-desc{font-size:13px;}
-  .banner-icon{font-size:28px;}
-  .banners{padding:0 20px 32px;}
-}
+@media(min-width:600px){.banner{height:130px;}.banner-title{font-size:22px;}.banner-desc{font-size:13px;}.banner-icon{font-size:28px;}.banners{padding:0 20px 32px;}}
 @media(min-width:900px){
-  .banners{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-    max-width:860px;
-  }
+  .banners{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:860px;}
   .banner{height:150px;}
-  .banners > a.banner:first-child{
-    grid-column:1/-1;
-    height:130px;
-  }
-  #bannerAdmin{
-    grid-column:1/-1;
-  }
+  .banners > a.banner:first-child{grid-column:1/-1;height:130px;}
+  #bannerAdmin{grid-column:1/-1;}
   .section-label{max-width:860px;}
   .portal-hero{padding:36px 20px 30px;}
 }
@@ -404,40 +283,99 @@ html,body{
 </head>
 <body>
 
-<!-- ── MODAL LOGIN ──────────────────────────────────── -->
-<div class="auth-modal-bg" id="authModalBg">
-  <div class="auth-modal">
-    <div class="auth-modal-title">⚔ La Ciudadela</div>
-    <p class="auth-modal-sub">Ingresá con tu cuenta de Google para acceder a mesas, perfil y más.</p>
-    <button class="auth-google-btn" onclick="window.AUTH.loginGoogle()">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
+<!-- ── OVERLAY ── -->
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+
+<!-- ── MODAL LOGIN ── -->
+<div class="modal-overlay" id="authModalBg">
+  <div class="modal-box">
+    <div class="modal-title">⚔ La Ciudadela</div>
+    <p class="modal-sub">Ingresá con tu cuenta de Google para acceder a mesas, perfil y más.</p>
+    <button class="google-btn" onclick="window.AUTH.loginGoogle()">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
       Continuar con Google
     </button>
-    <a class="auth-modal-cancel" onclick="window.AUTH.closeLogin()">Cancelar</a>
+    <a class="modal-cancel" onclick="window.AUTH.closeLogin()">Cancelar</a>
   </div>
 </div>
 
-<!-- ── HEADER ───────────────────────────────────────── -->
+<!-- ── PANEL LATERAL ── -->
+<div class="side-panel" id="sidePanel">
+  <div class="side-panel-header">
+    <span class="side-panel-title" id="sidePanelTitle">Mensajes</span>
+    <span class="side-panel-close" onclick="closePanel()">✕</span>
+  </div>
+  <div class="side-panel-tabs">
+    <div class="side-tab active" id="tabNotif" onclick="switchTab('notif')">
+      🔔 Notif <span class="side-tab-count" id="tabNotifCount" style="display:none"></span>
+    </div>
+    <div class="side-tab" id="tabMsg" onclick="switchTab('msg')">
+      💬 Mensajes <span class="side-tab-count" id="tabMsgCount" style="display:none"></span>
+    </div>
+  </div>
+  <div class="side-content">
+
+    <!-- NOTIFICACIONES -->
+    <div class="side-section active" id="secNotif">
+      <div class="notif-list" id="notifList">
+        <div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-text">Sin notificaciones</div></div>
+      </div>
+      <div class="notif-actions">
+        <button class="notif-mark-all" onclick="markAllRead()">Marcar todas como leídas</button>
+      </div>
+    </div>
+
+    <!-- MENSAJES -->
+    <div class="side-section" id="secMsg">
+      <!-- Lista de conversaciones -->
+      <div id="convListView" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+        <button class="new-conv-btn" onclick="toggleNewConv()">+ Nueva conversación</button>
+        <!-- Panel seleccionar contacto -->
+        <div class="new-conv-panel" id="newConvPanel">
+          <div class="new-conv-label">Seleccioná un Admin o DM</div>
+          <div class="contact-list" id="contactList">
+            <div style="font-size:12px;color:#555;padding:8px;">Cargando contactos…</div>
+          </div>
+          <button style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:8px;cursor:pointer;margin-top:4px;" onclick="startConv()">Iniciar conversación</button>
+        </div>
+        <div class="conv-list" id="convList">
+          <div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">Sin conversaciones</div></div>
+        </div>
+      </div>
+      <!-- Ventana de chat -->
+      <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+          <span class="chat-back" onclick="closeChat()">←</span>
+          <img class="chat-partner-avatar" id="chatPartnerAvatar" src="" alt="">
+          <span class="chat-partner-name" id="chatPartnerName"></span>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+          <textarea class="chat-input" id="chatInput" placeholder="Escribí tu mensaje…" rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+          <button class="chat-send" onclick="sendMessage()">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── HEADER ── -->
 <header class="portal-header">
   <div class="header-top">
-    <img class="header-logo" src="data:image/png;base64,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" alt="La Ciudadela">
+    <img class="header-logo" src="data:image/png;base64,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" alt="La Ciudadela">
     <div class="header-titles">
       <div class="header-name">El Portal de la Ciudadela</div>
       <div class="header-sub">✦ Lima 575, CABA ✦ @laciudadela.dlc</div>
     </div>
-    <!-- ZONA AUTH: se reemplaza dinámicamente -->
     <div class="auth-zone" id="authZone">
       <button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>
     </div>
   </div>
 </header>
 
-<!-- ── HERO ─────────────────────────────────────────── -->
+<!-- ── HERO ── -->
 <section class="portal-hero">
   <div class="hero-ornament">⚔ ✦ ⚔</div>
   <h1 class="hero-title">Bienvenido a<br><span>La Ciudadela</span></h1>
@@ -447,9 +385,7 @@ html,body{
 <div class="section-label">✦ Accesos rápidos</div>
 
 <div class="banners">
-
-  <!-- CALENDARIO - ACTIVO -->
-  <a class="banner" href="calendario/index.html">
+  <a class="banner" href="https://laciudadela-dlc.github.io/calendario/index.html">
     <div class="banner-bg bg-calendario"></div>
     <div class="banner-overlay"></div>
     <div class="banner-content">
@@ -459,238 +395,508 @@ html,body{
     </div>
     <span class="banner-status status-active">Disponible</span>
   </a>
-
-  <!-- MESAS -->
   <div class="banner disabled">
-    <div class="banner-bg bg-mesas"></div>
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <div class="banner-icon">🎲</div>
-      <div class="banner-title">Mesas</div>
-      <div class="banner-desc">Inscribite a partidas y seguí tus campañas activas</div>
-    </div>
+    <div class="banner-bg bg-mesas"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">🎲</div><div class="banner-title">Mesas</div><div class="banner-desc">Inscribite a partidas y seguí tus campañas activas</div></div>
     <span class="banner-status status-soon">Próximamente</span>
   </div>
-
-  <!-- BUFFET -->
   <div class="banner disabled">
-    <div class="banner-bg bg-buffet"></div>
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <div class="banner-icon">☕</div>
-      <div class="banner-title">Buffet</div>
-      <div class="banner-desc">Pedidos de bebidas y snacks desde tu mesa</div>
-    </div>
+    <div class="banner-bg bg-buffet"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">☕</div><div class="banner-title">Buffet</div><div class="banner-desc">Pedidos de bebidas y snacks desde tu mesa</div></div>
     <span class="banner-status status-soon">Próximamente</span>
   </div>
-
-  <!-- ANUNCIOS -->
   <div class="banner disabled">
-    <div class="banner-bg bg-anuncios"></div>
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <div class="banner-icon">📜</div>
-      <div class="banner-title">Anuncios</div>
-      <div class="banner-desc">Novedades, eventos especiales y comunicados</div>
-    </div>
+    <div class="banner-bg bg-anuncios"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">📜</div><div class="banner-title">Anuncios</div><div class="banner-desc">Novedades, eventos especiales y comunicados</div></div>
     <span class="banner-status status-soon">Próximamente</span>
   </div>
-
-  <!-- BIBLIOTECA -->
   <div class="banner disabled">
-    <div class="banner-bg bg-biblioteca"></div>
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <div class="banner-icon">📚</div>
-      <div class="banner-title">Biblioteca</div>
-      <div class="banner-desc">Manuales y reglamentos de los sistemas disponibles</div>
-    </div>
+    <div class="banner-bg bg-biblioteca"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">📚</div><div class="banner-title">Biblioteca</div><div class="banner-desc">Manuales y reglamentos de los sistemas disponibles</div></div>
     <span class="banner-status status-soon">Próximamente</span>
   </div>
-
-  <!-- MI PERFIL -->
   <div class="banner disabled">
-    <div class="banner-bg bg-perfil"></div>
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <div class="banner-icon">⚔</div>
-      <div class="banner-title">Mi Perfil</div>
-      <div class="banner-desc">Tu personaje, historial de mesas y suscripción</div>
-    </div>
+    <div class="banner-bg bg-perfil"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">⚔</div><div class="banner-title">Mi Perfil</div><div class="banner-desc">Tu personaje, historial de mesas y suscripción</div></div>
     <span class="banner-status status-soon">Próximamente</span>
   </div>
-
-  <!-- ADMIN - oculto por defecto, visible solo para admin -->
   <a class="banner banner-admin" id="bannerAdmin" href="https://laciudadela-dlc.github.io/admin/" style="display:none;">
-    <div class="banner-bg bg-admin"></div>
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <div class="banner-icon">🛡</div>
-      <div class="banner-title">Panel de Admin</div>
-      <div class="banner-desc">Usuarios, roles, mensajería y configuración</div>
-    </div>
+    <div class="banner-bg bg-admin"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">🛡</div><div class="banner-title">Panel de Admin</div><div class="banner-desc">Usuarios, roles, mensajería y configuración</div></div>
     <span class="banner-status status-admin">Admin</span>
   </a>
-
 </div>
 
-<footer class="portal-footer">
-  ✦ La Ciudadela de los Confines ✦ Lima 575, CABA ✦ 2025
-</footer>
+<footer class="portal-footer">✦ La Ciudadela de los Confines ✦ Lima 575, CABA ✦ 2025</footer>
 
-<!-- ── FIREBASE SDK ──────────────────────────────────── -->
+<!-- ── FIREBASE ── -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-// ── CONFIG FIREBASE ──────────────────────────────────
-const firebaseConfig = {
-  apiKey: "AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
-  authDomain: "ciudadela-portal-88111.firebaseapp.com",
-  projectId: "ciudadela-portal-88111",
-  storageBucket: "ciudadela-portal-88111.firebasestorage.app",
-  messagingSenderId: "629290273583",
-  appId: "1:629290273583:web:47e321d389fb0e49a6afda"
-};
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({
+  apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
+  authDomain:"ciudadela-portal-88111.firebaseapp.com",
+  projectId:"ciudadela-portal-88111",
+  storageBucket:"ciudadela-portal-88111.firebasestorage.app",
+  messagingSenderId:"629290273583",
+  appId:"1:629290273583:web:47e321d389fb0e49a6afda"
+});
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ── MÓDULO AUTH ──────────────────────────────────────
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
 window.AUTH = (function(){
-  let _user = null;
-  let _profile = null;
+  let _user = null, _profile = null;
 
-  // Abrir/cerrar modal
-  function openLogin(){
-    document.getElementById('authModalBg').classList.add('open');
-  }
-  function closeLogin(){
-    document.getElementById('authModalBg').classList.remove('open');
-  }
+  function openLogin(){ document.getElementById('authModalBg').classList.add('open'); }
+  function closeLogin(){ document.getElementById('authModalBg').classList.remove('open'); }
 
-  // Login con Google
   async function loginGoogle(){
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       await auth.signInWithPopup(provider);
       closeLogin();
-    } catch(e){
-      console.error('Login error:', e);
-    }
+    } catch(e){ console.error('Login error:',e); }
   }
 
-  // Logout
-  async function logout(){
-    await auth.signOut();
-  }
+  async function logout(){ await auth.signOut(); }
 
-  // Toggle dropdown
   function toggleDropdown(){
     const dd = document.getElementById('authDropdown');
     if(dd) dd.classList.toggle('open');
   }
 
-  // Cerrar dropdown al click fuera
   document.addEventListener('click', function(e){
     const menu = document.getElementById('authUserMenu');
     const dd   = document.getElementById('authDropdown');
-    if(menu && dd && !menu.contains(e.target)){
-      dd.classList.remove('open');
-    }
+    if(menu && dd && !menu.contains(e.target)) dd.classList.remove('open');
+    const panel = document.getElementById('sidePanel');
+    const overlay = document.getElementById('panelOverlay');
+    // no cerrar si click dentro del panel
   });
 
-  // Crear/actualizar perfil en Firestore
   async function ensureProfile(user){
-    const ref = db.collection('usuarios').doc(user.uid);
+    const ref  = db.collection('usuarios').doc(user.uid);
     const snap = await ref.get();
     const isAdmin = user.email === 'laciudadeladelosconfines@gmail.com';
-
     if(!snap.exists){
       await ref.set({
-        displayName : user.displayName || '',
-        email       : user.email,
-        photoURL    : user.photoURL || '',
-        roles       : isAdmin ? ['admin'] : ['jugador'],
-        activo      : true,
-        creadoEn    : firebase.firestore.FieldValue.serverTimestamp(),
-        ultimoAcceso: firebase.firestore.FieldValue.serverTimestamp()
+        displayName:user.displayName||'',email:user.email,photoURL:user.photoURL||'',
+        roles:isAdmin?['admin']:['jugador'],activo:true,
+        creadoEn:firebase.firestore.FieldValue.serverTimestamp(),
+        ultimoAcceso:firebase.firestore.FieldValue.serverTimestamp()
       });
     } else {
-      await ref.update({
-        ultimoAcceso: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      await ref.update({ultimoAcceso:firebase.firestore.FieldValue.serverTimestamp()});
     }
-    const updated = await ref.get();
-    return updated.data();
+    return (await ref.get()).data();
   }
 
-  // Renderizar zona auth
   function renderZone(user, profile){
     const zone = document.getElementById('authZone');
-    if(!user || !profile){
-      zone.innerHTML = `<button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>`;
+    if(!user||!profile){
+      zone.innerHTML=`<button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>`;
       return;
     }
-
-    const roles = profile.roles || [];
-    const mainRole = roles.includes('admin') ? 'admin'
-                   : roles.includes('dm')    ? 'dm'
-                   : 'jugador';
-    const badgeClass = mainRole === 'admin' ? '' : mainRole;
-    const name = (user.displayName || user.email).split(' ')[0];
-
-    zone.innerHTML = `
+    const roles = profile.roles||[];
+    const mainRole = roles.includes('admin')?'admin':roles.includes('dm')?'dm':'jugador';
+    const badgeClass = mainRole==='admin'?'':mainRole;
+    const name = (user.displayName||user.email).split(' ')[0];
+    zone.innerHTML=`
+      <div class="notif-btn" onclick="openPanel('notif')" title="Notificaciones">
+        🔔<span class="notif-badge" id="notifBadge"></span>
+      </div>
+      <div class="notif-btn" onclick="openPanel('msg')" title="Mensajes">
+        💬<span class="notif-badge" id="msgBadge"></span>
+      </div>
       <div class="auth-user-menu" id="authUserMenu" onclick="window.AUTH.toggleDropdown()">
-        <img class="auth-avatar" src="${user.photoURL || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=c4a030&color=1a1208'}" alt="${name}">
+        <img class="auth-avatar" src="${user.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=c4a030&color=1a1208'}" alt="${name}">
         <span class="auth-name">${name}</span>
         <span class="auth-role-badge ${badgeClass}">${mainRole}</span>
         <div class="auth-dropdown" id="authDropdown">
-          <a href="#">Mi perfil</a>
+          <a href="#" onclick="event.stopPropagation();openPanel('notif')">🔔 Notificaciones</a>
+          <a href="#" onclick="event.stopPropagation();openPanel('msg')">💬 Mensajes</a>
           <a href="#" onclick="event.stopPropagation();window.AUTH.logout()">Cerrar sesión</a>
         </div>
       </div>`;
+
+    // iniciar listeners en tiempo real
+    startNotifListener(user.uid);
+    startMsgListener(user.uid);
+    loadContacts(user.uid, profile.roles||[]);
   }
 
-  // Mostrar/ocultar banner admin
   function updateAdminBanner(profile){
     const banner = document.getElementById('bannerAdmin');
     if(!banner) return;
-    const isAdmin = profile && profile.roles && profile.roles.includes('admin');
+    const isAdmin = profile&&profile.roles&&profile.roles.includes('admin');
     banner.style.display = isAdmin ? 'block' : 'none';
   }
 
-  // Observer de autenticación
   auth.onAuthStateChanged(async function(user){
     _user = user;
     if(user){
-      try {
-        _profile = await ensureProfile(user);
-      } catch(e){
-        console.error('Firestore error:', e);
-        _profile = { roles: ['jugador'] };
-      }
+      try { _profile = await ensureProfile(user); }
+      catch(e){ console.error(e); _profile={roles:['jugador']}; }
     } else {
       _profile = null;
+      stopListeners();
     }
     renderZone(_user, _profile);
     updateAdminBanner(_profile);
   });
 
   return {
-    openLogin,
-    closeLogin,
-    loginGoogle,
-    logout,
-    toggleDropdown,
-    getUser    : () => _user,
-    getProfile : () => _profile,
-    isLoggedIn : () => !!_user,
-    hasRole    : (r) => _profile && _profile.roles && _profile.roles.includes(r)
+    openLogin,closeLogin,loginGoogle,logout,toggleDropdown,
+    getUser:()=>_user, getProfile:()=>_profile,
+    isLoggedIn:()=>!!_user,
+    hasRole:(r)=>_profile&&_profile.roles&&_profile.roles.includes(r)
   };
 })();
-</script>
 
+// ══════════════════════════════════════════════════════
+// PANEL LATERAL
+// ══════════════════════════════════════════════════════
+let unsubNotif = null, unsubMsg = null;
+
+function openPanel(tab){
+  document.getElementById('sidePanel').classList.add('open');
+  document.getElementById('panelOverlay').classList.add('open');
+  switchTab(tab);
+}
+
+function closePanel(){
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.remove('open');
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.side-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.side-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab'+cap(tab)).classList.add('active');
+  document.getElementById('sec'+cap(tab)).classList.add('active');
+}
+
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+// ══════════════════════════════════════════════════════
+// NOTIFICACIONES
+// ══════════════════════════════════════════════════════
+function startNotifListener(uid){
+  if(unsubNotif) unsubNotif();
+  unsubNotif = db.collection('notificaciones').doc(uid).collection('items')
+    .orderBy('creadoEn','desc').limit(50)
+    .onSnapshot(snap=>{
+      const items = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderNotifList(items, uid);
+      const unread = items.filter(n=>!n.leida).length;
+      updateBadge('notifBadge','tabNotifCount', unread);
+    });
+}
+
+function renderNotifList(items, uid){
+  const list = document.getElementById('notifList');
+  if(!items.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-text">Sin notificaciones</div></div>`;
+    return;
+  }
+  list.innerHTML = items.map(n=>`
+    <div class="notif-item ${n.leida?'':'unread'}" onclick="markNotifRead('${uid}','${n.id}','${n.convId||''}')">
+      <div class="notif-item-title">${esc(n.titulo||'Mensaje')}</div>
+      <div class="notif-item-body">${esc(n.cuerpo||'')}</div>
+      ${n.link?`<div class="notif-item-time"><a href="${n.link}" style="color:var(--gold);font-size:10px;" target="_blank">Ver enlace →</a></div>`:''}
+      <div class="notif-item-time">${formatTime(n.creadoEn)}</div>
+    </div>`).join('');
+}
+
+async function markNotifRead(uid, notifId, convId){
+  await db.collection('notificaciones').doc(uid).collection('items').doc(notifId).update({leida:true});
+  if(convId){
+    // abrir chat
+    const convSnap = await db.collection('mensajes').doc(convId).get();
+    if(convSnap.exists) openChatFromConv(convId, convSnap.data());
+  }
+}
+
+async function markAllRead(){
+  const user = AUTH.getUser();
+  if(!user) return;
+  const snap = await db.collection('notificaciones').doc(user.uid).collection('items').where('leida','==',false).get();
+  const batch = db.batch();
+  snap.docs.forEach(d=>batch.update(d.ref,{leida:true}));
+  await batch.commit();
+}
+
+// ══════════════════════════════════════════════════════
+// MENSAJERÍA
+// ══════════════════════════════════════════════════════
+let currentConvId = null, unsubChat = null, selectedContact = null;
+let allContacts = [];
+
+function startMsgListener(uid){
+  if(unsubMsg) unsubMsg();
+  unsubMsg = db.collection('mensajes')
+    .where('participantes','array-contains', uid)
+    .orderBy('ultimoMensajeAt','desc')
+    .onSnapshot(snap=>{
+      const convs = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderConvList(convs, uid);
+      // contar no leídas
+      let unread = 0;
+      convs.forEach(c=>{ if(c.noLeidos&&c.noLeidos[uid]) unread+=c.noLeidos[uid]; });
+      updateBadge('msgBadge','tabMsgCount', unread);
+    });
+}
+
+function renderConvList(convs, uid){
+  const list = document.getElementById('convList');
+  if(!convs.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">Sin conversaciones</div></div>`;
+    return;
+  }
+  list.innerHTML = convs.map(c=>{
+    const partnerId = c.participantes.find(p=>p!==uid);
+    const partner   = allContacts.find(u=>u.uid===partnerId)||{displayName:partnerId,photoURL:''};
+    const unread    = c.noLeidos&&c.noLeidos[uid]?c.noLeidos[uid]:0;
+    const name      = partner.displayName||(partner.email||partnerId).split('@')[0];
+    const avatar    = partner.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=36`;
+    return `
+    <div class="conv-item ${c.id===currentConvId?'active':''}" onclick="openChat('${c.id}')">
+      <img class="conv-avatar" src="${avatar}" alt="">
+      <div class="conv-info">
+        <div class="conv-name">${esc(name)}</div>
+        <div class="conv-last">${esc(c.ultimoMensaje||'')}</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">${formatTime(c.ultimoMensajeAt)}</div>
+        ${unread?`<div class="conv-unread-dot"></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadContacts(myUid, myRoles){
+  // Cargar admins y DMs para poder iniciar conversaciones
+  // Los jugadores solo pueden escribirle a admin/dm
+  // Los admin/dm pueden escribirle a cualquiera
+  try {
+    let q;
+    if(myRoles.includes('admin')||myRoles.includes('dm')){
+      q = await db.collection('usuarios').where('activo','==',true).get();
+    } else {
+      // jugador: solo admin y dm
+      q = await db.collection('usuarios').where('activo','==',true).get();
+    }
+    allContacts = q.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==myUid);
+
+    // filtrar según rol
+    if(!myRoles.includes('admin')&&!myRoles.includes('dm')){
+      allContacts = allContacts.filter(u=>(u.roles||[]).some(r=>r==='admin'||r==='dm'));
+    }
+    renderContactList();
+  } catch(e){ console.error(e); }
+}
+
+function renderContactList(){
+  const list = document.getElementById('contactList');
+  if(!allContacts.length){
+    list.innerHTML=`<div style="font-size:12px;color:#555;padding:8px;">Sin contactos disponibles</div>`;
+    return;
+  }
+  list.innerHTML = allContacts.map(u=>{
+    const name = u.displayName||(u.email||u.uid).split('@')[0];
+    const role = (u.roles||['jugador'])[0];
+    const avatar = u.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=26`;
+    return `
+    <div class="contact-item" id="contact_${u.uid}" onclick="selectContact('${u.uid}')">
+      <img class="contact-avatar" src="${avatar}" alt="">
+      <span class="contact-name">${esc(name)}</span>
+      <span class="contact-role">${role}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleNewConv(){
+  const panel = document.getElementById('newConvPanel');
+  panel.classList.toggle('open');
+  selectedContact = null;
+  document.querySelectorAll('.contact-item').forEach(el=>el.classList.remove('selected'));
+}
+
+function selectContact(uid){
+  selectedContact = uid;
+  document.querySelectorAll('.contact-item').forEach(el=>el.classList.remove('selected'));
+  const el = document.getElementById('contact_'+uid);
+  if(el) el.classList.add('selected');
+}
+
+async function startConv(){
+  const user = AUTH.getUser();
+  if(!user||!selectedContact) return;
+  // Buscar si ya existe conv entre estos dos
+  const snap = await db.collection('mensajes')
+    .where('participantes','array-contains', user.uid)
+    .get();
+  const existing = snap.docs.find(d=>{
+    const p = d.data().participantes||[];
+    return p.includes(selectedContact);
+  });
+  if(existing){
+    openChat(existing.id);
+  } else {
+    // crear nueva conv
+    const ref = await db.collection('mensajes').add({
+      participantes:[user.uid, selectedContact],
+      tipo:'user-user',
+      ultimoMensaje:'',
+      ultimoMensajeAt:firebase.firestore.FieldValue.serverTimestamp(),
+      noLeidos:{}
+    });
+    openChat(ref.id);
+  }
+  document.getElementById('newConvPanel').classList.remove('open');
+}
+
+function openChat(convId){
+  currentConvId = convId;
+  const user = AUTH.getUser();
+  // buscar datos del partner
+  db.collection('mensajes').doc(convId).get().then(snap=>{
+    if(!snap.exists) return;
+    openChatFromConv(convId, snap.data());
+  });
+  // marcar leídos
+  db.collection('mensajes').doc(convId).update({
+    [`noLeidos.${user.uid}`]: 0
+  });
+}
+
+function openChatFromConv(convId, convData){
+  currentConvId = convId;
+  const user = AUTH.getUser();
+  const partnerId = convData.participantes.find(p=>p!==user.uid);
+  const partner   = allContacts.find(u=>u.uid===partnerId)||{displayName:partnerId,photoURL:''};
+  const name   = partner.displayName||(partner.email||partnerId).split('@')[0];
+  const avatar = partner.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=30`;
+
+  document.getElementById('chatPartnerName').textContent = name;
+  document.getElementById('chatPartnerAvatar').src = avatar;
+
+  document.getElementById('convListView').style.display='none';
+  document.getElementById('chatWindow').classList.add('open');
+
+  // tab mensajes activa
+  switchTab('msg');
+  openPanel('msg');
+
+  // suscribir mensajes del chat
+  if(unsubChat) unsubChat();
+  const msgDiv = document.getElementById('chatMessages');
+  msgDiv.innerHTML='';
+  unsubChat = db.collection('mensajes').doc(convId).collection('items')
+    .orderBy('creadoEn','asc')
+    .onSnapshot(snap=>{
+      msgDiv.innerHTML = snap.docs.map(d=>{
+        const m = d.data();
+        const mine = m.de === user.uid;
+        return `
+        <div class="msg-bubble ${mine?'mine':'theirs'}">
+          <div class="msg-text">${esc(m.texto||'')}</div>
+          <div class="msg-time">${formatTime(m.creadoEn)}</div>
+        </div>`;
+      }).join('');
+      msgDiv.scrollTop = msgDiv.scrollHeight;
+    });
+}
+
+function closeChat(){
+  if(unsubChat){ unsubChat(); unsubChat=null; }
+  currentConvId = null;
+  document.getElementById('chatWindow').classList.remove('open');
+  document.getElementById('convListView').style.display='flex';
+}
+
+async function sendMessage(){
+  const user = AUTH.getUser();
+  if(!user||!currentConvId) return;
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  if(!texto) return;
+  input.value='';
+
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+
+  // Obtener el partner
+  const convSnap = await db.collection('mensajes').doc(currentConvId).get();
+  const convData = convSnap.data();
+  const partnerId = convData.participantes.find(p=>p!==user.uid);
+
+  // Guardar mensaje
+  await db.collection('mensajes').doc(currentConvId).collection('items').add({
+    de:user.uid, texto, leido:false, creadoEn:now
+  });
+
+  // Actualizar conv
+  await db.collection('mensajes').doc(currentConvId).update({
+    ultimoMensaje: texto,
+    ultimoMensajeAt: now,
+    [`noLeidos.${partnerId}`]: firebase.firestore.FieldValue.increment(1)
+  });
+
+  // Notificación al partner
+  const myName = (user.displayName||user.email).split(' ')[0];
+  await db.collection('notificaciones').doc(partnerId).collection('items').add({
+    tipo:'mensaje',
+    titulo:`Mensaje de ${myName}`,
+    cuerpo: texto.length>60 ? texto.substring(0,60)+'…' : texto,
+    convId: currentConvId,
+    leida: false,
+    creadoEn: now
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function updateBadge(badgeId, tabCountId, count){
+  const badge = document.getElementById(badgeId);
+  const tabCount = document.getElementById(tabCountId);
+  if(badge){
+    badge.textContent = count>9?'9+':count;
+    badge.classList.toggle('visible', count>0);
+  }
+  if(tabCount){
+    tabCount.textContent = count;
+    tabCount.style.display = count>0?'inline-block':'none';
+  }
+}
+
+function formatTime(ts){
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if(diff < 60000) return 'ahora';
+  if(diff < 3600000) return Math.floor(diff/60000)+'m';
+  if(diff < 86400000) return Math.floor(diff/3600000)+'h';
+  return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+}
+
+function esc(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function stopListeners(){
+  if(unsubNotif){ unsubNotif(); unsubNotif=null; }
+  if(unsubMsg){ unsubMsg(); unsubMsg=null; }
+  if(unsubChat){ unsubChat(); unsubChat=null; }
+  // Limpiar zona auth
+  document.getElementById('authZone').innerHTML=`<button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>`;
+}
+</script>
 </body>
 </html>
