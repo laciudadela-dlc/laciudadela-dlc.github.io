@@ -390,9 +390,12 @@ html,body{
     max-width:860px;
   }
   .banner{height:150px;}
-  .banner:first-child{
+  .banners > a.banner:first-child{
     grid-column:1/-1;
     height:130px;
+  }
+  #bannerAdmin{
+    grid-column:1/-1;
   }
   .section-label{max-width:860px;}
   .portal-hero{padding:36px 20px 30px;}
@@ -651,20 +654,12 @@ window.AUTH = (function(){
   }
 
   // Mostrar/ocultar banner admin
- function updateAdminBanner(profile){
-  const banner = document.getElementById('bannerAdmin');
-  if(!banner) return;
-  const isAdmin = profile && profile.roles && profile.roles.includes('admin');
-  if(isAdmin){
-    banner.style.display = 'block';
-    banner.style.pointerEvents = 'auto';
-    banner.style.position = 'relative';
-    banner.style.zIndex = '10';
-  } else {
-    banner.style.display = 'none';
-    banner.style.pointerEvents = 'none';
+  function updateAdminBanner(profile){
+    const banner = document.getElementById('bannerAdmin');
+    if(!banner) return;
+    const isAdmin = profile && profile.roles && profile.roles.includes('admin');
+    banner.style.display = isAdmin ? 'block' : 'none';
   }
-}
 
   // Observer de autenticación
   auth.onAuthStateChanged(async function(user){
