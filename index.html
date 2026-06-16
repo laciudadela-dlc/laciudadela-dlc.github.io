@@ -655,7 +655,7 @@ window.AUTH = (function(){
     const banner = document.getElementById('bannerAdmin');
     if(!banner) return;
     const isAdmin = profile && profile.roles && profile.roles.includes('admin');
-    banner.style.display = isAdmin ? 'block' : 'none';
+    banner.style.display = isAdmin ? 'flex' : 'none';
   }
 
   // Observer de autenticación
