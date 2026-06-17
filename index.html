@@ -415,11 +415,11 @@ html,body{min-height:100%;background:var(--bg-darker);font-family:'Nunito',sans-
     <div class="banner-content"><div class="banner-icon">📚</div><div class="banner-title">Biblioteca</div><div class="banner-desc">Manuales y reglamentos de los sistemas disponibles</div></div>
     <span class="banner-status status-soon">Próximamente</span>
   </div>
-  <div class="banner disabled">
+  <a class="banner" id="bannerPerfil" href="https://laciudadela-dlc.github.io/mensajes/" style="display:none;">
     <div class="banner-bg bg-perfil"></div><div class="banner-overlay"></div>
-    <div class="banner-content"><div class="banner-icon">⚔</div><div class="banner-title">Mi Perfil</div><div class="banner-desc">Tu personaje, historial de mesas y suscripción</div></div>
-    <span class="banner-status status-soon">Próximamente</span>
-  </div>
+    <div class="banner-content"><div class="banner-icon">⚔</div><div class="banner-title">Mi Perfil</div><div class="banner-desc">Tus mensajes, historial de mesas y suscripción</div></div>
+    <span class="banner-status status-active" id="bannerPerfilBadge">Mensajes</span>
+  </a>
   <a class="banner banner-admin" id="bannerAdmin" href="https://laciudadela-dlc.github.io/admin/" style="display:none;">
     <div class="banner-bg bg-admin"></div><div class="banner-overlay"></div>
     <div class="banner-content"><div class="banner-icon">🛡</div><div class="banner-title">Panel de Admin</div><div class="banner-desc">Usuarios, roles, mensajería y configuración</div></div>
@@ -537,6 +537,12 @@ window.AUTH = (function(){
     banner.style.display = isAdmin ? 'block' : 'none';
   }
 
+  function updatePerfilBanner(user, profile){
+    const banner = document.getElementById('bannerPerfil');
+    if(!banner) return;
+    banner.style.display = user ? 'block' : 'none';
+  }
+
   auth.onAuthStateChanged(async function(user){
     _user = user;
     if(user){
@@ -548,6 +554,7 @@ window.AUTH = (function(){
     }
     renderZone(_user, _profile);
     updateAdminBanner(_profile);
+    updatePerfilBanner(_user, _profile);
   });
 
   return {
