@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Ciudadela de los Confines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="https://laciudadela-dlc.github.io/img/logo.png">
 <meta name="theme-color" content="#FFFFFF">
@@ -21,8 +21,8 @@
   --text-1:    #111110;
   --text-2:    #5C5A54;
   --text-3:    #9C9A94;
-  --gold:      #B8940A;
-  --gold-bg:   #FDF6DC;
+  --gold:      #111110;
+  --gold-bg:   #F0EFEC;
   --ink:       #111110;
   --radius:    10px;
   --radius-sm: 6px;
@@ -32,7 +32,7 @@
 
 /* ── RESET ───────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text-1);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text-1);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 
 /* ── HEADER ─────────────────────────────────────────── */
 .header{
@@ -53,12 +53,12 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
   letter-spacing:.02em;
   flex:1;
 }
-.header-wordmark span{color:var(--gold);}
+.header-wordmark span{color:var(--ink);}
 
 /* AUTH ZONE */
 .auth-zone{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .auth-btn{
-  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
   background:var(--ink);color:#fff;border:none;
   padding:8px 16px;border-radius:var(--radius-sm);
   cursor:pointer;transition:opacity .15s;white-space:nowrap;
@@ -70,7 +70,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .auth-role-badge{
   font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   padding:2px 7px;border-radius:20px;
-  background:var(--gold-bg);color:var(--gold);
+  background:var(--bg3);color:var(--ink2);
 }
 .auth-role-badge.jugador{background:#EFF7EF;color:#2D7A2D;}
 .auth-role-badge.dm{background:#EEF2FF;color:#3B5BDB;}
@@ -125,7 +125,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
   display:flex;align-items:center;justify-content:center;gap:10px;
   width:100%;background:var(--surface);color:var(--text-1);
   border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:12px;cursor:pointer;font-family:'Inter',sans-serif;
+  padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;
   font-size:14px;font-weight:600;transition:background .15s;
   box-shadow:var(--shadow);
 }
@@ -179,12 +179,12 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 }
 .notif-item:hover{background:var(--bg);}
 .notif-item.unread{background:#FFFBF0;}
-.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ink2);}
 .notif-item-title{font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;}
 .notif-item-body{font-size:12px;color:var(--text-2);line-height:1.4;}
 .notif-item-time{font-size:11px;color:var(--text-3);margin-top:4px;}
 .notif-actions{padding:12px 18px;border-top:1px solid var(--border);flex-shrink:0;}
-.notif-mark-all{font-size:12px;font-weight:600;color:var(--gold);cursor:pointer;background:none;border:none;padding:0;}
+.notif-mark-all{font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;background:none;border:none;padding:0;}
 .notif-mark-all:hover{text-decoration:underline;}
 .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-3);padding:40px 20px;}
 .empty-state-icon{font-size:36px;opacity:.4;}
@@ -201,7 +201,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .conv-last{font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;}
 .conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
 .conv-time{font-size:10px;color:var(--text-3);}
-.conv-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+.conv-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--ink2);}
 
 /* Chat window */
 .chat-window{display:none;flex:1;flex-direction:column;}
@@ -222,7 +222,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .chat-input{
   flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text-1);
   padding:9px 12px;border-radius:var(--radius-sm);
-  font-family:'Inter',sans-serif;font-size:13px;outline:none;resize:none;max-height:100px;
+  font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:none;max-height:100px;
 }
 .chat-input:focus{border-color:var(--border-strong);}
 .chat-send{
@@ -247,7 +247,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .contact-list{display:flex;flex-direction:column;gap:2px;max-height:160px;overflow-y:auto;}
 .contact-item{display:flex;align-items:center;gap:8px;padding:7px 8px;cursor:pointer;border-radius:var(--radius-sm);transition:background .1s;}
 .contact-item:hover{background:var(--bg);}
-.contact-item.selected{background:var(--gold-bg);}
+.contact-item.selected{background:var(--bg3);}
 .contact-avatar{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);object-fit:cover;}
 .contact-name{font-size:12px;font-weight:500;color:var(--text-1);flex:1;}
 .contact-role{font-size:10px;color:var(--text-3);}
@@ -269,7 +269,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .hero-eyebrow{
   display:inline-flex;align-items:center;gap:6px;
   font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gold);background:var(--gold-bg);
+  color:var(--muted);background:var(--bg3);
   padding:4px 12px;border-radius:20px;margin-bottom:16px;
 }
 .hero-title{
@@ -338,7 +338,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .chip-active{background:#fff;color:var(--text-1);}
 .chip-soon{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);backdrop-filter:blur(4px);}
 .chip-admin{background:#E03131;color:#fff;}
-.chip-new{background:var(--gold);color:#fff;}
+.chip-new{background:var(--ink);color:#fff;}
 
 /* Backgrounds banners */
 .bg-calendario{background-image:url("https://laciudadela-dlc.github.io/img/botcalendario.png");}
@@ -677,7 +677,7 @@ function renderNotifList(items, uid){
     <div class="notif-item ${n.leida?'':'unread'}" onclick="markNotifRead('${uid}','${n.id}','${n.convId||''}')">
       <div class="notif-item-title">${esc(n.titulo||'Mensaje')}</div>
       <div class="notif-item-body">${esc(n.cuerpo||'')}</div>
-      ${n.link?`<div class="notif-item-time"><a href="${n.link}" style="color:var(--gold);" target="_blank">Ver enlace →</a></div>`:''}
+      ${n.link?`<div class="notif-item-time"><a href="${n.link}" style="color:var(--ink2);" target="_blank">Ver enlace →</a></div>`:''}
       <div class="notif-item-time">${formatTime(n.creadoEn)}</div>
     </div>`).join('');
 }
