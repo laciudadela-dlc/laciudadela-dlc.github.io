@@ -712,8 +712,8 @@ function loadAdminConversations(adminUid){
     .onSnapshot(async snap=>{
       const convs = snap.docs.map(d=>({id:d.id,...d.data()}))
         .sort((a,b)=>{
-          const ta = a.ultimoMensajeAt?.toMillis?.()||0;
-          const tb = b.ultimoMensajeAt?.toMillis?.()||0;
+          const ta = a.ultimoMensajeAt?.toMillis?.() || 0;
+          const tb = b.ultimoMensajeAt?.toMillis?.() || 0;
           return tb - ta;
         });
       // cargar usuarios si no están
@@ -730,6 +730,10 @@ function loadAdminConversations(adminUid){
         badge.textContent = total>9?'9+':total;
         badge.style.display = total>0?'inline-block':'none';
       }
+    }, err => {
+      console.error('admin convs:', err);
+      const list = document.getElementById('adminConvList');
+      if(list) list.innerHTML='<div style="padding:20px;color:#faa;font-size:12px;text-align:center;">Error al cargar conversaciones</div>';
     });
 }
 
