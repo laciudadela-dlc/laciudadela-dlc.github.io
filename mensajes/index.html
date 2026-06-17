@@ -5,34 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mis Mensajes · La Ciudadela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#F7F6F2;
-  --surface:#FFFFFF;
-  --border:#E8E6E0;
-  --border-strong:#D0CCC0;
-  --ink:#111110;
-  --ink2:#3A3A38;
-  --muted:#5C5A54;
-  --text-3:#9C9A94;
-  --gold:#B8940A;
-  --gold-bg:#FDF6DC;
-  --red:#C0392B;
-  --red-light:#FEF0EE;
-  --brd:#E8E6E0;
-  --brd-dark:#D0CCC0;
-  --radius:10px;
-  --radius-sm:6px;
-  --shadow:0 1px 3px rgba(0,0,0,.06);
-  --shadow-md:0 4px 16px rgba(0,0,0,.08);}
-html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+  --bg:        #FFFFFF;
+  --bg2:       #F5F5F3;
+  --bg3:       #EBEBEA;
+  --ink:       #111110;
+  --ink2:      #3A3A38;
+  --muted:     #6B6B68;
+  --gold:      #444442;
+  --gold2:     #222220;
+  --brd:       #E2E0DA;
+  --brd-dark:  #C8C5BE;
+  --red:       #B91C1C;
+  --red-light: #FEF2F2;
+  --header-bg: #FFFFFF;
+}
+html,body{min-height:100%;background:var(--bg-darker);font-family:'Inter',sans-serif;color:#fff;overflow-x:hidden;}
 
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.header{background:var(--bg-dark);border-bottom:2px solid var(--gold);padding:12px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
 .header-back{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);padding:6px 12px;text-decoration:none;transition:all .15s;}
-.header-back:hover{background:var(--ink);color:#fff;}
-.header-title{font-family:'Cinzel',serif;font-size:14px;color:var(--ink);flex:1;}
+.header-back:hover{background:var(--gold);color:var(--bg-dark);}
+.header-title{font-family:'Cinzel',serif;font-size:14px;color:#fff;flex:1;}
 .header-user{display:flex;align-items:center;gap:8px;}
 .header-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;}
 .header-name{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.06em;}
@@ -44,32 +40,32 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
   .chat-panel{min-height:400px;}
 }
 
-.sidebar{border:1px solid var(--brd);border-right:none;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.sidebar{border:1px solid var(--brd);border-right:none;display:flex;flex-direction:column;overflow:hidden;background:rgba(0,0,0,.2);}
 .sidebar-header{padding:12px 14px;border-bottom:1px solid var(--brd);font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.new-btn{font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:#fff;border:none;padding:5px 10px;cursor:pointer;}
+.new-btn{font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:5px 10px;cursor:pointer;}
 .new-btn:hover{background:#e8bc38;}
 
-.contact-panel{display:none;border-bottom:1px solid var(--brd);padding:12px 14px;flex-direction:column;gap:8px;background:#F7F6F2;flex-shrink:0;}
+.contact-panel{display:none;border-bottom:1px solid var(--brd);padding:12px 14px;flex-direction:column;gap:8px;background:rgba(196,160,48,.04);flex-shrink:0;}
 .contact-panel.open{display:flex;}
 .contact-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
 .contact-list{display:flex;flex-direction:column;gap:3px;max-height:160px;overflow-y:auto;}
 .contact-item{display:flex;align-items:center;gap:8px;padding:7px 8px;cursor:pointer;border:1px solid transparent;transition:all .12s;}
-.contact-item:hover{border-color:var(--brd);background:#F7F6F2;}
-.contact-item.selected{border-color:var(--gold);background:#F0EEE8;}
+.contact-item:hover{border-color:var(--brd);background:rgba(196,160,48,.05);}
+.contact-item.selected{border-color:var(--gold);background:rgba(196,160,48,.12);}
 .contact-avatar{width:26px;height:26px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;flex-shrink:0;}
-.contact-name{font-size:12px;color:#ccc;flex:1;}
-.contact-role{font-size:9px;color:#888;}
-.contact-start-btn{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:#fff;border:none;padding:9px;cursor:pointer;width:100%;margin-top:4px;}
+.contact-name{font-size:12px;color:var(--muted);flex:1;}
+.contact-role{font-size:9px;color:var(--muted);}
+.contact-start-btn{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:9px;cursor:pointer;width:100%;margin-top:4px;}
 .contact-start-btn:hover{background:#e8bc38;}
-.contact-start-btn:disabled{background:#555;color:#888;cursor:default;}
+.contact-start-btn:disabled{background:#555;color:var(--muted);cursor:default;}
 
 .conv-list{flex:1;overflow-y:auto;}
-.conv-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #F0EEE8;cursor:pointer;transition:background .12s;}
-.conv-item:hover{background:#F7F6F2;}
-.conv-item.active{background:#F0EEE8;border-left:3px solid var(--gold);}
+.conv-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(196,160,48,.06);cursor:pointer;transition:background .12s;}
+.conv-item:hover{background:rgba(196,160,48,.05);}
+.conv-item.active{background:rgba(196,160,48,.1);border-left:3px solid var(--gold);}
 .conv-avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;flex-shrink:0;}
 .conv-info{flex:1;min-width:0;}
-.conv-name{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.06em;color:var(--ink);}
+.conv-name{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.06em;color:#fff;}
 .conv-last{font-size:11px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
 .conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
 .conv-time{font-size:9px;color:#555;}
@@ -79,30 +75,30 @@ html,body{min-height:100%;background:var(--bg);font-family:'Inter',sans-serif;co
 .chat-panel{border:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
 .chat-header{padding:13px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;min-height:56px;}
 .chat-partner-avatar{width:32px;height:32px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
-.chat-partner-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.06em;color:var(--ink);flex:1;}
-.chat-partner-role{font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-sm);background:#E8E6E0;color:var(--gold);}
+.chat-partner-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.06em;color:#fff;flex:1;}
+.chat-partner-role{font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:rgba(196,160,48,.15);color:var(--gold);}
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:100px;}
 .msg{max-width:78%;padding:10px 14px;line-height:1.5;}
-.msg.mine{align-self:flex-end;background:#E8E6E0;border:1px solid var(--brd);}
+.msg.mine{align-self:flex-end;background:rgba(196,160,48,.15);border:1px solid var(--brd);}
 .msg.theirs{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);}
 .msg-text{font-size:13px;color:#ddd;}
 .msg-time{font-size:9px;color:#555;margin-top:4px;text-align:right;}
 .chat-input-area{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--brd);flex-shrink:0;}
-.chat-input{flex:1;background:#111110;border:1px solid var(--brd);color:var(--ink);padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;resize:none;max-height:100px;}
+.chat-input{flex:1;background:#111;border:1px solid var(--brd);color:#fff;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;resize:none;max-height:100px;}
 .chat-input:focus{border-color:var(--gold);}
-.chat-send{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:#fff;border:none;padding:10px 16px;cursor:pointer;align-self:flex-end;transition:background .15s;flex-shrink:0;}
+.chat-send{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 16px;cursor:pointer;align-self:flex-end;transition:background .15s;flex-shrink:0;}
 .chat-send:hover{background:#e8bc38;}
 .chat-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#444;}
 .chat-placeholder-icon{font-size:40px;opacity:.25;}
 .chat-placeholder-text{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;}
 
-.guard{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:20px;}
+.guard{display:none;position:fixed;inset:0;background:var(--bg-darker);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:20px;}
 .guard.show{display:flex;}
-.guard-title{font-family:'Cinzel',serif;font-size:18px;color:var(--ink);}
-.guard-sub{font-size:13px;color:#888;}
-.guard-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:#fff;border:none;padding:10px 24px;cursor:pointer;margin-top:8px;}
+.guard-title{font-family:'Cinzel',serif;font-size:18px;color:#fff;}
+.guard-sub{font-size:13px;color:var(--muted);}
+.guard-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 24px;cursor:pointer;margin-top:8px;}
 
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface);border:1px solid var(--gold);padding:10px 20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;color:var(--gold);opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--bg-dark);border:1px solid var(--gold);padding:10px 20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;color:var(--gold);opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.err{border-color:var(--red);color:#faa;}
 </style>
