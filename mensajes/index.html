@@ -1,1 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Mensajes · La Ciudadela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#c4a030;--bg-dark:#1a1208;--bg-darker:#0e0a04;--bg-panel:#221508;
+  --red:#7a1515;--brd:rgba(196,160,48,.2);
+}
+html,body{min-height:100%;background:var(--bg-darker);font-family:'Nunito',sans-serif;color:#fff;overflow-x:hidden;}
 
+/* ── HEADER ── */
+.header{background:var(--bg-dark);border-bottom:2px solid var(--gold);padding:12px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.header-back{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);padding:6px 12px;text-decoration:none;transition:all .15s;}
+.header-back:hover{background:var(--gold);color:var(--bg-dark);}
+.header-title{font-family:'Cinzel Decorative',serif;font-size:14px;color:#fff;flex:1;}
+.header-user{display:flex;align-items:center;gap:8px;}
+.header-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;}
+.header-name{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.06em;}
+
+/* ── LAYOUT ── */
+.page-body{max-width:860px;margin:0 auto;padding:20px;display:grid;grid-template-columns:260px 1fr;gap:16px;height:calc(100vh - 62px);}
+@media(max-width:700px){.page-body{grid-template-columns:1fr;height:auto;padding:12px;}}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:0;border:1px solid var(--brd);overflow:hidden;}
+.sidebar-header{padding:12px 14px;border-bottom:1px solid var(--brd);font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;justify-content:space-between;}
+.new-btn{font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:4px 8px;cursor:pointer;transition:background .15s;}
+.new-btn:hover{background:#e8bc38;}
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(196,160,48,.06);cursor:pointer;transition:background .12s;}
+.conv-item:hover{background:rgba(196,160,48,.05);}
+.conv-item.active{background:rgba(196,160,48,.1);border-left:3px solid var(--gold);}
+.conv-avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;flex-shrink:0;}
+.conv-info{flex:1;min-width:0;}
+.conv-name{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.06em;color:#fff;}
+.conv-last{font-size:11px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.conv-time{font-size:9px;color:#555;}
+.conv-unread{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+.conv-empty{padding:24px;text-align:center;color:#444;font-size:12px;}
+
+/* ── NUEVO CONTACTO ── */
+.contact-panel{display:none;border-bottom:1px solid var(--brd);padding:12px 14px;flex-direction:column;gap:8px;}
+.contact-panel.open{display:flex;}
+.contact-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
+.contact-list{display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;}
+.contact-item{display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border:1px solid transparent;transition:all .15s;border-radius:2px;}
+.contact-item:hover{border-color:var(--brd);background:rgba(196,160,48,.05);}
+.contact-item.selected{border-color:var(--gold);background:rgba(196,160,48,.1);}
+.contact-avatar{width:24px;height:24px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
+.contact-name{font-size:12px;color:#ccc;flex:1;}
+.contact-role{font-size:9px;color:#888;}
+.contact-start-btn{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:8px;cursor:pointer;width:100%;}
+.contact-start-btn:hover{background:#e8bc38;}
+
+/* ── CHAT ── */
+.chat-panel{border:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
+.chat-header{padding:14px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.chat-partner-avatar{width:32px;height:32px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
+.chat-partner-name{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.06em;color:#fff;flex:1;}
+.chat-partner-role{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:var(--brd);}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:200px;}
+.msg{max-width:78%;padding:10px 14px;line-height:1.5;}
+.msg.mine{align-self:flex-end;background:rgba(196,160,48,.15);border:1px solid var(--brd);}
+.msg.theirs{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);}
+.msg-text{font-size:13px;color:#ddd;}
+.msg-time{font-size:9px;color:#555;margin-top:4px;text-align:right;}
+.chat-input-area{display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--brd);flex-shrink:0;}
+.chat-input{flex:1;background:#111;border:1px solid var(--brd);color:#fff;padding:10px 12px;font-family:'Nunito',sans-serif;font-size:13px;outline:none;resize:none;max-height:120px;}
+.chat-input:focus{border-color:var(--gold);}
+.chat-send{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 16px;cursor:pointer;align-self:flex-end;transition:background .15s;flex-shrink:0;}
+.chat-send:hover{background:#e8bc38;}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#444;}
+.chat-empty-icon{font-size:40px;opacity:.3;}
+.chat-empty-text{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;}
+
+/* ── GUARD ── */
+.guard-screen{display:none;position:fixed;inset:0;background:var(--bg-darker);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.guard-screen.show{display:flex;}
+.guard-title{font-family:'Cinzel Decorative',serif;font-size:18px;color:#fff;}
+.guard-sub{font-size:13px;color:#888;}
+.guard-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 20px;cursor:pointer;}
+
+/* ── NOTIF BANNER ── */
+.notif-banner{background:rgba(196,160,48,.1);border:1px solid var(--brd);padding:10px 16px;margin-bottom:0;font-size:12px;color:#aaa;display:none;flex-shrink:0;}
+.notif-banner strong{color:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- Guard: solo logueados -->
+<div class="guard-screen" id="guardScreen">
+  <div class="guard-title">⚔ La Ciudadela</div>
+  <div class="guard-sub">Necesitás iniciar sesión para ver tus mensajes</div>
+  <button class="guard-btn" onclick="location.href='../'">Ir al Portal</button>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <a class="header-back" href="../">← Portal</a>
+  <div class="header-title">Mis Mensajes</div>
+  <div class="header-user" id="headerUser"></div>
+</header>
+
+<!-- Body -->
+<div class="page-body">
+
+  <!-- Sidebar conversaciones -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      Conversaciones
+      <button class="new-btn" onclick="toggleContactPanel()">+ Nueva</button>
+    </div>
+    <!-- Panel nuevo contacto -->
+    <div class="contact-panel" id="contactPanel">
+      <div class="contact-label">Seleccioná un Admin o DM</div>
+      <div class="contact-list" id="contactList">
+        <div style="font-size:12px;color:#555;padding:6px;">Cargando…</div>
+      </div>
+      <button class="contact-start-btn" onclick="startConv()">Iniciar conversación</button>
+    </div>
+    <!-- Lista convs -->
+    <div class="conv-list" id="convList">
+      <div class="conv-empty">Cargando conversaciones…</div>
+    </div>
+  </div>
+
+  <!-- Panel chat -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="notif-banner" id="notifBanner"></div>
+    <div class="chat-header" id="chatHeader">
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <div class="chat-empty-text">Seleccioná una conversación</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area" id="chatInputArea" style="display:none;">
+      <textarea class="chat-input" id="chatInput" rows="2" placeholder="Escribí tu mensaje…"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+      <button class="chat-send" onclick="sendMsg()">Enviar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
+  authDomain:"ciudadela-portal-88111.firebaseapp.com",
+  projectId:"ciudadela-portal-88111",
+  storageBucket:"ciudadela-portal-88111.firebasestorage.app",
+  messagingSenderId:"629290273583",
+  appId:"1:629290273583:web:47e321d389fb0e49a6afda"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+let currentUser    = null;
+let currentProfile = null;
+let currentConvId  = null;
+let allContacts    = [];
+let selectedContact = null;
+let unsubConvs = null, unsubChat = null;
+
+// ── AUTH GUARD ──────────────────────────────────────
+auth.onAuthStateChanged(async function(user){
+  if(!user){
+    document.getElementById('guardScreen').classList.add('show');
+    return;
+  }
+  currentUser = user;
+  // cargar perfil
+  const snap = await db.collection('usuarios').doc(user.uid).get();
+  currentProfile = snap.exists ? snap.data() : {roles:['jugador']};
+
+  // header
+  const name = (user.displayName||user.email).split(' ')[0];
+  document.getElementById('headerUser').innerHTML=`
+    <img class="header-avatar" src="${user.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=c4a030&color=1a1208'}" alt="">
+    <span class="header-name">${esc(name)}</span>`;
+
+  // check si viene con convId en URL
+  const params = new URLSearchParams(location.search);
+  const convId = params.get('conv');
+
+  loadContacts();
+  startConvListener(convId);
+});
+
+// ── CONTACTOS ───────────────────────────────────────
+async function loadContacts(){
+  const myRoles = currentProfile.roles||[];
+  const snap = await db.collection('usuarios').where('activo','==',true).get();
+  let users = snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid);
+
+  // jugadores solo pueden escribir a admin/dm
+  if(!myRoles.includes('admin')&&!myRoles.includes('dm')){
+    users = users.filter(u=>(u.roles||[]).some(r=>r==='admin'||r==='dm'));
+  }
+  allContacts = users;
+  renderContactList();
+}
+
+function renderContactList(){
+  const list = document.getElementById('contactList');
+  if(!allContacts.length){
+    list.innerHTML='<div style="font-size:12px;color:#555;padding:6px;">Sin contactos disponibles</div>';
+    return;
+  }
+  list.innerHTML = allContacts.map(u=>{
+    const name = u.displayName||(u.email||u.uid).split('@')[0];
+    const role = (u.roles||['jugador'])[0];
+    const av   = u.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=24`;
+    return `
+    <div class="contact-item" id="ct_${u.uid}" onclick="selectContact('${u.uid}')">
+      <img class="contact-avatar" src="${av}" alt="">
+      <span class="contact-name">${esc(name)}</span>
+      <span class="contact-role">${role}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleContactPanel(){
+  document.getElementById('contactPanel').classList.toggle('open');
+  selectedContact = null;
+  document.querySelectorAll('.contact-item').forEach(el=>el.classList.remove('selected'));
+}
+
+function selectContact(uid){
+  selectedContact = uid;
+  document.querySelectorAll('.contact-item').forEach(el=>el.classList.remove('selected'));
+  const el = document.getElementById('ct_'+uid);
+  if(el) el.classList.add('selected');
+}
+
+async function startConv(){
+  if(!selectedContact) return;
+  // buscar conv existente
+  const snap = await db.collection('mensajes')
+    .where('participantes','array-contains', currentUser.uid).get();
+  const existing = snap.docs.find(d=>(d.data().participantes||[]).includes(selectedContact));
+  if(existing){
+    openChat(existing.id);
+  } else {
+    const ref = await db.collection('mensajes').add({
+      participantes:[currentUser.uid, selectedContact],
+      tipo:'user-user',
+      ultimoMensaje:'',
+      ultimoMensajeAt:firebase.firestore.FieldValue.serverTimestamp(),
+      noLeidos:{}
+    });
+    openChat(ref.id);
+  }
+  document.getElementById('contactPanel').classList.remove('open');
+}
+
+// ── CONVERSACIONES ───────────────────────────────────
+function startConvListener(autoOpenConvId){
+  if(unsubConvs) unsubConvs();
+  unsubConvs = db.collection('mensajes')
+    .where('participantes','array-contains', currentUser.uid)
+    .onSnapshot(snap=>{
+      const convs = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>{
+          const ta = a.ultimoMensajeAt?.toMillis?.()||0;
+          const tb = b.ultimoMensajeAt?.toMillis?.()||0;
+          return tb - ta;
+        });
+      renderConvList(convs);
+      if(autoOpenConvId){
+        const found = convs.find(c=>c.id===autoOpenConvId);
+        if(found){ openChat(autoOpenConvId); autoOpenConvId=null; }
+      }
+    });
+}
+
+function renderConvList(convs){
+  const list = document.getElementById('convList');
+  if(!convs.length){
+    list.innerHTML='<div class="conv-empty">Sin conversaciones aún.<br>Usá + Nueva para escribirle a un Admin o DM.</div>';
+    return;
+  }
+  list.innerHTML = convs.map(c=>{
+    const partnerId = c.participantes.find(p=>p!==currentUser.uid);
+    const partner   = allContacts.find(u=>u.uid===partnerId)||{displayName:partnerId,photoURL:''};
+    const name  = partner.displayName||(partner.email||partnerId).split('@')[0];
+    const av    = partner.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=34`;
+    const unread = c.noLeidos&&c.noLeidos[currentUser.uid]?c.noLeidos[currentUser.uid]:0;
+    return `
+    <div class="conv-item ${c.id===currentConvId?'active':''}" onclick="openChat('${c.id}')">
+      <img class="conv-avatar" src="${av}" alt="">
+      <div class="conv-info">
+        <div class="conv-name">${esc(name)}</div>
+        <div class="conv-last">${esc(c.ultimoMensaje||'Conversación nueva')}</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-time">${fmtTime(c.ultimoMensajeAt)}</div>
+        ${unread?'<div class="conv-unread"></div>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CHAT ─────────────────────────────────────────────
+function openChat(convId){
+  currentConvId = convId;
+
+  db.collection('mensajes').doc(convId).get().then(snap=>{
+    if(!snap.exists) return;
+    const data = snap.data();
+    const partnerId = data.participantes.find(p=>p!==currentUser.uid);
+    const partner   = allContacts.find(u=>u.uid===partnerId)||{displayName:partnerId,photoURL:''};
+    const name  = partner.displayName||(partner.email||partnerId).split('@')[0];
+    const role  = (partner.roles||['jugador'])[0];
+    const av    = partner.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=32`;
+
+    document.getElementById('chatHeader').innerHTML=`
+      <img class="chat-partner-avatar" src="${av}" alt="">
+      <span class="chat-partner-name">${esc(name)}</span>
+      <span class="chat-partner-role">${role}</span>`;
+    document.getElementById('chatInputArea').style.display='flex';
+    document.getElementById('notifBanner').style.display='none';
+
+    // marcar leídos
+    db.collection('mensajes').doc(convId).update({[`noLeidos.${currentUser.uid}`]:0});
+
+    // highlight
+    document.querySelectorAll('.conv-item').forEach(el=>el.classList.remove('active'));
+    const el = document.querySelector(`.conv-item[onclick*="${convId}"]`);
+    if(el) el.classList.add('active');
+
+    // suscribir mensajes
+    if(unsubChat) unsubChat();
+    const msgDiv = document.getElementById('chatMessages');
+    msgDiv.innerHTML='';
+    unsubChat = db.collection('mensajes').doc(convId).collection('items')
+      .orderBy('creadoEn','asc')
+      .onSnapshot(snap=>{
+        msgDiv.innerHTML = snap.docs.map(d=>{
+          const m = d.data();
+          const mine = m.de === currentUser.uid;
+          return `
+          <div class="msg ${mine?'mine':'theirs'}">
+            <div class="msg-text">${esc(m.texto||'')}</div>
+            <div class="msg-time">${fmtTime(m.creadoEn)}</div>
+          </div>`;
+        }).join('');
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      });
+  });
+}
+
+async function sendMsg(){
+  if(!currentUser||!currentConvId) return;
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  if(!texto) return;
+  input.value='';
+
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  const convSnap = await db.collection('mensajes').doc(currentConvId).get();
+  const partnerId = convSnap.data().participantes.find(p=>p!==currentUser.uid);
+
+  await db.collection('mensajes').doc(currentConvId).collection('items').add({
+    de:currentUser.uid, texto, leido:false, creadoEn:now
+  });
+  await db.collection('mensajes').doc(currentConvId).update({
+    ultimoMensaje:texto,
+    ultimoMensajeAt:now,
+    [`noLeidos.${partnerId}`]:firebase.firestore.FieldValue.increment(1)
+  });
+  const myName = (currentUser.displayName||currentUser.email).split(' ')[0];
+  await db.collection('notificaciones').doc(partnerId).collection('items').add({
+    tipo:'mensaje',
+    titulo:`Mensaje de ${myName}`,
+    cuerpo:texto.length>60?texto.substring(0,60)+'…':texto,
+    convId:currentConvId,
+    leida:false,
+    creadoEn:now
+  });
+}
+
+// ── HELPERS ──────────────────────────────────────────
+function fmtTime(ts){
+  if(!ts) return '';
+  const d = ts.toDate?ts.toDate():new Date(ts);
+  const diff = new Date()-d;
+  if(diff<60000) return 'ahora';
+  if(diff<3600000) return Math.floor(diff/60000)+'m';
+  if(diff<86400000) return Math.floor(diff/3600000)+'h';
+  return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
