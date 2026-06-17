@@ -709,9 +709,13 @@ let adminAllUsers = [];
 function loadAdminConversations(adminUid){
   if(adminUnsubConvs) adminUnsubConvs();
   adminUnsubConvs = db.collection('mensajes')
-    .orderBy('ultimoMensajeAt','desc')
     .onSnapshot(async snap=>{
-      const convs = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const convs = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>{
+          const ta = a.ultimoMensajeAt?.toMillis?.()||0;
+          const tb = b.ultimoMensajeAt?.toMillis?.()||0;
+          return tb - ta;
+        });
       // cargar usuarios si no están
       if(!adminAllUsers.length){
         const usnap = await db.collection('usuarios').get();
