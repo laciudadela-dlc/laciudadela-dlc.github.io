@@ -1,0 +1,12 @@
+{
+  "name": "ciudadela-scripts",
+  "version": "1.0.0",
+  "description": "Scripts de sincronización para La Ciudadela de los Confines",
+  "main": "sync-mesas.js",
+  "scripts": {
+    "sync": "node sync-mesas.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
