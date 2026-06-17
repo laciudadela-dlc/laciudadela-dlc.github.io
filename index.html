@@ -510,16 +510,16 @@ window.AUTH = (function(){
       <div class="notif-btn" onclick="openPanel('notif')" title="Notificaciones">
         🔔<span class="notif-badge" id="notifBadge"></span>
       </div>
-      <div class="notif-btn" onclick="openPanel('msg')" title="Mensajes">
+      <a class="notif-btn" href="https://laciudadela-dlc.github.io/mensajes/" title="Mensajes" style="text-decoration:none;">
         💬<span class="notif-badge" id="msgBadge"></span>
-      </div>
+      </a>
       <div class="auth-user-menu" id="authUserMenu" onclick="window.AUTH.toggleDropdown()">
         <img class="auth-avatar" src="${user.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=c4a030&color=1a1208'}" alt="${name}">
         <span class="auth-name">${name}</span>
         <span class="auth-role-badge ${badgeClass}">${mainRole}</span>
         <div class="auth-dropdown" id="authDropdown">
           <a href="#" onclick="event.stopPropagation();openPanel('notif')">🔔 Notificaciones</a>
-          <a href="#" onclick="event.stopPropagation();openPanel('msg')">💬 Mensajes</a>
+          <a href="https://laciudadela-dlc.github.io/mensajes/" onclick="event.stopPropagation();">💬 Mensajes</a>
           <a href="#" onclick="event.stopPropagation();window.AUTH.logout()">Cerrar sesión</a>
         </div>
       </div>`;
@@ -648,15 +648,13 @@ function startMsgListener(uid){
   if(unsubMsg) unsubMsg();
   unsubMsg = db.collection('mensajes')
     .where('participantes','array-contains', uid)
-    .orderBy('ultimoMensajeAt','desc')
     .onSnapshot(snap=>{
       const convs = snap.docs.map(d=>({id:d.id,...d.data()}));
-      renderConvList(convs, uid);
-      // contar no leídas
+      // solo actualizar badge, la lista vive en /mensajes/
       let unread = 0;
       convs.forEach(c=>{ if(c.noLeidos&&c.noLeidos[uid]) unread+=c.noLeidos[uid]; });
       updateBadge('msgBadge','tabMsgCount', unread);
-    });
+    }, err => { console.error('msg badge:', err); });
 }
 
 function renderConvList(convs, uid){
