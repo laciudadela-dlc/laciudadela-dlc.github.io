@@ -1006,9 +1006,14 @@ window.resolverSolicitud = async function resolverSolicitud(mesaId, solUid, deci
 
     // 2. Si aprobada, agregar jugador
     if (decision === 'aprobada') {
+      // Obtener nombre del usuario
+      var uSnap = await db.collection('usuarios').doc(solUid).get();
+      var uData = uSnap.exists ? uSnap.data() : {};
+      var uNombre = uData.displayName || uData.email || solUid;
       await db.collection('mesas').doc(mesaId).update({
         jugadores: firebase.firestore.FieldValue.arrayUnion({
           uid:     solUid,
+          nombre:  uNombre,
           rol:     'jugador',
           estado:  'confirmado',
           unidoEn: new Date().toISOString()
