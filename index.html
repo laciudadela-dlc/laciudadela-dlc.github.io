@@ -3,448 +3,517 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin · La Ciudadela</title>
+<title>La Ciudadela de los Confines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="https://laciudadela-dlc.github.io/img/logo.png">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
+/* ── TOKENS ─────────────────────────────────────────── */
 :root{
-  --bg:        #FFFFFF;
-  --bg2:       #F4F3F0;
-  --bg3:       #E8E7E3;
+  --bg:        #F7F6F2;
+  --surface:   #FFFFFF;
+  --border:    #E8E6E0;
+  --border-strong: #D0CCC0;
+  --text-1:    #111110;
+  --text-2:    #5C5A54;
+  --text-3:    #9C9A94;
+  --gold:      #111110;
+  --gold-bg:   #F0EFEC;
   --ink:       #111110;
-  --ink2:      #383836;
-  --muted:     #6B6A67;
-  --gold:      #383836;
-  --gold2:     #111110;
-  --brd:       #DDDBD4;
-  --brd-dark:  #C4C2BA;
-  --red:       #B91C1C;
-  --red-light: #FEF2F2;
-  --header-bg: #FFFFFF;
-  --green:     #166534;
-  --blue:      #3730A3;
+  --radius:    10px;
+  --radius-sm: 6px;
+  --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08);
 }
-html,body{min-height:100%;background:var(--bg);-webkit-font-smoothing:antialiased;}
 
-/* ── HEADER ── */
-.admin-header{
-  background:var(--bg-dark);border-bottom:2px solid var(--gold);
-  padding:12px 20px;display:flex;align-items:center;gap:14px;
+/* ── RESET ───────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text-1);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* ── HEADER ─────────────────────────────────────────── */
+.header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  height:60px;
+  display:flex;align-items:center;gap:12px;
   position:sticky;top:0;z-index:100;
 }
-.admin-header-logo{height:38px;}
-.admin-header-titles{flex:1;}
-.admin-header-name{font-family:'Cinzel',serif;font-size:13px;color:var(--ink);letter-spacing:.04em;}
-.admin-header-sub{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.03em;color:var(--gold);text-transform:uppercase;margin-top:2px;}
-.admin-header-back{
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gold);border:1px solid var(--gold);padding:6px 12px;text-decoration:none;
+.header-logo{
+  height:36px;width:36px;object-fit:contain;flex-shrink:0;
+}
+.header-wordmark{
+  font-family:'Cinzel',serif;
+  font-size:15px;font-weight:700;
+  color:var(--text-1);
+  letter-spacing:.02em;
+  flex:1;
+}
+.header-wordmark span{color:var(--ink);}
+
+/* AUTH ZONE */
+.auth-zone{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.auth-btn{
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  background:var(--ink);color:#fff;border:none;
+  padding:8px 16px;border-radius:var(--radius-sm);
+  cursor:pointer;transition:opacity .15s;white-space:nowrap;
+}
+.auth-btn:hover{opacity:.85;}
+.auth-user-menu{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.auth-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);object-fit:cover;}
+.auth-name{font-size:13px;font-weight:500;color:var(--text-1);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.auth-role-badge{
+  font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;
+  background:var(--bg3);color:var(--ink2);
+}
+.auth-role-badge.jugador{background:#EFF7EF;color:#2D7A2D;}
+.auth-role-badge.dm{background:#EEF2FF;color:#3B5BDB;}
+
+.auth-dropdown{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  min-width:180px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow-md);z-index:200;overflow:hidden;
+}
+.auth-dropdown.open{display:block;}
+.auth-dropdown a{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:500;color:var(--text-1);
+  padding:10px 14px;text-decoration:none;transition:background .1s;
+}
+.auth-dropdown a:hover{background:var(--bg);}
+.auth-dropdown a.danger{color:#C0392B;}
+.auth-dropdown hr{border:none;border-top:1px solid var(--border);margin:4px 0;}
+
+/* NOTIF BTN */
+.notif-btn{
+  position:relative;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);cursor:pointer;
+  color:var(--text-2);font-size:17px;
+  transition:background .12s;text-decoration:none;
+}
+.notif-btn:hover{background:var(--bg);}
+.notif-badge{
+  position:absolute;top:2px;right:2px;
+  min-width:15px;height:15px;border-radius:8px;
+  background:#E03131;color:#fff;
+  font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+  padding:0 3px;border:1.5px solid var(--surface);
+}
+.notif-badge.visible{display:flex;}
+
+/* ── MODAL LOGIN ────────────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--surface);border-radius:16px;
+  padding:36px 28px;width:90%;max-width:360px;
+  text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+.modal-logo{height:52px;margin-bottom:16px;}
+.modal-title{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--text-1);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--text-2);margin-bottom:28px;line-height:1.5;}
+.google-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;background:var(--surface);color:var(--text-1);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:600;transition:background .15s;
+  box-shadow:var(--shadow);
+}
+.google-btn:hover{background:var(--bg);}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
+.modal-cancel{
+  display:block;margin-top:16px;font-size:12px;
+  color:var(--text-3);cursor:pointer;text-decoration:none;
+}
+.modal-cancel:hover{color:var(--text-2);}
+
+/* ── PANEL LATERAL NOTIFICACIONES ───────────────────── */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:399;backdrop-filter:blur(1px);}
+.panel-overlay.open{display:block;}
+.side-panel{
+  position:fixed;top:0;right:-100%;width:min(360px,100vw);height:100%;
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:400;transition:right .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+}
+.side-panel.open{right:0;}
+.side-panel-header{
+  display:flex;align-items:center;padding:16px 18px;
+  border-bottom:1px solid var(--border);gap:10px;flex-shrink:0;height:60px;
+}
+.side-panel-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--text-1);flex:1;}
+.side-panel-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-3);border-radius:var(--radius-sm);font-size:16px;transition:background .1s;}
+.side-panel-close:hover{background:var(--bg);color:var(--text-1);}
+.side-panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.side-tab{
+  flex:1;font-size:12px;font-weight:600;
+  padding:10px;text-align:center;cursor:pointer;
+  color:var(--text-3);border-bottom:2px solid transparent;
   transition:all .15s;
 }
-.admin-header-back:hover{background:var(--gold);color:var(--bg-dark);}
-.admin-user-info{display:flex;align-items:center;gap:8px;}
-.admin-avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--brd-dark);object-fit:cover;}
-.admin-name{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.06em;}
+.side-tab:hover{color:var(--text-1);}
+.side-tab.active{color:var(--text-1);border-bottom-color:var(--ink);}
+.side-tab-count{
+  display:inline-block;background:#E03131;color:#fff;
+  font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;margin-left:4px;
+}
+.side-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.side-section{display:none;flex:1;flex-direction:column;}
+.side-section.active{display:flex;}
 
-/* ── NAV TABS ── */
-.admin-nav{
-  background:var(--bg-dark);border-bottom:1px solid var(--brd);
-  display:flex;padding:0 20px;gap:0;overflow-x:auto;
+/* Notif items */
+.notif-list{flex:1;overflow-y:auto;}
+.notif-item{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .1s;position:relative;
 }
-.admin-tab{
-  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
-  padding:12px 18px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
-  white-space:nowrap;transition:all .15s;
-}
-.admin-tab:hover{color:var(--gold);}
-.admin-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.notif-item:hover{background:var(--bg);}
+.notif-item.unread{background:#FFFBF0;}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ink2);}
+.notif-item-title{font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:3px;}
+.notif-item-body{font-size:12px;color:var(--text-2);line-height:1.4;}
+.notif-item-time{font-size:11px;color:var(--text-3);margin-top:4px;}
+.notif-actions{padding:12px 18px;border-top:1px solid var(--border);flex-shrink:0;}
+.notif-mark-all{font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;background:none;border:none;padding:0;}
+.notif-mark-all:hover{text-decoration:underline;}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-3);padding:40px 20px;}
+.empty-state-icon{font-size:36px;opacity:.4;}
+.empty-state-text{font-size:12px;font-weight:500;text-align:center;}
 
-/* ── CONTENIDO ── */
-.admin-body{padding:24px 20px;max-width:900px;margin:0 auto;}
+/* Mensajes en panel */
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.conv-item:hover{background:var(--bg);}
+.conv-item.active{background:var(--bg);}
+.conv-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
+.conv-info{flex:1;min-width:0;}
+.conv-name{font-size:13px;font-weight:600;color:var(--text-1);}
+.conv-last{font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.conv-time{font-size:10px;color:var(--text-3);}
+.conv-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--ink2);}
 
-/* ── PANEL CARD ── */
-.panel-card{
-  background:var(--bg-panel);border:1px solid var(--brd);
-  padding:20px;margin-bottom:16px;
+/* Chat window */
+.chat-window{display:none;flex:1;flex-direction:column;}
+.chat-window.open{display:flex;}
+.chat-header{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.chat-back{font-size:18px;cursor:pointer;color:var(--text-2);transition:color .1s;line-height:1;}
+.chat-back:hover{color:var(--text-1);}
+.chat-partner-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid var(--border);}
+.chat-partner-name{font-size:13px;font-weight:600;color:var(--text-1);flex:1;}
+.chat-messages{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:8px;}
+.msg-bubble{max-width:82%;padding:9px 13px;border-radius:var(--radius);line-height:1.45;}
+.msg-bubble.mine{align-self:flex-end;background:var(--ink);color:#fff;}
+.msg-bubble.theirs{align-self:flex-start;background:var(--bg);border:1px solid var(--border);}
+.msg-text{font-size:13px;}
+.msg-time{font-size:10px;opacity:.5;margin-top:3px;text-align:right;}
+.msg-bubble.theirs .msg-time{text-align:left;}
+.chat-input-area{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border);flex-shrink:0;}
+.chat-input{
+  flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text-1);
+  padding:9px 12px;border-radius:var(--radius-sm);
+  font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:none;max-height:100px;
 }
-.panel-card-title{
-  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.03em;
-  text-transform:uppercase;color:var(--gold);margin-bottom:16px;
-  padding-bottom:10px;border-bottom:1px solid var(--brd);
-  display:flex;align-items:center;justify-content:space-between;
+.chat-input:focus{border-color:var(--border-strong);}
+.chat-send{
+  background:var(--ink);color:#fff;border:none;
+  padding:9px 16px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:600;cursor:pointer;
+  align-self:flex-end;transition:opacity .15s;flex-shrink:0;
+}
+.chat-send:hover{opacity:.85;}
+
+/* Nueva conv panel */
+.new-conv-btn{
+  margin:12px 18px;background:var(--bg);border:1px solid var(--border);
+  color:var(--text-1);font-size:12px;font-weight:600;
+  padding:9px;border-radius:var(--radius-sm);cursor:pointer;
+  width:calc(100% - 36px);transition:background .1s;
+}
+.new-conv-btn:hover{background:var(--border);}
+.new-conv-panel{display:none;padding:0 18px 12px;border-bottom:1px solid var(--border);flex-direction:column;gap:6px;}
+.new-conv-panel.open{display:flex;}
+.new-conv-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:2px;}
+.contact-list{display:flex;flex-direction:column;gap:2px;max-height:160px;overflow-y:auto;}
+.contact-item{display:flex;align-items:center;gap:8px;padding:7px 8px;cursor:pointer;border-radius:var(--radius-sm);transition:background .1s;}
+.contact-item:hover{background:var(--bg);}
+.contact-item.selected{background:var(--bg3);}
+.contact-avatar{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);object-fit:cover;}
+.contact-name{font-size:12px;font-weight:500;color:var(--text-1);flex:1;}
+.contact-role{font-size:10px;color:var(--text-3);}
+.contact-start-btn{
+  background:var(--ink);color:#fff;border:none;
+  padding:9px;border-radius:var(--radius-sm);
+  font-size:12px;font-weight:600;cursor:pointer;
+  width:100%;margin-top:4px;transition:opacity .15s;
+}
+.contact-start-btn:hover{opacity:.85;}
+
+/* ── HERO ───────────────────────────────────────────── */
+.hero{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:48px 20px 40px;
+  text-align:center;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);background:var(--bg3);
+  padding:4px 12px;border-radius:20px;margin-bottom:16px;
+}
+.hero-title{
+  font-family:'Cinzel',serif;
+  font-size:clamp(26px,6vw,46px);
+  font-weight:700;color:var(--text-1);
+  letter-spacing:.01em;line-height:1.1;
+  margin-bottom:12px;
+}
+.hero-desc{
+  font-size:clamp(14px,3vw,16px);
+  color:var(--text-2);max-width:460px;
+  margin:0 auto;line-height:1.65;
 }
 
-/* ── TABLA USUARIOS ── */
-.users-table{width:100%;border-collapse:collapse;}
-.users-table th{
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--gold);padding:8px 10px;
-  border-bottom:1px solid var(--brd);text-align:left;
+/* ── SECTION LABEL ──────────────────────────────────── */
+.section-label{
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);padding:24px 20px 10px;
+  max-width:860px;margin:0 auto;width:100%;
 }
-.users-table td{
-  font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink2);
-  padding:10px 10px;border-bottom:1px solid var(--brd);
-  vertical-align:middle;
-}
-.users-table tr:hover td{background:var(--bg2);}
-.user-avatar-sm{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);object-fit:cover;vertical-align:middle;}
-.user-name{font-weight:700;color:var(--ink);margin-left:8px;}
-.user-email{font-size:11px;color:var(--muted);}
 
-/* ── BADGES ── */
-.badge{
-  display:inline-block;font-family:'Cinzel',serif;font-size:7px;
-  letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
-  border-radius:2px;margin:1px;
+/* ── BANNERS GRID ───────────────────────────────────── */
+.banners{
+  padding:0 16px 32px;
+  display:flex;flex-direction:column;gap:10px;
+  max-width:860px;margin:0 auto;width:100%;
 }
-.badge-admin{background:#FEF2F2;color:#B91C1C;}
-.badge-dm{background:#EEF2FF;color:#3730A3;}
-.badge-jugador{background:#DCFCE7;color:#166534;}
-.badge-custom{background:#F3F4F6;color:#374151;}
-.badge-inactivo{background:var(--bg3);color:var(--muted);}
+.banner{
+  border-radius:var(--radius);overflow:hidden;position:relative;
+  cursor:pointer;text-decoration:none;display:block;
+  height:116px;transition:transform .18s, box-shadow .18s;
+  border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.banner:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.banner.disabled{cursor:default;opacity:.65;}
+.banner.disabled:hover{transform:none;box-shadow:var(--shadow);}
+.banner-bg{
+  position:absolute;inset:0;background-size:cover;background-position:center;
+  transition:transform .3s;
+}
+.banner:hover:not(.disabled) .banner-bg{transform:scale(1.03);}
+.banner-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(17,17,16,.72) 0%,rgba(17,17,16,.35) 55%,rgba(17,17,16,.08) 100%);
+}
+.banner-content{
+  position:relative;z-index:2;padding:18px 20px;
+  height:100%;display:flex;flex-direction:column;justify-content:center;
+}
+.banner-icon{font-size:22px;margin-bottom:4px;}
+.banner-title{
+  font-family:'Cinzel',serif;font-weight:700;font-size:19px;
+  color:#fff;letter-spacing:.02em;line-height:1.2;
+  text-shadow:0 1px 6px rgba(0,0,0,.4);
+}
+.banner-desc{
+  font-size:12px;color:rgba(255,255,255,.75);margin-top:3px;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.banner-chip{
+  position:absolute;top:12px;right:14px;z-index:3;
+  font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;
+}
+.chip-active{background:#fff;color:var(--text-1);}
+.chip-soon{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);backdrop-filter:blur(4px);}
+.chip-admin{background:#E03131;color:#fff;}
+.chip-new{background:var(--ink);color:#fff;}
 
-/* ── BOTONES ── */
-.btn{
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;
-  text-transform:uppercase;padding:6px 12px;cursor:pointer;
-  border:1px solid;transition:all .15s;
-}
-.btn-gold{border-color:var(--gold);color:var(--gold);background:transparent;}
-.btn-gold:hover{background:var(--gold);color:var(--bg-dark);}
-.btn-red{border-color:var(--red);color:#faa;background:transparent;}
-.btn-red:hover{background:var(--red);color:var(--ink);}
-.btn-green{border-color:#2a8a2a;color:#afa;background:transparent;}
-.btn-green:hover{background:#2a8a2a;color:var(--ink);}
-.btn-sm{padding:4px 8px;font-size:7px;}
+/* Backgrounds banners */
+.bg-calendario{background-image:url("https://laciudadela-dlc.github.io/img/botcalendario.png");}
+.bg-mesas{background-image:url("https://laciudadela-dlc.github.io/img/botmesas.png");}
+.bg-buffet{background-image:url("https://laciudadela-dlc.github.io/img/botbuffet.png");}
+.bg-anuncios{background-image:url("https://laciudadela-dlc.github.io/img/botanuncios.png");}
+.bg-biblioteca{background-image:url("https://laciudadela-dlc.github.io/img/botbiblioteca.png");}
+.bg-perfil{background-image:url("https://laciudadela-dlc.github.io/img/botprofile.png");}
+.bg-admin{background-image:url("https://laciudadela-dlc.github.io/img/botadmin.png");background-color:#1a0808;}
 
-/* ── ROLES ── */
-.roles-grid{display:flex;flex-wrap:wrap;gap:12px;}
-.role-card{
-  background:var(--bg2);border:1px solid var(--brd);
-  padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:160px;
-}
-.role-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
-.role-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;color:var(--ink);flex:1;}
-.role-count{font-size:11px;color:var(--muted);}
+/* Banner admin */
+#bannerAdmin{border-color:rgba(224,49,49,.3);}
 
-/* ── FORM NUEVO ROL ── */
-.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px;}
-.form-group{display:flex;flex-direction:column;gap:5px;}
-.form-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
-.form-input{
-  background:var(--bg2);border:1px solid var(--brd);color:var(--ink);
-  padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;
-  outline:none;min-width:160px;
+/* ── FOOTER ─────────────────────────────────────────── */
+.footer{
+  text-align:center;padding:20px;
+  font-size:11px;color:var(--text-3);
+  border-top:1px solid var(--border);
 }
-.form-input:focus{border-color:var(--gold);}
-.color-picker-wrap{display:flex;align-items:center;gap:8px;}
-input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd);background:var(--bg2);cursor:pointer;}
 
-/* ── DIFUSIÓN ── */
-.difusion-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;}
-@media(max-width:700px){.difusion-layout{grid-template-columns:1fr;}}
-.difusion-form{display:flex;flex-direction:column;gap:12px;}
-.form-textarea{
-  background:var(--bg2);border:1px solid var(--brd);color:var(--ink);
-  padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;
-  outline:none;resize:vertical;min-height:100px;
+/* ── DESKTOP ─────────────────────────────────────────── */
+@media(min-width:600px){
+  .banner{height:134px;}
+  .banner-title{font-size:22px;}
+  .banner-desc{font-size:13px;}
+  .banners{padding:0 20px 36px;}
 }
-.form-textarea:focus{border-color:var(--gold);}
-.destinatarios-panel{background:rgba(0,0,0,.3);border:1px solid var(--brd);padding:14px;}
-.dest-header{
-  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--gold);margin-bottom:10px;
-  display:flex;align-items:center;justify-content:space-between;
+@media(min-width:900px){
+  .banners{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .banner{height:154px;}
+  .banners > a.banner:first-child{grid-column:1/-1;height:140px;}
+  #bannerAdmin{grid-column:1/-1;}
+  #bannerPerfil{grid-column:auto;}
+  .section-label{max-width:860px;}
+  .hero{padding:60px 20px 52px;}
 }
-.dest-filter{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
-.dest-filter-btn{
-  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;
-  text-transform:uppercase;padding:3px 8px;cursor:pointer;
-  border:1px solid var(--brd);color:var(--muted);background:transparent;transition:all .15s;
-}
-.dest-filter-btn:hover,.dest-filter-btn.active{border-color:var(--gold);color:var(--gold);background:var(--bg2);}
-.dest-list{max-height:280px;overflow-y:auto;}
-.dest-item{
-  display:flex;align-items:center;gap:8px;padding:6px 0;
-  border-bottom:1px solid var(--brd);cursor:pointer;
-}
-.dest-item:hover{background:var(--bg2);}
-.dest-item input[type=checkbox]{accent-color:var(--gold);width:14px;height:14px;}
-.dest-item-avatar{width:22px;height:22px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
-.dest-item-name{font-size:11px;color:var(--ink2);flex:1;}
-.dest-item-role{font-size:9px;color:var(--muted);}
-.dest-count{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.08em;}
-
-/* ── LOADING / EMPTY ── */
-.loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
-.empty{text-align:center;padding:32px;color:#555;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.1em;}
-
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:24px;right:24px;z-index:999;
-  background:var(--bg-dark);border:1px solid var(--gold);
-  padding:12px 20px;font-family:'Cinzel',serif;font-size:10px;
-  letter-spacing:.08em;color:var(--gold);
-  transform:translateY(80px);opacity:0;transition:all .3s;
-  pointer-events:none;
-}
-.toast.show{transform:translateY(0);opacity:1;}
-.toast.error{border-color:var(--red);color:#faa;}
-
-/* ── MODAL ROLES USUARIO ── */
-.modal-bg{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
-  z-index:500;align-items:center;justify-content:center;
-}
-.modal-bg.open{display:flex;}
-.modal-box{
-  background:var(--bg-dark);border:1px solid var(--gold);
-  padding:28px;width:90%;max-width:380px;
-}
-.modal-title{font-family:'Cinzel',serif;font-size:13px;color:var(--ink);letter-spacing:.06em;margin-bottom:6px;}
-.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
-.roles-check-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
-.role-check-item{display:flex;align-items:center;gap:10px;}
-.role-check-item input{accent-color:var(--gold);width:15px;height:15px;}
-.role-check-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
-
-/* ── SECCIÓN OCULTA ── */
-.section{display:none;}
-.section.active{display:block;}
-
-/* ── NOTIF BADGE ── */
-.notif-info{
-  background:var(--bg2);border:1px solid var(--brd);
-  padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--muted);
-}
-.notif-info strong{color:var(--gold);}
-
-/* ── CHAT ADMIN ── */
-.chat-layout{display:grid;grid-template-columns:280px 1fr;gap:0;height:600px;border:1px solid var(--brd);}
-@media(max-width:700px){.chat-layout{grid-template-columns:1fr;height:auto;}}
-.chat-sidebar{border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
-.chat-sidebar-header{padding:12px 14px;border-bottom:1px solid var(--brd);font-family:"Cinzel",serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
-.admin-conv-list{flex:1;overflow-y:auto;}
-.admin-conv-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--brd);cursor:pointer;transition:background .12s;}
-.admin-conv-item:hover{background:var(--bg2);}
-.admin-conv-item.active{background:var(--bg2);}
-.admin-conv-avatar{width:32px;height:32px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;flex-shrink:0;}
-.admin-conv-info{flex:1;min-width:0;}
-.admin-conv-name{font-family:"Cinzel",serif;font-size:9px;letter-spacing:.06em;color:var(--ink);}
-.admin-conv-last{font-size:11px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
-.admin-conv-unread{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
-.admin-chat-main{display:flex;flex-direction:column;overflow:hidden;}
-.admin-chat-header{padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.admin-chat-partner{font-family:"Cinzel",serif;font-size:11px;letter-spacing:.06em;color:var(--ink);}
-.admin-chat-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:200px;}
-.admin-msg{max-width:75%;padding:10px 12px;line-height:1.4;}
-.admin-msg.mine{align-self:flex-end;background:var(--bg2);border:1px solid var(--brd);}
-.admin-msg.theirs{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);}
-.admin-msg-text{font-size:13px;color:#ddd;}
-.admin-msg-meta{font-size:9px;color:#555;margin-top:4px;text-align:right;}
-.admin-chat-input-area{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--brd);flex-shrink:0;}
-.admin-chat-input{flex:1;background:var(--bg2);border:1px solid var(--brd);color:var(--ink);padding:10px;font-family:"DM Sans",sans-serif;font-size:13px;outline:none;resize:none;}
-.admin-chat-input:focus{border-color:var(--gold);}
-.admin-chat-send{font-family:"Cinzel",serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 14px;cursor:pointer;align-self:flex-end;}
-.admin-chat-send:hover{background:#e8bc38;}
-.chat-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#444;font-family:"Cinzel",serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
 </style>
 </head>
 <body>
 
-<!-- ── TOAST ── -->
-<div class="toast" id="toast"></div>
+<!-- OVERLAY -->
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
 
-<!-- ── MODAL EDITAR ROLES ── -->
-<div class="modal-bg" id="rolesModal">
+<!-- MODAL LOGIN -->
+<div class="modal-overlay" id="authModalBg">
   <div class="modal-box">
-    <div class="modal-title" id="modalUserName">Usuario</div>
-    <div class="modal-sub" id="modalUserEmail"></div>
-    <div class="roles-check-list" id="rolesCheckList"></div>
-    <div class="modal-actions">
-      <button class="btn btn-red btn-sm" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-gold btn-sm" onclick="saveRoles()">Guardar</button>
+    <img class="modal-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela">
+    <div class="modal-title">La Ciudadela</div>
+    <p class="modal-sub">Ingresá con tu cuenta de Google para acceder a mesas, perfil y más.</p>
+    <button class="google-btn" onclick="window.AUTH.loginGoogle()">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continuar con Google
+    </button>
+    <a class="modal-cancel" onclick="window.AUTH.closeLogin()">Cancelar</a>
+  </div>
+</div>
+
+<!-- PANEL LATERAL NOTIFICACIONES -->
+<div class="side-panel" id="sidePanel">
+  <div class="side-panel-header">
+    <span class="side-panel-title">Notificaciones</span>
+    <span class="side-panel-close" onclick="closePanel()">✕</span>
+  </div>
+  <div class="side-panel-tabs">
+    <div class="side-tab active" id="tabNotif" onclick="switchTab('notif')">
+      Alertas <span class="side-tab-count" id="tabNotifCount" style="display:none"></span>
+    </div>
+    <div class="side-tab" id="tabMsg" onclick="switchTab('msg')">
+      Mensajes <span class="side-tab-count" id="tabMsgCount" style="display:none"></span>
+    </div>
+  </div>
+  <div class="side-content">
+    <!-- Notificaciones -->
+    <div class="side-section active" id="secNotif">
+      <div class="notif-list" id="notifList">
+        <div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-text">Sin notificaciones</div></div>
+      </div>
+      <div class="notif-actions">
+        <button class="notif-mark-all" onclick="markAllRead()">Marcar todas como leídas</button>
+      </div>
+    </div>
+    <!-- Mensajes (solo badge, lista en /mensajes/) -->
+    <div class="side-section" id="secMsg">
+      <div style="padding:24px 18px;display:flex;flex-direction:column;gap:12px;">
+        <div class="empty-state" style="flex:none;padding:0;">
+          <div class="empty-state-icon">💬</div>
+          <div class="empty-state-text">Tus conversaciones están en la sección Mensajes</div>
+        </div>
+        <a href="https://laciudadela-dlc.github.io/mensajes/"
+           style="background:var(--ink);color:#fff;border:none;padding:11px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;display:block;">
+          Ir a Mensajes →
+        </a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ── HEADER ── -->
-<header class="admin-header">
-  <img class="admin-header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela" style="height:32px;width:auto;">
-  <div class="admin-header-titles">
-    <div class="admin-header-name">Panel de Administración</div>
-    <div class="admin-header-sub">La Ciudadela de los Confines</div>
+<!-- HEADER -->
+<header class="header">
+  <img class="header-logo"
+    src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png"
+    onerror="this.style.display='none'" alt="La Ciudadela">
+  <span class="header-wordmark">La <span>Ciudadela</span></span>
+  <div class="auth-zone" id="authZone">
+    <button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>
   </div>
-  <div class="admin-user-info" id="adminUserInfo"></div>
-  <a class="admin-header-back" href="../">← Portal</a>
 </header>
 
-<!-- ── NAV ── -->
-<nav class="admin-nav">
-  <div class="admin-tab active" onclick="showSection('usuarios')">👥 Usuarios</div>
-  <div class="admin-tab" onclick="showSection('roles')">🏷 Roles</div>
-  <div class="admin-tab" onclick="showSection('difusion')">📢 Difusión</div>
-  <div class="admin-tab" onclick="showSection('mesas')">🎲 Mesas <span id="solBadge" style="display:none;background:#B91C1C;color:#fff;font-size:8px;padding:1px 5px;border-radius:6px;margin-left:3px;"></span></div>
-  <div class="admin-tab" onclick="showSection('conversaciones')">💬 Mensajes <span id="adminMsgBadge" style="display:none;background:var(--red);color:#fff;font-size:7px;padding:1px 5px;border-radius:6px;margin-left:3px;"></span></div>
-</nav>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">✦ Lima 575, CABA · @laciudadela.dlc</div>
+  <h1 class="hero-title">Tu espacio de rol<br>en Buenos Aires</h1>
+  <p class="hero-desc">Explorá el calendario de mesas, conectá con la comunidad y viví la aventura.</p>
+</section>
 
-<!-- ── BODY ── -->
-<div class="admin-body">
+<div class="section-label">Accesos rápidos</div>
 
-  <!-- ── SECCIÓN USUARIOS ── -->
-  <div class="section active" id="sec-usuarios">
-    <div class="panel-card">
-      <div class="panel-card-title">
-        <span>Usuarios registrados</span>
-        <span class="dest-count" id="usersCount">—</span>
-      </div>
-      <div id="usersTableWrap">
-        <div class="loading">Cargando usuarios…</div>
-      </div>
+<div class="banners">
+
+  <a class="banner" href="https://laciudadela-dlc.github.io/calendario/index.html">
+    <div class="banner-bg bg-calendario"></div>
+    <div class="banner-overlay"></div>
+    <div class="banner-content">
+      <div class="banner-icon">📅</div>
+      <div class="banner-title">Calendario</div>
+      <div class="banner-desc">Agenda de mesas, horarios y eventos</div>
     </div>
+    <span class="banner-chip chip-active">Disponible</span>
+  </a>
+
+  <div class="banner disabled">
+    <div class="banner-bg bg-mesas"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">🎲</div><div class="banner-title">Mesas</div><div class="banner-desc">Inscribite a partidas y seguí tus campañas</div></div>
+    <span class="banner-chip chip-soon">Próximamente</span>
   </div>
 
-  <!-- ── SECCIÓN ROLES ── -->
-  <div class="section" id="sec-roles">
-    <div class="panel-card">
-      <div class="panel-card-title">Roles del sistema</div>
-      <div class="roles-grid" id="rolesGrid">
-        <div class="loading">Cargando roles…</div>
-      </div>
-      <div class="form-row" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--brd);">
-        <div class="form-group">
-          <label class="form-label">Nombre del rol</label>
-          <input class="form-input" id="newRoleLabel" placeholder="ej: organizador" maxlength="30">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Color</label>
-          <div class="color-picker-wrap">
-            <input type="color" id="newRoleColor" value="#c4a030">
-          </div>
-        </div>
-        <div class="form-group" style="justify-content:flex-end;">
-          <button class="btn btn-gold" onclick="createRole()">+ Crear rol</button>
-        </div>
-      </div>
-    </div>
+  <div class="banner disabled">
+    <div class="banner-bg bg-buffet"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">☕</div><div class="banner-title">Buffet</div><div class="banner-desc">Pedidos de bebidas y snacks desde tu mesa</div></div>
+    <span class="banner-chip chip-soon">Próximamente</span>
   </div>
 
-  <!-- ── SECCIÓN DIFUSIÓN ── -->
-  <div class="section" id="sec-difusion">
-    <div class="notif-info">
-      Los mensajes se guardan en <strong>notificaciones/{uid}/items</strong> de cada destinatario y aparecerán como notificaciones en su perfil.
-    </div>
-    <div class="difusion-layout">
-      <!-- Formulario -->
-      <div class="panel-card">
-        <div class="panel-card-title">Redactar mensaje</div>
-        <div class="difusion-form">
-          <div class="form-group">
-            <label class="form-label">Título</label>
-            <input class="form-input" id="msgTitulo" placeholder="Ej: Recordatorio de mesa">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Cuerpo del mensaje</label>
-            <textarea class="form-textarea" id="msgCuerpo" placeholder="Escribí el contenido del mensaje…"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Enlace (opcional)</label>
-            <input class="form-input" id="msgLink" placeholder="https://…">
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <span class="dest-count" id="selectedCount">0 destinatarios seleccionados</span>
-            <button class="btn btn-gold" onclick="enviarMensaje()">📢 Enviar</button>
-          </div>
-        </div>
-      </div>
-      <!-- Destinatarios -->
-      <div class="panel-card">
-        <div class="panel-card-title">
-          <span>Destinatarios</span>
-        </div>
-        <div class="dest-filter" id="destFilter">
-          <button class="dest-filter-btn active" onclick="filtrarDest('todos',this)">Todos</button>
-          <button class="dest-filter-btn" onclick="filtrarDest('admin',this)">Admin</button>
-          <button class="dest-filter-btn" onclick="filtrarDest('dm',this)">DM</button>
-          <button class="dest-filter-btn" onclick="filtrarDest('jugador',this)">Jugador</button>
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:10px;">
-          <button class="btn btn-gold btn-sm" onclick="selectAllVisible(true)">Seleccionar todos</button>
-          <button class="btn btn-red btn-sm" onclick="selectAllVisible(false)">Ninguno</button>
-        </div>
-        <div class="dest-list" id="destList">
-          <div class="loading">Cargando…</div>
-        </div>
-      </div>
-    </div>
+  <div class="banner disabled">
+    <div class="banner-bg bg-anuncios"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">📜</div><div class="banner-title">Anuncios</div><div class="banner-desc">Novedades y comunicados de la comunidad</div></div>
+    <span class="banner-chip chip-soon">Próximamente</span>
   </div>
 
-  <!-- ── SECCIÓN CONVERSACIONES ── -->
-  <div class="section" id="sec-conversaciones">
-    <div class="panel-card" style="padding:0;overflow:hidden;">
-      <div class="chat-layout">
-        <!-- Sidebar lista convs -->
-        <div class="chat-sidebar">
-          <div class="chat-sidebar-header">Conversaciones</div>
-          <div class="admin-conv-list" id="adminConvList">
-            <div style="padding:20px;color:#555;font-size:12px;text-align:center;">Cargando…</div>
-          </div>
-        </div>
-        <!-- Panel chat -->
-        <div class="admin-chat-main">
-          <div class="admin-chat-header" id="adminChatHeader">
-            <div class="chat-empty" style="flex:1;">Seleccioná una conversación</div>
-          </div>
-          <div class="admin-chat-messages" id="adminChatMessages">
-          </div>
-          <div class="admin-chat-input-area" id="adminChatInputArea" style="display:none;">
-            <textarea class="admin-chat-input" id="adminChatInput" rows="2" placeholder="Escribí tu respuesta…"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();adminSendMessage();}"></textarea>
-            <button class="admin-chat-send" onclick="adminSendMessage()">Enviar</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="banner disabled">
+    <div class="banner-bg bg-biblioteca"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">📚</div><div class="banner-title">Biblioteca</div><div class="banner-desc">Manuales y reglamentos disponibles</div></div>
+    <span class="banner-chip chip-soon">Próximamente</span>
   </div>
 
+  <a class="banner" id="bannerPerfil" href="https://laciudadela-dlc.github.io/mensajes/" style="display:none;">
+    <div class="banner-bg bg-perfil"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">✉️</div><div class="banner-title">Mensajes</div><div class="banner-desc">Tus conversaciones con admins y DMs</div></div>
+    <span class="banner-chip chip-new">Nuevo</span>
+  </a>
 
-  <!-- ── SECCIÓN MESAS ── -->
-  <div class="section" id="sec-mesas">
-    <div class="panel-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--ink);">
-          Solicitudes de ingreso
-        </h2>
-        <span id="solCount" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);"></span>
-      </div>
-      <div id="solList">
-        <div style="color:var(--muted);font-size:13px;text-align:center;padding:32px;">Cargando solicitudes…</div>
-      </div>
-    </div>
-    <div class="panel-card" style="margin-top:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--ink);">
-          Mesas activas
-        </h2>
-        <span id="mesasAdminCount" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);"></span>
-      </div>
-      <div id="mesasAdminList">
-        <div style="color:var(--muted);font-size:13px;text-align:center;padding:32px;">Cargando mesas…</div>
-      </div>
-    </div>
-  </div>
+  <a class="banner" id="bannerAdmin" href="https://laciudadela-dlc.github.io/admin/" style="display:none;">
+    <div class="banner-bg bg-admin"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">🛡</div><div class="banner-title">Panel Admin</div><div class="banner-desc">Usuarios, roles, mensajería y configuración</div></div>
+    <span class="banner-chip chip-admin">Admin</span>
+  </a>
 
-</div><!-- /admin-body -->
+</div>
 
-<!-- ── FIREBASE SDK ── -->
+<footer class="footer">La Ciudadela de los Confines · Lima 575, CABA · 2025</footer>
+
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
 <script>
-// ── FIREBASE ──────────────────────────────────────────
 firebase.initializeApp({
   apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
   authDomain:"ciudadela-portal-88111.firebaseapp.com",
@@ -455,631 +524,214 @@ firebase.initializeApp({
 });
 const auth = firebase.auth();
 const db   = firebase.firestore();
-  const arrayUnion = firebase.firestore.FieldValue.arrayUnion;
 
-// ── ESTADO ───────────────────────────────────────────
-let allUsers   = [];
-let allRoles   = [];
-let editingUid = null;
-let currentFilter = 'todos';
+// ══ AUTH ══════════════════════════════════════════════
+window.AUTH = (function(){
+  let _user = null, _profile = null;
 
-// ── NAVEGACIÓN ───────────────────────────────────────
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
-  event.currentTarget.classList.add('active');
-}
+  function openLogin(){ document.getElementById('authModalBg').classList.add('open'); }
+  function closeLogin(){ document.getElementById('authModalBg').classList.remove('open'); }
 
-// ── TOAST ────────────────────────────────────────────
-function toast(msg, isError){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (isError?' error':'');
-  setTimeout(()=> t.classList.remove('show'), 3200);
-}
-
-// ── GUARD: solo admin ─────────────────────────────────
-auth.onAuthStateChanged(async function(user){
-  window._authUser = user;
-  if(!user){ location.href='../'; return; }
-
-  const snap = await db.collection('usuarios').doc(user.uid).get();
-  if(!snap.exists || !snap.data().roles || !snap.data().roles.includes('admin')){
-    location.href='../';
-    return;
+  async function loginGoogle(){
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+      closeLogin();
+    } catch(e){ console.error('Login error:',e); }
   }
 
-  // Header usuario
-  const name = (user.displayName||user.email).split(' ')[0];
-  document.getElementById('adminUserInfo').innerHTML = `
-    <img class="admin-avatar" src="${user.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=c4a030&color=1a1208'}" alt="">
-    <span class="admin-name">${name}</span>`;
+  async function logout(){ await auth.signOut(); }
 
-  // Cargar datos
-  loadUsers();
-  loadRoles();
-  loadAdminConversations(user.uid);
-  loadMesasAdmin();
-});
-
-// ── USUARIOS ─────────────────────────────────────────
-async function loadUsers(){
-  const wrap = document.getElementById('usersTableWrap');
-  wrap.innerHTML = '<div class="loading">Cargando…</div>';
-  try {
-    const snap = await db.collection('usuarios').orderBy('creadoEn','desc').get();
-    allUsers = snap.docs.map(d=>({uid:d.id,...d.data()}));
-    document.getElementById('usersCount').textContent = allUsers.length + ' usuarios';
-    renderUsers();
-    renderDestList();
-  } catch(e){
-    wrap.innerHTML = '<div class="empty">Error al cargar usuarios</div>';
+  function toggleDropdown(){
+    document.getElementById('authDropdown')?.classList.toggle('open');
   }
-}
 
-function renderUsers(){
-  const wrap = document.getElementById('usersTableWrap');
-  if(!allUsers.length){ wrap.innerHTML='<div class="empty">Sin usuarios aún</div>'; return; }
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('authUserMenu');
+    const dd   = document.getElementById('authDropdown');
+    if(menu && dd && !menu.contains(e.target)) dd.classList.remove('open');
+  });
 
-  wrap.innerHTML = `
-  <div style="overflow-x:auto;">
-  <table class="users-table">
-    <thead><tr>
-      <th>Usuario</th>
-      <th>Email</th>
-      <th>Roles</th>
-      <th>Estado</th>
-      <th>Acciones</th>
-    </tr></thead>
-    <tbody>
-    ${allUsers.map(u=>`
-      <tr>
-        <td>
-          <img class="user-avatar-sm" src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'?')+'&background=3a2000&color=c4a030&size=28'}" alt="">
-          <span class="user-name">${u.displayName||'(sin nombre)'}</span>
-        </td>
-        <td><span class="user-email">${u.email||''}</span></td>
-        <td>${renderBadges(u.roles||[])}</td>
-        <td>
-          ${u.activo!==false
-            ? '<span class="badge badge-jugador">Activo</span>'
-            : '<span class="badge badge-inactivo">Inactivo</span>'}
-        </td>
-        <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;">
-          <button class="btn btn-gold btn-sm" onclick="openRolesModal('${u.uid}')">Roles</button>
-          ${u.activo!==false
-            ? `<button class="btn btn-red btn-sm" onclick="toggleActivo('${u.uid}',false)">Desactivar</button>`
-            : `<button class="btn btn-green btn-sm" onclick="toggleActivo('${u.uid}',true)">Activar</button>`}
-        </td>
-      </tr>`).join('')}
-    </tbody>
-  </table>
-  </div>`;
-}
-
-function renderBadges(roles){
-  if(!roles||!roles.length) return '<span class="badge badge-inactivo">sin rol</span>';
-  return roles.map(r=>{
-    const cls = r==='admin'?'badge-admin':r==='dm'?'badge-dm':r==='jugador'?'badge-jugador':'badge-custom';
-    return `<span class="badge ${cls}">${r}</span>`;
-  }).join('');
-}
-
-async function toggleActivo(uid, activo){
-  try {
-    await db.collection('usuarios').doc(uid).update({activo});
-    const u = allUsers.find(u=>u.uid===uid);
-    if(u) u.activo = activo;
-    renderUsers();
-    renderDestList();
-    toast(activo ? 'Usuario activado' : 'Usuario desactivado');
-  } catch(e){ toast('Error al actualizar', true); }
-}
-
-// ── MODAL ROLES ───────────────────────────────────────
-function openRolesModal(uid){
-  editingUid = uid;
-  const user = allUsers.find(u=>u.uid===uid);
-  document.getElementById('modalUserName').textContent = user.displayName||'Usuario';
-  document.getElementById('modalUserEmail').textContent = user.email||'';
-
-  const currentRoles = user.roles||[];
-  // Roles disponibles: fijos + custom
-  const availableRoles = ['admin','dm','jugador',...allRoles.map(r=>r.id)];
-  const unique = [...new Set(availableRoles)];
-
-  document.getElementById('rolesCheckList').innerHTML = unique.map(r=>`
-    <div class="role-check-item">
-      <input type="checkbox" id="rc_${r}" value="${r}" ${currentRoles.includes(r)?'checked':''}>
-      <label class="role-check-label" for="rc_${r}">${r}</label>
-    </div>`).join('');
-
-  document.getElementById('rolesModal').classList.add('open');
-}
-
-function closeModal(){
-  document.getElementById('rolesModal').classList.remove('open');
-  editingUid = null;
-}
-
-async function saveRoles(){
-  if(!editingUid) return;
-  const checks = document.querySelectorAll('#rolesCheckList input[type=checkbox]');
-  const newRoles = Array.from(checks).filter(c=>c.checked).map(c=>c.value);
-  try {
-    await db.collection('usuarios').doc(editingUid).update({roles:newRoles});
-    const u = allUsers.find(u=>u.uid===editingUid);
-    if(u) u.roles = newRoles;
-    renderUsers();
-    renderDestList();
-    closeModal();
-    toast('Roles actualizados');
-  } catch(e){ toast('Error al guardar roles', true); }
-}
-
-// ── ROLES ─────────────────────────────────────────────
-async function loadRoles(){
-  try {
-    const snap = await db.collection('roles').get();
-    allRoles = snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderRoles();
-  } catch(e){
-    document.getElementById('rolesGrid').innerHTML='<div class="empty">Error al cargar roles</div>';
-  }
-}
-
-function renderRoles(){
-  const grid = document.getElementById('rolesGrid');
-  const fixed = [
-    {id:'jugador',label:'Jugador',color:'#2a8a2a'},
-    {id:'dm',label:'DM',color:'#2a2a8a'},
-    {id:'admin',label:'Admin',color:'#8a1515'}
-  ];
-  const all = [...fixed,...allRoles];
-  grid.innerHTML = all.map(r=>{
-    const count = allUsers.filter(u=>(u.roles||[]).includes(r.id)).length;
-    return `
-    <div class="role-card">
-      <div class="role-dot" style="background:${r.color||'#c4a030'}"></div>
-      <span class="role-name">${r.label||r.id}</span>
-      <span class="role-count">${count} usuarios</span>
-    </div>`;
-  }).join('');
-}
-
-async function createRole(){
-  const label = document.getElementById('newRoleLabel').value.trim().toLowerCase();
-  const color = document.getElementById('newRoleColor').value;
-  if(!label){ toast('Ingresá un nombre para el rol', true); return; }
-  if(['admin','dm','jugador'].includes(label)){ toast('Ese rol ya existe como rol fijo', true); return; }
-  try {
-    await db.collection('roles').doc(label).set({label, color, creadoEn: firebase.firestore.FieldValue.serverTimestamp()});
-    allRoles.push({id:label,label,color});
-    renderRoles();
-    document.getElementById('newRoleLabel').value='';
-    toast('Rol "'+label+'" creado');
-  } catch(e){ toast('Error al crear rol', true); }
-}
-
-// ── DIFUSIÓN ──────────────────────────────────────────
-function renderDestList(){
-  const list = document.getElementById('destList');
-  const users = currentFilter==='todos'
-    ? allUsers
-    : allUsers.filter(u=>(u.roles||[]).includes(currentFilter));
-
-  if(!users.length){ list.innerHTML='<div class="empty">Sin usuarios para este filtro</div>'; return; }
-
-  list.innerHTML = users.map(u=>`
-    <div class="dest-item" onclick="toggleDest('${u.uid}')">
-      <input type="checkbox" id="dest_${u.uid}" class="dest-check" data-uid="${u.uid}" data-roles='${JSON.stringify(u.roles||[])}'>
-      <img class="dest-item-avatar"
-        src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'?')+'&background=3a2000&color=c4a030&size=22'}" alt="">
-      <span class="dest-item-name">${u.displayName||u.email||u.uid}</span>
-      <span class="dest-item-role">${(u.roles||['jugador'])[0]}</span>
-    </div>`).join('');
-
-  updateSelectedCount();
-}
-
-function toggleDest(uid){
-  const cb = document.querySelector(`#dest_${uid}`);
-  if(cb){ cb.checked = !cb.checked; updateSelectedCount(); }
-}
-
-function updateSelectedCount(){
-  const n = document.querySelectorAll('.dest-check:checked').length;
-  document.getElementById('selectedCount').textContent = n + ' destinatario' + (n===1?'':'s') + ' seleccionado' + (n===1?'':'s');
-}
-
-function filtrarDest(filtro, btn){
-  currentFilter = filtro;
-  document.querySelectorAll('.dest-filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderDestList();
-}
-
-function selectAllVisible(select){
-  document.querySelectorAll('.dest-check').forEach(cb=>cb.checked=select);
-  updateSelectedCount();
-}
-
-async function enviarMensaje(){
-  const titulo = document.getElementById('msgTitulo').value.trim();
-  const cuerpo = document.getElementById('msgCuerpo').value.trim();
-  const link   = document.getElementById('msgLink').value.trim();
-  if(!titulo){ toast('El título es obligatorio', true); return; }
-  if(!cuerpo){ toast('El mensaje no puede estar vacío', true); return; }
-
-  const seleccionados = Array.from(document.querySelectorAll('.dest-check:checked'))
-    .map(cb=>cb.dataset.uid);
-  if(!seleccionados.length){ toast('Seleccioná al menos un destinatario', true); return; }
-
-  try {
-    const ahora = firebase.firestore.FieldValue.serverTimestamp();
-    const batch = db.batch();
-    seleccionados.forEach(uid=>{
-      const ref = db.collection('notificaciones').doc(uid).collection('items').doc();
-      batch.set(ref,{
-        tipo:'difusion',titulo,cuerpo,
-        link: link||null,
-        leida:false,
-        creadoEn:ahora
+  async function ensureProfile(user){
+    const ref  = db.collection('usuarios').doc(user.uid);
+    const snap = await ref.get();
+    const isAdmin = user.email === 'laciudadeladelosconfines@gmail.com';
+    if(!snap.exists){
+      await ref.set({
+        displayName:user.displayName||'',email:user.email,
+        photoURL:user.photoURL||'',
+        roles:isAdmin?['admin']:['jugador'],
+        activo:true,
+        creadoEn:firebase.firestore.FieldValue.serverTimestamp(),
+        ultimoAcceso:firebase.firestore.FieldValue.serverTimestamp()
       });
-    });
-    await batch.commit();
-    toast(`✓ Mensaje enviado a ${seleccionados.length} destinatario${seleccionados.length===1?'':'s'}`);
-    document.getElementById('msgTitulo').value='';
-    document.getElementById('msgCuerpo').value='';
-    document.getElementById('msgLink').value='';
-    selectAllVisible(false);
-  } catch(e){
-    console.error(e);
-    toast('Error al enviar', true);
+    } else {
+      await ref.update({ultimoAcceso:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+    return (await ref.get()).data();
   }
+
+  function renderZone(user, profile){
+    const zone = document.getElementById('authZone');
+    if(!user||!profile){
+      zone.innerHTML=`<button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>`;
+      return;
+    }
+    const roles = profile.roles||[];
+    const mainRole = roles.includes('admin')?'admin':roles.includes('dm')?'dm':'jugador';
+    const name = (user.displayName||user.email).split(' ')[0];
+    const av = user.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E8E6E0&color=111110&size=34`;
+    zone.innerHTML=`
+      <div class="notif-btn" onclick="openPanel('notif')" title="Notificaciones">
+        🔔<span class="notif-badge" id="notifBadge"></span>
+      </div>
+      <a class="notif-btn" href="https://laciudadela-dlc.github.io/mensajes/" title="Mensajes" style="text-decoration:none;">
+        💬<span class="notif-badge" id="msgBadge"></span>
+      </a>
+      <div class="auth-user-menu" id="authUserMenu" onclick="window.AUTH.toggleDropdown()">
+        <img class="auth-avatar" src="${av}" alt="${name}">
+        <span class="auth-name">${name}</span>
+        <div class="auth-dropdown" id="authDropdown">
+          <a href="#" onclick="event.stopPropagation();openPanel('notif')">🔔 Notificaciones</a>
+          <a href="https://laciudadela-dlc.github.io/mensajes/" onclick="event.stopPropagation();">💬 Mensajes</a>
+          <hr>
+          <a href="#" class="danger" onclick="event.stopPropagation();window.AUTH.logout()">Cerrar sesión</a>
+        </div>
+      </div>`;
+
+    startNotifListener(user.uid);
+    startMsgListener(user.uid);
+  }
+
+  function updateAdminBanner(profile){
+    const b = document.getElementById('bannerAdmin');
+    if(b) b.style.display = (profile?.roles?.includes('admin')) ? 'block' : 'none';
+  }
+
+  function updatePerfilBanner(user){
+    const b = document.getElementById('bannerPerfil');
+    if(b) b.style.display = user ? 'block' : 'none';
+  }
+
+  auth.onAuthStateChanged(async user => {
+    _user = user;
+    if(user){
+      try { _profile = await ensureProfile(user); }
+      catch(e){ console.error(e); _profile={roles:['jugador']}; }
+    } else {
+      _profile = null;
+      stopListeners();
+    }
+    renderZone(_user, _profile);
+    updateAdminBanner(_profile);
+    updatePerfilBanner(_user);
+  });
+
+  return {
+    openLogin,closeLogin,loginGoogle,logout,toggleDropdown,
+    getUser:()=>_user, getProfile:()=>_profile,
+    isLoggedIn:()=>!!_user,
+    hasRole:(r)=>_profile?.roles?.includes(r)
+  };
+})();
+
+// ══ PANEL ═════════════════════════════════════════════
+let unsubNotif=null, unsubMsg=null;
+
+function openPanel(tab){
+  document.getElementById('sidePanel').classList.add('open');
+  document.getElementById('panelOverlay').classList.add('open');
+  switchTab(tab);
 }
+function closePanel(){
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.remove('open');
+}
+function switchTab(tab){
+  document.querySelectorAll('.side-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.side-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab'+cap(tab)).classList.add('active');
+  document.getElementById('sec'+cap(tab)).classList.add('active');
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
-// ── CONVERSACIONES (ADMIN) ──────────────────────────
-let adminCurrentConvId = null;
-let adminUnsubChat = null;
-let adminUnsubConvs = null;
-let adminAllUsers = [];
-
-function loadAdminConversations(adminUid){
-  if(adminUnsubConvs) adminUnsubConvs();
-  adminUnsubConvs = db.collection('mensajes')
-    .onSnapshot(async snap=>{
-      const convs = snap.docs.map(d=>({id:d.id,...d.data()}))
-        .sort((a,b)=>{
-          const ta = a.ultimoMensajeAt?.toMillis?.() || 0;
-          const tb = b.ultimoMensajeAt?.toMillis?.() || 0;
-          return tb - ta;
-        });
-      // cargar usuarios si no están
-      if(!adminAllUsers.length){
-        const usnap = await db.collection('usuarios').get();
-        adminAllUsers = usnap.docs.map(d=>({uid:d.id,...d.data()}));
-      }
-      renderAdminConvList(convs, adminUid);
-      // badge total no leidos
-      let total = 0;
-      convs.forEach(c=>{ if(c.noLeidos&&c.noLeidos[adminUid]) total+=c.noLeidos[adminUid]; });
-      const badge = document.getElementById('adminMsgBadge');
-      if(badge){
-        badge.textContent = total>9?'9+':total;
-        badge.style.display = total>0?'inline-block':'none';
-      }
-    }, err => {
-      console.error('admin convs:', err);
-      const list = document.getElementById('adminConvList');
-      if(list) list.innerHTML='<div style="padding:20px;color:#faa;font-size:12px;text-align:center;">Error al cargar conversaciones</div>';
+// ══ NOTIFICACIONES ════════════════════════════════════
+function startNotifListener(uid){
+  if(unsubNotif) unsubNotif();
+  unsubNotif = db.collection('notificaciones').doc(uid).collection('items')
+    .orderBy('creadoEn','desc').limit(50)
+    .onSnapshot(snap=>{
+      const items = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderNotifList(items, uid);
+      updateBadge('notifBadge','tabNotifCount', items.filter(n=>!n.leida).length);
     });
 }
 
-function renderAdminConvList(convs, adminUid){
-  const list = document.getElementById('adminConvList');
-  if(!convs.length){
-    list.innerHTML='<div style="padding:20px;color:#555;font-size:12px;text-align:center;">Sin conversaciones aún</div>';
+function renderNotifList(items, uid){
+  const list = document.getElementById('notifList');
+  if(!items.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-text">Sin notificaciones</div></div>`;
     return;
   }
-  list.innerHTML = convs.map(c=>{
-    const otherId = c.participantes.find(p=>p!==adminUid)||c.participantes[0];
-    const other   = adminAllUsers.find(u=>u.uid===otherId)||{displayName:otherId,photoURL:''};
-    const name    = other.displayName||(other.email||otherId).split('@')[0];
-    const avatar  = other.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=32`;
-    const unread  = c.noLeidos&&c.noLeidos[adminUid]?c.noLeidos[adminUid]:0;
-    return `
-    <div class="admin-conv-item ${c.id===adminCurrentConvId?'active':''}" onclick="adminOpenChat('${c.id}','${otherId}')">
-      <img class="admin-conv-avatar" src="${avatar}" alt="">
-      <div class="admin-conv-info">
-        <div class="admin-conv-name">${escA(name)}</div>
-        <div class="admin-conv-last">${escA(c.ultimoMensaje||'')}</div>
-      </div>
-      ${unread?`<div class="admin-conv-unread"></div>`:''}
-    </div>`;
-  }).join('');
+  list.innerHTML = items.map(n=>`
+    <div class="notif-item ${n.leida?'':'unread'}" onclick="markNotifRead('${uid}','${n.id}','${n.convId||''}')">
+      <div class="notif-item-title">${esc(n.titulo||'Mensaje')}</div>
+      <div class="notif-item-body">${esc(n.cuerpo||'')}</div>
+      ${n.link?`<div class="notif-item-time"><a href="${n.link}" style="color:var(--ink2);" target="_blank">Ver enlace →</a></div>`:''}
+      <div class="notif-item-time">${formatTime(n.creadoEn)}</div>
+    </div>`).join('');
 }
 
-function adminOpenChat(convId, partnerId){
-  adminCurrentConvId = convId;
-  const adminUser = auth.currentUser;
-  const partner = adminAllUsers.find(u=>u.uid===partnerId)||{displayName:partnerId,photoURL:''};
-  const name   = partner.displayName||(partner.email||partnerId).split('@')[0];
-  const avatar = partner.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3a2000&color=c4a030&size=32`;
+async function markNotifRead(uid, notifId, convId){
+  await db.collection('notificaciones').doc(uid).collection('items').doc(notifId).update({leida:true});
+  if(convId) location.href=`https://laciudadela-dlc.github.io/mensajes/?conv=${convId}`;
+}
 
-  document.getElementById('adminChatHeader').innerHTML=`
-    <img style="width:30px;height:30px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;" src="${avatar}" alt="">
-    <span class="admin-chat-partner">${escA(name)}</span>`;
-  document.getElementById('adminChatInputArea').style.display='flex';
+async function markAllRead(){
+  const user = AUTH.getUser();
+  if(!user) return;
+  const snap = await db.collection('notificaciones').doc(user.uid).collection('items').where('leida','==',false).get();
+  const batch = db.batch();
+  snap.docs.forEach(d=>batch.update(d.ref,{leida:true}));
+  await batch.commit();
+}
 
-  // marcar leídos
-  db.collection('mensajes').doc(convId).update({[`noLeidos.${adminUser.uid}`]:0});
-
-  // suscribir mensajes
-  if(adminUnsubChat) adminUnsubChat();
-  const msgDiv = document.getElementById('adminChatMessages');
-  msgDiv.innerHTML='';
-  adminUnsubChat = db.collection('mensajes').doc(convId).collection('items')
-    .orderBy('creadoEn','asc')
+// ══ MENSAJES BADGE ════════════════════════════════════
+function startMsgListener(uid){
+  if(unsubMsg) unsubMsg();
+  unsubMsg = db.collection('mensajes')
+    .where('participantes','array-contains', uid)
     .onSnapshot(snap=>{
-      msgDiv.innerHTML = snap.docs.map(d=>{
-        const m = d.data();
-        const mine = m.de === adminUser.uid;
-        return `
-        <div class="admin-msg ${mine?'mine':'theirs'}">
-          <div class="admin-msg-text">${escA(m.texto||'')}</div>
-          <div class="admin-msg-meta">${formatTimeA(m.creadoEn)}</div>
-        </div>`;
-      }).join('');
-      msgDiv.scrollTop = msgDiv.scrollHeight;
-    });
-
-  // highlight conv activa
-  document.querySelectorAll('.admin-conv-item').forEach(el=>el.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+      let unread = 0;
+      snap.docs.forEach(d=>{ const c=d.data(); if(c.noLeidos?.[uid]) unread+=c.noLeidos[uid]; });
+      updateBadge('msgBadge','tabMsgCount', unread);
+    }, err=>console.error('msg badge:',err));
 }
 
-async function adminSendMessage(){
-  const adminUser = auth.currentUser;
-  if(!adminUser||!adminCurrentConvId) return;
-  const input = document.getElementById('adminChatInput');
-  const texto = input.value.trim();
-  if(!texto) return;
-  input.value='';
-
-  const now = firebase.firestore.FieldValue.serverTimestamp();
-  const convSnap = await db.collection('mensajes').doc(adminCurrentConvId).get();
-  const convData = convSnap.data();
-  const partnerId = convData.participantes.find(p=>p!==adminUser.uid);
-
-  await db.collection('mensajes').doc(adminCurrentConvId).collection('items').add({
-    de:adminUser.uid, texto, leido:false, creadoEn:now
-  });
-  await db.collection('mensajes').doc(adminCurrentConvId).update({
-    ultimoMensaje:texto,
-    ultimoMensajeAt:now,
-    [`noLeidos.${partnerId}`]:firebase.firestore.FieldValue.increment(1)
-  });
-  // notificación al partner
-  const myName = (adminUser.displayName||adminUser.email).split(' ')[0];
-  await db.collection('notificaciones').doc(partnerId).collection('items').add({
-    tipo:'mensaje',
-    titulo:`Mensaje de ${myName}`,
-    cuerpo: texto.length>60?texto.substring(0,60)+'…':texto,
-    convId: adminCurrentConvId,
-    leida:false,
-    creadoEn:now
-  });
+// ══ HELPERS ═══════════════════════════════════════════
+function updateBadge(badgeId, tabId, count){
+  const b = document.getElementById(badgeId);
+  const t = document.getElementById(tabId);
+  if(b){ b.textContent=count>9?'9+':count; b.classList.toggle('visible',count>0); }
+  if(t){ t.textContent=count; t.style.display=count>0?'inline-block':'none'; }
 }
-
-function escA(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function formatTimeA(ts){
+function formatTime(ts){
   if(!ts) return '';
   const d = ts.toDate?ts.toDate():new Date(ts);
-  const now = new Date(); const diff = now-d;
+  const diff = Date.now()-d;
   if(diff<60000) return 'ahora';
   if(diff<3600000) return Math.floor(diff/60000)+'m';
   if(diff<86400000) return Math.floor(diff/3600000)+'h';
   return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
 }
-// ══ MESAS & SOLICITUDES (ADMIN) ═══════════════════════════
-var _todasMesas = [];
-
-async function loadMesasAdmin() {
-  await window._fbReady;
-  var { collection, getDocs, query, orderBy, db } = window.FB;
-  try {
-    var snap = await getDocs(collection(db, 'mesas'));
-    _todasMesas = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
-    _todasMesas.sort(function(a,b){
-      if (!a.proximaFecha && !b.proximaFecha) return 0;
-      if (!a.proximaFecha) return 1;
-      if (!b.proximaFecha) return -1;
-      return new Date(a.proximaFecha) - new Date(b.proximaFecha);
-    });
-    renderMesasAdmin();
-    await loadSolicitudesPendientes();
-  } catch(e) {
-    console.error('loadMesasAdmin:', e);
-  }
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function renderMesasAdmin() {
-  var list = document.getElementById('mesasAdminList');
-  var count = document.getElementById('mesasAdminCount');
-  if (!list) return;
-
-  var mesas = _todasMesas;
-  if (count) count.textContent = mesas.length + ' mesas';
-
-  if (!mesas.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sin mesas</div>';
-    return;
-  }
-
-  list.innerHTML = mesas.map(function(m) {
-    var estadoColor = m.estado === 'activa' ? '#166534' : '#B91C1C';
-    var estadoBg    = m.estado === 'activa' ? '#DCFCE7' : '#FEF2F2';
-    var jugCount    = (m.jugadores || []).filter(function(j){ return j.rol === 'jugador'; }).length;
-
-    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd);">'
-      + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
-      +        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escA(m.nombre) + '</div>'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
-      +     escA(m.sistema || '') + (m.dm ? ' · DM: ' + escA(m.dm) : '') + ' · ' + jugCount + ' jugadores'
-      +   '</div>'
-      + '</div>'
-      + '<span style="font-family:\'DM Sans\',sans-serif;font-size:10px;font-weight:600;'
-      +       'background:' + estadoBg + ';color:' + estadoColor + ';padding:2px 8px;border-radius:20px;">'
-      +   m.estado
-      + '</span>'
-      + '</div>';
-  }).join('');
+function stopListeners(){
+  if(unsubNotif){unsubNotif();unsubNotif=null;}
+  if(unsubMsg){unsubMsg();unsubMsg=null;}
+  document.getElementById('authZone').innerHTML=`<button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>`;
 }
-
-async function loadSolicitudesPendientes() {
-  var { collection, getDocs, query, where, db } = window.FB;
-  var pendientes = [];
-
-  // Buscar solicitudes pendientes en todas las mesas
-  for (var i = 0; i < _todasMesas.length; i++) {
-    var mesa = _todasMesas[i];
-    try {
-      var snap = await getDocs(
-        query(collection(db, 'mesas', mesa.id, 'solicitudes'),
-              where('estado', '==', 'pendiente'))
-      );
-      snap.docs.forEach(function(d) {
-        pendientes.push(Object.assign({
-          mesaId:    mesa.id,
-          mesaNombre: mesa.nombre
-        }, d.data()));
-      });
-    } catch(e) { /* sin solicitudes */ }
-  }
-
-  renderSolicitudes(pendientes);
-
-  // Actualizar badge
-  var badge = document.getElementById('solBadge');
-  var countEl = document.getElementById('solCount');
-  if (badge) {
-    badge.textContent = pendientes.length;
-    badge.style.display = pendientes.length > 0 ? 'inline-block' : 'none';
-  }
-  if (countEl) countEl.textContent = pendientes.length + ' pendiente' + (pendientes.length !== 1 ? 's' : '');
-}
-
-function renderSolicitudes(solicitudes) {
-  var list = document.getElementById('solList');
-  if (!list) return;
-
-  if (!solicitudes.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:24px;">Sin solicitudes pendientes</div>';
-    return;
-  }
-
-  list.innerHTML = solicitudes.map(function(s) {
-    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--brd);">'
-      + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);">'
-      +     escA(s.nombre || s.email || s.uid)
-      +   '</div>'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
-      +     'Mesa: ' + escA(s.mesaNombre || s.mesaId)
-      +   '</div>'
-      + '</div>'
-      + '<button onclick="resolverSolicitud(\'' + s.mesaId + '\',\'' + s.uid + '\',\'aprobada\')" '
-      +   'style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;'
-      +   'background:#166534;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;margin-right:6px;">'
-      +   '✓ Aprobar'
-      + '</button>'
-      + '<button onclick="resolverSolicitud(\'' + s.mesaId + '\',\'' + s.uid + '\',\'rechazada\')" '
-      +   'style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;'
-      +   'background:#B91C1C;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;">'
-      +   '✗ Rechazar'
-      + '</button>'
-      + '</div>';
-  }).join('');
-}
-
-async function resolverSolicitud(mesaId, solUid, decision) {
-  var { doc, setDoc, updateDoc, arrayUnion, addDoc, collection, serverTimestamp, db } = window.FB;
-  var adminUser = window._authUser;
-
-  try {
-    // 1. Actualizar estado de la solicitud
-    var solRef = doc(db, 'mesas', mesaId, 'solicitudes', solUid);
-    await setDoc(solRef, {
-      estado:      decision,
-      resueltaEn:  serverTimestamp(),
-      resueltaPor: adminUser ? adminUser.uid : 'admin'
-    }, { merge: true });
-
-    // 2. Si aprobada, agregar jugador a la mesa
-    if (decision === 'aprobada') {
-      var mesaRef = doc(db, 'mesas', mesaId);
-      await updateDoc(mesaRef, {
-        jugadores: arrayUnion({
-          uid:    solUid,
-          rol:    'jugador',
-          estado: 'confirmado',
-          unidoEn: new Date().toISOString()
-        })
-      });
-    }
-
-    // 3. Notificar al jugador
-    var mesa = _todasMesas.find(function(m){ return m.id === mesaId; }) || {};
-    var titulo = decision === 'aprobada'
-      ? '¡Tu solicitud fue aprobada!'
-      : 'Tu solicitud fue rechazada';
-    var cuerpo = decision === 'aprobada'
-      ? 'Ya sos parte de la mesa "' + (mesa.nombre || mesaId) + '".'
-      : 'Tu solicitud para "' + (mesa.nombre || mesaId) + '" no fue aceptada.';
-
-    await addDoc(collection(db, 'notificaciones', solUid, 'items'), {
-      tipo:     'solicitud_' + decision,
-      titulo,
-      cuerpo,
-      mesaId,
-      leida:    false,
-      creadoEn: serverTimestamp()
-    });
-
-    // 4. Recargar
-    await loadMesasAdmin();
-    showToastAdmin(decision === 'aprobada' ? 'Jugador aprobado ✓' : 'Solicitud rechazada');
-
-  } catch(e) {
-    console.error('resolverSolicitud:', e);
-    showToastAdmin('Error al procesar la solicitud', true);
-  }
-}
-
-function showToastAdmin(msg, isError) {
-  var t = document.getElementById('adminToast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'adminToast';
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);'
-      + 'background:var(--ink);color:#fff;padding:10px 20px;font-family:\'DM Sans\',sans-serif;'
-      + 'font-size:13px;font-weight:600;border-radius:8px;opacity:0;transition:all .3s;z-index:999;';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.background = isError ? '#B91C1C' : 'var(--ink)';
-  t.style.opacity = '1';
-  t.style.transform = 'translateX(-50%) translateY(0)';
-  setTimeout(function(){
-    t.style.opacity = '0';
-    t.style.transform = 'translateX(-50%) translateY(60px)';
-  }, 3000);
-}
-
-
 </script>
 </body>
 </html>
