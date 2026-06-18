@@ -355,7 +355,7 @@ async function loadMesas() {
 
 // ── Filtros ─────────────────────────────────────────────
 function buildSysFilters() {
-  const isAdmin = MY_PROFILE?.roles?.includes('admin');
+  const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   const mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
 
   // Contar por sistema
@@ -414,7 +414,7 @@ window.setSubView = (sub) => {
 
 // ── Render ──────────────────────────────────────────────
 function render() {
-  const isAdmin = MY_PROFILE?.roles?.includes('admin');
+  const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   let mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
 
   // Filtrar por sistema
@@ -511,6 +511,8 @@ function makeCard(mesa, isAdmin) {
   // Botón acción
   let actionHtml = '';
   if (ME) {
+    // Debug temporal
+    console.log('makeCard:', mesa.nombre, '| ME:', ME?.uid, '| isAdmin:', isAdmin, '| sol:', MIS_SOLICITUDES[mesa.id]);
     const jugadores = mesa.jugadores || [];
     const yaEsJugador = jugadores.some(j => j.uid === ME.uid);
     const sol = MIS_SOLICITUDES[mesa.id];
@@ -521,7 +523,8 @@ function makeCard(mesa, isAdmin) {
       actionHtml = `<span class="status-badge status-pendiente">⏳ Solicitud pendiente</span>`;
     } else if (sol === 'rechazada') {
       actionHtml = `<span class="status-badge status-rechazado">✗ Solicitud rechazada</span>`;
-    } else if (!isAdmin) {
+    } else {
+      // Mostrar botón a cualquier usuario logueado que no sea admin ni esté en la mesa
       actionHtml = `<button class="btn-solicitar" onclick="solicitarMesa('${mesa.id}')">+ Solicitar unirse</button>`;
     }
   }
