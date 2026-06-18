@@ -237,6 +237,7 @@ const auth = getAuth(app);
 
 // ── Estado ─────────────────────────────────────────────
 let ME = null, MY_PROFILE = null;
+let ALL_USERS = [];
 let ALL_MESAS = [];
 let MIS_SOLICITUDES = {}; // mesaId → estado
 let subView = 'sistema';
@@ -317,7 +318,11 @@ window.doLogout = async () => {
 
 // ── Cargar mesas ────────────────────────────────────────
 async function loadMesas() {
-  const snap = await getDocs(collection(db, 'mesas'));
+  const [snap, usersSnap] = await Promise.all([
+    getDocs(collection(db, 'mesas')),
+    getDocs(collection(db, 'usuarios')).catch(() => ({ docs: [] }))
+  ]);
+  ALL_USERS = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
   ALL_MESAS = snap.docs.map(d => ({ id:d.id, ...d.data() }))
     .sort((a,b) => {
       if (!a.proximaFecha && !b.proximaFecha) return 0;
@@ -527,18 +532,20 @@ function makeCard(mesa, isAdmin) {
   }
 
   // Jugadores confirmados
-  const jugadores = (mesa.jugadores || []).filter(j => j.rol === 'jugador');
+  const jugLista = (mesa.jugadores || []).filter(j => j.rol === 'jugador');
   let jugadoresHtml = '';
-  if (jugadores.length > 0) {
-    const names = jugadores.map(j => {
-      const est  = j.estadoSesion || 'pendiente';
-      const icn  = est === 'confirmado' ? '🟢' : est === 'ausente' ? '🔴' : '⚪';
-      return icn + ' ' + esc(j.nombre || j.uid);
-    }).join(' &nbsp;·&nbsp; ');
+  if (jugLista.length > 0) {
+    const names = jugLista.map(j => {
+      const est   = j.estadoSesion || 'pendiente';
+      const icn   = est === 'confirmado' ? '🟢' : est === 'ausente' ? '🔴' : '⚪';
+      const uData = ALL_USERS.find(u => u.uid === j.uid) || {};
+      const uName = j.nombre || uData.displayName || (uData.email ? uData.email.split('@')[0] : '?');
+      return icn + ' ' + esc(uName);
+    }).join(' · ');
     jugadoresHtml = '<div style="font-size:11px;color:var(--muted);margin-top:6px;">'
       + '<span style="font-weight:600;color:var(--ink2);">Jugadores: </span>' + names + '</div>';
   } else {
-    jugadoresHtml = '<div style="font-size:11px;color:var(--muted);margin-top:6px;">Sin jugadores confirmados aún.</div>';
+    jugadoresHtml = '<div style="font-size:11px;color:var(--muted);margin-top:6px;">Sin jugadores aún.</div>';
   }
   const dmLine = '<div style="font-size:12px;color:var(--muted);margin-top:4px;">'
     + '<span style="font-weight:600;color:var(--ink2);">DM: </span>' + esc(mesa.dm || 'A confirmar') + '</div>';
