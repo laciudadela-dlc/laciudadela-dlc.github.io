@@ -22,53 +22,55 @@
   --red:       #B91C1C;
   --red-light: #FEF2F2;
   --header-bg: #FFFFFF;
+  --green:     #166534;
+  --blue:      #3730A3;
 }
-html,body{min-height:100%;background:var(--bg);}
+html,body{min-height:100%;background:var(--bg);-webkit-font-smoothing:antialiased;}
 
 /* ── HEADER ── */
 .admin-header{
-  background:var(--bg);border-bottom:2px solid var(--ink2);
+  background:var(--bg-dark);border-bottom:2px solid var(--gold);
   padding:12px 20px;display:flex;align-items:center;gap:14px;
   position:sticky;top:0;z-index:100;
 }
 .admin-header-logo{height:38px;}
 .admin-header-titles{flex:1;}
 .admin-header-name{font-family:'Cinzel',serif;font-size:13px;color:var(--ink);letter-spacing:.04em;}
-.admin-header-sub{font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.02em;color:var(--ink2);text-transform:uppercase;margin-top:2px;}
+.admin-header-sub{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.03em;color:var(--gold);text-transform:uppercase;margin-top:2px;}
 .admin-header-back{
-  font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.02em;text-transform:uppercase;
-  color:var(--ink2);border:1px solid var(--ink2);padding:6px 12px;text-decoration:none;
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold);padding:6px 12px;text-decoration:none;
   transition:all .15s;
 }
-.admin-header-back:hover{background:var(--ink2);color:var(--bg);}
+.admin-header-back:hover{background:var(--gold);color:var(--bg-dark);}
 .admin-user-info{display:flex;align-items:center;gap:8px;}
-.admin-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink2);object-fit:cover;}
-.admin-name{font-family:'DM Sans',sans-serif;font-size:8px;color:var(--ink2);letter-spacing:.06em;}
+.admin-avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--brd-dark);object-fit:cover;}
+.admin-name{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.06em;}
 
 /* ── NAV TABS ── */
 .admin-nav{
-  background:var(--bg);border-bottom:1px solid var(--brd);
+  background:var(--bg-dark);border-bottom:1px solid var(--brd);
   display:flex;padding:0 20px;gap:0;overflow-x:auto;
 }
 .admin-tab{
-  font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.02em;text-transform:uppercase;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   padding:12px 18px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
   white-space:nowrap;transition:all .15s;
 }
-.admin-tab:hover{color:var(--ink2);}
-.admin-tab.active{color:var(--ink2);border-bottom-color:var(--ink2);}
+.admin-tab:hover{color:var(--gold);}
+.admin-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
 /* ── CONTENIDO ── */
 .admin-body{padding:24px 20px;max-width:900px;margin:0 auto;}
 
 /* ── PANEL CARD ── */
 .panel-card{
-  background:var(--bg);border:1px solid var(--brd);
+  background:var(--bg-panel);border:1px solid var(--brd);
   padding:20px;margin-bottom:16px;
 }
 .panel-card-title{
-  font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.02em;
-  text-transform:uppercase;color:var(--ink2);margin-bottom:16px;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:16px;
   padding-bottom:10px;border-bottom:1px solid var(--brd);
   display:flex;align-items:center;justify-content:space-between;
 }
@@ -76,36 +78,40 @@ html,body{min-height:100%;background:var(--bg);}
 /* ── TABLA USUARIOS ── */
 .users-table{width:100%;border-collapse:collapse;}
 .users-table th{
-  font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.02em;
-  text-transform:uppercase;color:var(--ink2);padding:8px 10px;
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--gold);padding:8px 10px;
   border-bottom:1px solid var(--brd);text-align:left;
 }
 .users-table td{
-  font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);
+  font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink2);
   padding:10px 10px;border-bottom:1px solid var(--brd);
   vertical-align:middle;
 }
 .users-table tr:hover td{background:var(--bg2);}
-.user-avatar-sm{width:28px;height:28px;border-radius:50%;border:1px solid var(--ink2);object-fit:cover;vertical-align:middle;}
+.user-avatar-sm{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);object-fit:cover;vertical-align:middle;}
 .user-name{font-weight:700;color:var(--ink);margin-left:8px;}
 .user-email{font-size:11px;color:var(--muted);}
 
 /* ── BADGES ── */
-.badge{display:inline-block;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin:1px;}
-.badge-admin{background:#FEE2E2;color:#991B1B;font-weight:600;}
-.badge-dm{background:#EEF2FF;color:#3730A3;font-weight:600;}
-.badge-jugador{background:#DCFCE7;color:#166534;font-weight:600;}
-.badge-custom{background:#F3F4F6;color:#374151;font-weight:600;}
+.badge{
+  display:inline-block;font-family:'Cinzel',serif;font-size:7px;
+  letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
+  border-radius:2px;margin:1px;
+}
+.badge-admin{background:#FEF2F2;color:#B91C1C;}
+.badge-dm{background:#EEF2FF;color:#3730A3;}
+.badge-jugador{background:#DCFCE7;color:#166534;}
+.badge-custom{background:#F3F4F6;color:#374151;}
 .badge-inactivo{background:var(--bg3);color:var(--muted);}
 
 /* ── BOTONES ── */
 .btn{
-  font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.01em;
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;
   text-transform:uppercase;padding:6px 12px;cursor:pointer;
   border:1px solid;transition:all .15s;
 }
-.btn-gold{border-color:var(--ink2);color:var(--ink2);background:transparent;}
-.btn-gold:hover{background:var(--ink2);color:var(--bg);}
+.btn-gold{border-color:var(--gold);color:var(--gold);background:transparent;}
+.btn-gold:hover{background:var(--gold);color:var(--bg-dark);}
 .btn-red{border-color:var(--red);color:#faa;background:transparent;}
 .btn-red:hover{background:var(--red);color:var(--ink);}
 .btn-green{border-color:#2a8a2a;color:#afa;background:transparent;}
@@ -119,67 +125,67 @@ html,body{min-height:100%;background:var(--bg);}
   padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:160px;
 }
 .role-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
-.role-name{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.01em;color:var(--ink);flex:1;}
+.role-name{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;color:var(--ink);flex:1;}
 .role-count{font-size:11px;color:var(--muted);}
 
 /* ── FORM NUEVO ROL ── */
 .form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px;}
 .form-group{display:flex;flex-direction:column;gap:5px;}
-.form-label{font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.02em;text-transform:uppercase;color:var(--ink2);}
+.form-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
 .form-input{
-  background:var(--bg3);border:1px solid var(--brd);color:var(--ink);
+  background:var(--bg2);border:1px solid var(--brd);color:var(--ink);
   padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;
   outline:none;min-width:160px;
 }
-.form-input:focus{border-color:var(--ink2);}
+.form-input:focus{border-color:var(--gold);}
 .color-picker-wrap{display:flex;align-items:center;gap:8px;}
-input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd);background:var(--bg3);cursor:pointer;}
+input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd);background:var(--bg2);cursor:pointer;}
 
 /* ── DIFUSIÓN ── */
 .difusion-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;}
 @media(max-width:700px){.difusion-layout{grid-template-columns:1fr;}}
 .difusion-form{display:flex;flex-direction:column;gap:12px;}
 .form-textarea{
-  background:var(--bg3);border:1px solid var(--brd);color:var(--ink);
+  background:var(--bg2);border:1px solid var(--brd);color:var(--ink);
   padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;
   outline:none;resize:vertical;min-height:100px;
 }
-.form-textarea:focus{border-color:var(--ink2);}
-.destinatarios-panel{background:var(--bg2);border:1px solid var(--brd);padding:14px;}
+.form-textarea:focus{border-color:var(--gold);}
+.destinatarios-panel{background:rgba(0,0,0,.3);border:1px solid var(--brd);padding:14px;}
 .dest-header{
-  font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.02em;
-  text-transform:uppercase;color:var(--ink2);margin-bottom:10px;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:10px;
   display:flex;align-items:center;justify-content:space-between;
 }
 .dest-filter{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
 .dest-filter-btn{
-  font-family:'DM Sans',sans-serif;font-size:7px;letter-spacing:.01em;
+  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.08em;
   text-transform:uppercase;padding:3px 8px;cursor:pointer;
   border:1px solid var(--brd);color:var(--muted);background:transparent;transition:all .15s;
 }
-.dest-filter-btn:hover,.dest-filter-btn.active{border-color:var(--ink2);color:var(--ink2);background:var(--bg2);}
+.dest-filter-btn:hover,.dest-filter-btn.active{border-color:var(--gold);color:var(--gold);background:var(--bg2);}
 .dest-list{max-height:280px;overflow-y:auto;}
 .dest-item{
   display:flex;align-items:center;gap:8px;padding:6px 0;
   border-bottom:1px solid var(--brd);cursor:pointer;
 }
 .dest-item:hover{background:var(--bg2);}
-.dest-item input[type=checkbox]{accent-color:var(--ink2);width:14px;height:14px;}
+.dest-item input[type=checkbox]{accent-color:var(--gold);width:14px;height:14px;}
 .dest-item-avatar{width:22px;height:22px;border-radius:50%;border:1px solid var(--brd);object-fit:cover;}
-.dest-item-name{font-size:11px;color:var(--muted);flex:1;}
+.dest-item-name{font-size:11px;color:var(--ink2);flex:1;}
 .dest-item-role{font-size:9px;color:var(--muted);}
-.dest-count{font-family:'DM Sans',sans-serif;font-size:8px;color:var(--ink2);letter-spacing:.01em;}
+.dest-count{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);letter-spacing:.08em;}
 
 /* ── LOADING / EMPTY ── */
 .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
-.empty{text-align:center;padding:32px;color:#555;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.02em;}
+.empty{text-align:center;padding:32px;color:#555;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.1em;}
 
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:24px;right:24px;z-index:999;
-  background:var(--bg);border:1px solid var(--ink2);
-  padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:10px;
-  letter-spacing:.01em;color:var(--ink2);
+  background:var(--bg-dark);border:1px solid var(--gold);
+  padding:12px 20px;font-family:'Cinzel',serif;font-size:10px;
+  letter-spacing:.08em;color:var(--gold);
   transform:translateY(80px);opacity:0;transition:all .3s;
   pointer-events:none;
 }
@@ -193,15 +199,15 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 }
 .modal-bg.open{display:flex;}
 .modal-box{
-  background:var(--bg);border:1px solid var(--ink2);
+  background:var(--bg-dark);border:1px solid var(--gold);
   padding:28px;width:90%;max-width:380px;
 }
 .modal-title{font-family:'Cinzel',serif;font-size:13px;color:var(--ink);letter-spacing:.06em;margin-bottom:6px;}
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
 .roles-check-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
 .role-check-item{display:flex;align-items:center;gap:10px;}
-.role-check-item input{accent-color:var(--ink2);width:15px;height:15px;}
-.role-check-label{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.01em;text-transform:uppercase;color:var(--muted);}
+.role-check-item input{accent-color:var(--gold);width:15px;height:15px;}
+.role-check-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
 
 /* ── SECCIÓN OCULTA ── */
@@ -213,13 +219,13 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
   background:var(--bg2);border:1px solid var(--brd);
   padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--muted);
 }
-.notif-info strong{color:var(--ink2);}
+.notif-info strong{color:var(--gold);}
 
 /* ── CHAT ADMIN ── */
 .chat-layout{display:grid;grid-template-columns:280px 1fr;gap:0;height:600px;border:1px solid var(--brd);}
 @media(max-width:700px){.chat-layout{grid-template-columns:1fr;height:auto;}}
 .chat-sidebar{border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;}
-.chat-sidebar-header{padding:12px 14px;border-bottom:1px solid var(--brd);font-family:"Cinzel",serif;font-size:9px;letter-spacing:.02em;text-transform:uppercase;color:var(--ink2);}
+.chat-sidebar-header{padding:12px 14px;border-bottom:1px solid var(--brd);font-family:"Cinzel",serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
 .admin-conv-list{flex:1;overflow-y:auto;}
 .admin-conv-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--brd);cursor:pointer;transition:background .12s;}
 .admin-conv-item:hover{background:var(--bg2);}
@@ -228,7 +234,7 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 .admin-conv-info{flex:1;min-width:0;}
 .admin-conv-name{font-family:"Cinzel",serif;font-size:9px;letter-spacing:.06em;color:var(--ink);}
 .admin-conv-last{font-size:11px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
-.admin-conv-unread{width:8px;height:8px;border-radius:50%;background:var(--ink2);flex-shrink:0;}
+.admin-conv-unread{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
 .admin-chat-main{display:flex;flex-direction:column;overflow:hidden;}
 .admin-chat-header{padding:12px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .admin-chat-partner{font-family:"Cinzel",serif;font-size:11px;letter-spacing:.06em;color:var(--ink);}
@@ -239,11 +245,11 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 .admin-msg-text{font-size:13px;color:#ddd;}
 .admin-msg-meta{font-size:9px;color:#555;margin-top:4px;text-align:right;}
 .admin-chat-input-area{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--brd);flex-shrink:0;}
-.admin-chat-input{flex:1;background:var(--bg3);border:1px solid var(--brd);color:var(--ink);padding:10px;font-family:"DM Sans",sans-serif;font-size:13px;outline:none;resize:none;}
-.admin-chat-input:focus{border-color:var(--ink2);}
-.admin-chat-send{font-family:"Cinzel",serif;font-size:8px;letter-spacing:.01em;text-transform:uppercase;background:var(--ink2);color:var(--bg);border:none;padding:10px 14px;cursor:pointer;align-self:flex-end;}
+.admin-chat-input{flex:1;background:var(--bg2);border:1px solid var(--brd);color:var(--ink);padding:10px;font-family:"DM Sans",sans-serif;font-size:13px;outline:none;resize:none;}
+.admin-chat-input:focus{border-color:var(--gold);}
+.admin-chat-send{font-family:"Cinzel",serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 14px;cursor:pointer;align-self:flex-end;}
 .admin-chat-send:hover{background:#e8bc38;}
-.chat-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#444;font-family:"Cinzel",serif;font-size:9px;letter-spacing:.02em;text-transform:uppercase;}
+.chat-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#444;font-family:"Cinzel",serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
 </style>
 </head>
 <body>
@@ -266,8 +272,7 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 
 <!-- ── HEADER ── -->
 <header class="admin-header">
-  <img class="admin-header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png"
-    onerror="this.style.display='none'" alt="">
+  <img class="admin-header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela" style="height:32px;width:auto;">
   <div class="admin-header-titles">
     <div class="admin-header-name">Panel de Administración</div>
     <div class="admin-header-sub">La Ciudadela de los Confines</div>
@@ -281,6 +286,7 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
   <div class="admin-tab active" onclick="showSection('usuarios')">👥 Usuarios</div>
   <div class="admin-tab" onclick="showSection('roles')">🏷 Roles</div>
   <div class="admin-tab" onclick="showSection('difusion')">📢 Difusión</div>
+  <div class="admin-tab" onclick="showSection('mesas')">🎲 Mesas <span id="solBadge" style="display:none;background:#B91C1C;color:#fff;font-size:8px;padding:1px 5px;border-radius:6px;margin-left:3px;"></span></div>
   <div class="admin-tab" onclick="showSection('conversaciones')">💬 Mensajes <span id="adminMsgBadge" style="display:none;background:var(--red);color:#fff;font-size:7px;padding:1px 5px;border-radius:6px;margin-left:3px;"></span></div>
 </nav>
 
@@ -404,6 +410,32 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
   </div>
 
 
+  <!-- ── SECCIÓN MESAS ── -->
+  <div class="section" id="sec-mesas">
+    <div class="panel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--ink);">
+          Solicitudes de ingreso
+        </h2>
+        <span id="solCount" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);"></span>
+      </div>
+      <div id="solList">
+        <div style="color:var(--muted);font-size:13px;text-align:center;padding:32px;">Cargando solicitudes…</div>
+      </div>
+    </div>
+    <div class="panel-card" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--ink);">
+          Mesas activas
+        </h2>
+        <span id="mesasAdminCount" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);"></span>
+      </div>
+      <div id="mesasAdminList">
+        <div style="color:var(--muted);font-size:13px;text-align:center;padding:32px;">Cargando mesas…</div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /admin-body -->
 
 <!-- ── FIREBASE SDK ── -->
@@ -423,6 +455,7 @@ firebase.initializeApp({
 });
 const auth = firebase.auth();
 const db   = firebase.firestore();
+  const arrayUnion = firebase.firestore.FieldValue.arrayUnion;
 
 // ── ESTADO ───────────────────────────────────────────
 let allUsers   = [];
@@ -448,6 +481,7 @@ function toast(msg, isError){
 
 // ── GUARD: solo admin ─────────────────────────────────
 auth.onAuthStateChanged(async function(user){
+  window._authUser = user;
   if(!user){ location.href='../'; return; }
 
   const snap = await db.collection('usuarios').doc(user.uid).get();
@@ -466,6 +500,7 @@ auth.onAuthStateChanged(async function(user){
   loadUsers();
   loadRoles();
   loadAdminConversations(user.uid);
+  loadMesasAdmin();
 });
 
 // ── USUARIOS ─────────────────────────────────────────
@@ -848,6 +883,203 @@ function formatTimeA(ts){
   if(diff<86400000) return Math.floor(diff/3600000)+'h';
   return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
 }
+// ══ MESAS & SOLICITUDES (ADMIN) ═══════════════════════════
+var _todasMesas = [];
+
+async function loadMesasAdmin() {
+  await window._fbReady;
+  var { collection, getDocs, query, orderBy, db } = window.FB;
+  try {
+    var snap = await getDocs(collection(db, 'mesas'));
+    _todasMesas = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    _todasMesas.sort(function(a,b){
+      if (!a.proximaFecha && !b.proximaFecha) return 0;
+      if (!a.proximaFecha) return 1;
+      if (!b.proximaFecha) return -1;
+      return new Date(a.proximaFecha) - new Date(b.proximaFecha);
+    });
+    renderMesasAdmin();
+    await loadSolicitudesPendientes();
+  } catch(e) {
+    console.error('loadMesasAdmin:', e);
+  }
+}
+
+function renderMesasAdmin() {
+  var list = document.getElementById('mesasAdminList');
+  var count = document.getElementById('mesasAdminCount');
+  if (!list) return;
+
+  var mesas = _todasMesas;
+  if (count) count.textContent = mesas.length + ' mesas';
+
+  if (!mesas.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sin mesas</div>';
+    return;
+  }
+
+  list.innerHTML = mesas.map(function(m) {
+    var estadoColor = m.estado === 'activa' ? '#166534' : '#B91C1C';
+    var estadoBg    = m.estado === 'activa' ? '#DCFCE7' : '#FEF2F2';
+    var jugCount    = (m.jugadores || []).filter(function(j){ return j.rol === 'jugador'; }).length;
+
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd);">'
+      + '<div style="flex:1;min-width:0;">'
+      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
+      +        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escA(m.nombre) + '</div>'
+      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
+      +     escA(m.sistema || '') + (m.dm ? ' · DM: ' + escA(m.dm) : '') + ' · ' + jugCount + ' jugadores'
+      +   '</div>'
+      + '</div>'
+      + '<span style="font-family:\'DM Sans\',sans-serif;font-size:10px;font-weight:600;'
+      +       'background:' + estadoBg + ';color:' + estadoColor + ';padding:2px 8px;border-radius:20px;">'
+      +   m.estado
+      + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+async function loadSolicitudesPendientes() {
+  var { collection, getDocs, query, where, db } = window.FB;
+  var pendientes = [];
+
+  // Buscar solicitudes pendientes en todas las mesas
+  for (var i = 0; i < _todasMesas.length; i++) {
+    var mesa = _todasMesas[i];
+    try {
+      var snap = await getDocs(
+        query(collection(db, 'mesas', mesa.id, 'solicitudes'),
+              where('estado', '==', 'pendiente'))
+      );
+      snap.docs.forEach(function(d) {
+        pendientes.push(Object.assign({
+          mesaId:    mesa.id,
+          mesaNombre: mesa.nombre
+        }, d.data()));
+      });
+    } catch(e) { /* sin solicitudes */ }
+  }
+
+  renderSolicitudes(pendientes);
+
+  // Actualizar badge
+  var badge = document.getElementById('solBadge');
+  var countEl = document.getElementById('solCount');
+  if (badge) {
+    badge.textContent = pendientes.length;
+    badge.style.display = pendientes.length > 0 ? 'inline-block' : 'none';
+  }
+  if (countEl) countEl.textContent = pendientes.length + ' pendiente' + (pendientes.length !== 1 ? 's' : '');
+}
+
+function renderSolicitudes(solicitudes) {
+  var list = document.getElementById('solList');
+  if (!list) return;
+
+  if (!solicitudes.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:24px;">Sin solicitudes pendientes</div>';
+    return;
+  }
+
+  list.innerHTML = solicitudes.map(function(s) {
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--brd);">'
+      + '<div style="flex:1;min-width:0;">'
+      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);">'
+      +     escA(s.nombre || s.email || s.uid)
+      +   '</div>'
+      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
+      +     'Mesa: ' + escA(s.mesaNombre || s.mesaId)
+      +   '</div>'
+      + '</div>'
+      + '<button onclick="resolverSolicitud(\'' + s.mesaId + '\',\'' + s.uid + '\',\'aprobada\')" '
+      +   'style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;'
+      +   'background:#166534;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;margin-right:6px;">'
+      +   '✓ Aprobar'
+      + '</button>'
+      + '<button onclick="resolverSolicitud(\'' + s.mesaId + '\',\'' + s.uid + '\',\'rechazada\')" '
+      +   'style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;'
+      +   'background:#B91C1C;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;">'
+      +   '✗ Rechazar'
+      + '</button>'
+      + '</div>';
+  }).join('');
+}
+
+async function resolverSolicitud(mesaId, solUid, decision) {
+  var { doc, setDoc, updateDoc, arrayUnion, addDoc, collection, serverTimestamp, db } = window.FB;
+  var adminUser = window._authUser;
+
+  try {
+    // 1. Actualizar estado de la solicitud
+    var solRef = doc(db, 'mesas', mesaId, 'solicitudes', solUid);
+    await setDoc(solRef, {
+      estado:      decision,
+      resueltaEn:  serverTimestamp(),
+      resueltaPor: adminUser ? adminUser.uid : 'admin'
+    }, { merge: true });
+
+    // 2. Si aprobada, agregar jugador a la mesa
+    if (decision === 'aprobada') {
+      var mesaRef = doc(db, 'mesas', mesaId);
+      await updateDoc(mesaRef, {
+        jugadores: arrayUnion({
+          uid:    solUid,
+          rol:    'jugador',
+          estado: 'confirmado',
+          unidoEn: new Date().toISOString()
+        })
+      });
+    }
+
+    // 3. Notificar al jugador
+    var mesa = _todasMesas.find(function(m){ return m.id === mesaId; }) || {};
+    var titulo = decision === 'aprobada'
+      ? '¡Tu solicitud fue aprobada!'
+      : 'Tu solicitud fue rechazada';
+    var cuerpo = decision === 'aprobada'
+      ? 'Ya sos parte de la mesa "' + (mesa.nombre || mesaId) + '".'
+      : 'Tu solicitud para "' + (mesa.nombre || mesaId) + '" no fue aceptada.';
+
+    await addDoc(collection(db, 'notificaciones', solUid, 'items'), {
+      tipo:     'solicitud_' + decision,
+      titulo,
+      cuerpo,
+      mesaId,
+      leida:    false,
+      creadoEn: serverTimestamp()
+    });
+
+    // 4. Recargar
+    await loadMesasAdmin();
+    showToastAdmin(decision === 'aprobada' ? 'Jugador aprobado ✓' : 'Solicitud rechazada');
+
+  } catch(e) {
+    console.error('resolverSolicitud:', e);
+    showToastAdmin('Error al procesar la solicitud', true);
+  }
+}
+
+function showToastAdmin(msg, isError) {
+  var t = document.getElementById('adminToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'adminToast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);'
+      + 'background:var(--ink);color:#fff;padding:10px 20px;font-family:\'DM Sans\',sans-serif;'
+      + 'font-size:13px;font-weight:600;border-radius:8px;opacity:0;transition:all .3s;z-index:999;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = isError ? '#B91C1C' : 'var(--ink)';
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(function(){
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(60px)';
+  }, 3000);
+}
+
+
 </script>
 </body>
 </html>
