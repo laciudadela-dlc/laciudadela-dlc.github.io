@@ -938,8 +938,7 @@ function renderMesasAdmin() {
 async function loadSolicitudesPendientes() {
   var pendientes = [];
 
-  for (var i = 0; i < _todasMesas.length; i++) {
-    var mesa = _todasMesas[i];
+  await Promise.all(_todasMesas.map(async function(mesa) {
     try {
       var snap = await db.collection('mesas').doc(mesa.id)
         .collection('solicitudes').where('estado','==','pendiente').get();
@@ -947,7 +946,7 @@ async function loadSolicitudesPendientes() {
         pendientes.push(Object.assign({ mesaId: mesa.id, mesaNombre: mesa.nombre }, d.data()));
       });
     } catch(e) { /* sin solicitudes */ }
-  }
+  }));
 
   renderSolicitudes(pendientes);
 
@@ -993,7 +992,7 @@ function renderSolicitudes(solicitudes) {
   }).join('');
 }
 
-async function resolverSolicitud(mesaId, solUid, decision) {
+window.resolverSolicitud = async function resolverSolicitud(mesaId, solUid, decision) {
   var adminUser = window._authUser;
   try {
     // 1. Actualizar solicitud
