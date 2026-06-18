@@ -421,32 +421,35 @@ function buildMisMesasHtml() {
     return '<div class="card-empty">Todavía no sos parte de ninguna mesa. <a href="../mesas/" style="color:var(--ink);font-weight:600;">Explorá las campañas →</a></div>';
   }
   return MIS_MESAS.map(m => {
-    const dot      = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
-    const jugadores = m.jugadores || [];
-    const yoEnMesa  = jugadores.find(j => j.uid === ME.uid);
+    const dot       = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
+    const todosJug  = m.jugadores || [];
+    const yoEnMesa  = todosJug.find(j => j.uid === ME.uid);
     const rol       = yoEnMesa ? yoEnMesa.rol : "dm";
     const rolCls    = rol === "dm" ? "st-aprobado" : "st-confirmado";
     const retiroBtn = rol === "jugador"
       ? ' <button class="btn btn-danger" data-accion="retiro" data-mesaid="' + m.id + '" data-nombre="' + esc(m.nombre) + '">Retirarse</button>'
       : "";
-    return '<div class="item-row">'
-      + '<div class="item-dot" style="background:' + dot + '"></div>'
-      + '<div class="item-info">'
-      +   '<div class="item-nombre">' + esc(m.nombre) + '</div>'
-      +   '<div class="item-meta">'
-      +     '<span>' + esc(m.sistema || "Otro sistema") + '</span>'
-      +     '<span>DM: ' + esc(m.dm || "A confirmar") + '</span>'
-      +     '<span class="item-prox">📅 ' + formatFecha(m.proximaFecha) + '</span>'
-      +     (m.periodicidad ? '<span>' + esc(m.periodicidad) + '</span>' : "")
-      +   '</div>'
-      + '</div>'
-      + '<div class="item-actions">'
-      +   '<span class="status ' + rolCls + '">' + rol + '</span>'
-      +   retiroBtn
-      + '</div>'
-      + '</div>';
+
+    // Lista compacta de jugadores
+    const soloJug = todosJug.filter(j => j.rol === "jugador");
+    let jugHtml = "";
+    if (soloJug.length > 0) {
+      const names = soloJug.map(j => {
+        const est   = j.estadoSesion || "pendiente";
+        const icn   = est === "confirmado" ? "🟢" : est === "ausente" ? "🔴" : "⚪";
+        const uData = ALL_USUARIOS.find(u => u.uid === j.uid) || {};
+        const uName = j.nombre || uData.displayName || (uData.email ? uData.email.split("@")[0] : "?");
+        return icn + " " + esc(uName);
+      }).join(" · ");
+      jugHtml = '<div style="font-size:11px;color:var(--muted);margin-top:5px;">'
+        + '<span style="font-weight:600;color:var(--ink2);">Jugadores: </span>' + names + '</div>';
+    }
+
+    return '<div class="item-row" style="flex-direction:column;align-items:stretch;gap:0;">'      + '<div style="display:flex;align-items:flex-start;gap:12px;">'      +   '<div class="item-dot" style="background:' + dot + ';margin-top:4px;"></div>'      +   '<div class="item-info">'      +     '<div class="item-nombre">' + esc(m.nombre) + '</div>'      +     '<div class="item-meta">'      +       '<span>' + esc(m.sistema || "Otro sistema") + '</span>'      +       '<span>DM: ' + esc(m.dm || "A confirmar") + '</span>'      +       '<span class="item-prox">📅 ' + formatFecha(m.proximaFecha) + '</span>'      +       (m.periodicidad ? '<span>' + esc(m.periodicidad) + '</span>' : "")      +     '</div>'      +     jugHtml      +   '</div>'      +   '<div class="item-actions">'      +     '<span class="status ' + rolCls + '">' + rol + '</span>'      +     retiroBtn      +   '</div>'      + '</div>'      + '</div>';
   }).join("");
 }
+
+
 
 
 function buildMisMesasDMHtml() {
