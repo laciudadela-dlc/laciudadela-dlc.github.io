@@ -180,7 +180,7 @@ const auth = getAuth(app);
 
 // ── Estado ──────────────────────────────────────────────
 let ME = null, MY_PROFILE = null;
-let ALL_MESAS = [], MIS_MESAS = [], MIS_SOLICITUDES = [], PROXIMAS_SESIONES = [];
+let ALL_MESAS = [], MIS_MESAS = [], MIS_SOLICITUDES = [], PROXIMAS_SESIONES = [], ALL_USUARIOS = [];
 
 const SYS_DOT = {
   dnd:"#7a1515", d55:"#7a4a0a", pf:"#1a4a8a",
@@ -273,11 +273,13 @@ onAuthStateChanged(auth, async user => {
 
 // ── Carga de datos ──────────────────────────────────────
 async function loadData() {
-  const [mesasSnap, solSnap] = await Promise.all([
+  const [mesasSnap, solSnap, usersSnap] = await Promise.all([
     getDocs(collection(db, "mesas")),
     getDocs(query(collectionGroup(db, "solicitudes"), where("uid", "==", ME.uid)))
-      .catch(() => ({ docs: [] }))
+      .catch(() => ({ docs: [] })),
+    getDocs(collection(db, "usuarios")).catch(() => ({ docs: [] }))
   ]);
+  ALL_USUARIOS = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
 
   ALL_MESAS = mesasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
@@ -358,6 +360,9 @@ function renderPage() {
     + misMesasHtml
     + '</div>'
 
+    // Mis mesas como DM
+    + buildMisMesasDMHtml()
+
     // Solicitudes pendientes/rechazadas
     + solicitudesHtml
 
@@ -384,27 +389,29 @@ function buildSesionesHtml() {
     return '<div class="card-empty">No tenés sesiones próximas agendadas.</div>';
   }
   return PROXIMAS_SESIONES.map(s => {
-    const dot   = SYS_DOT[sistemaToCode(s.sistema)] || "#888";
+    const dot    = SYS_DOT[sistemaToCode(s.sistema)] || "#888";
     const partes = formatFecha(s.fecha).split("·");
-    const dia   = partes[0] ? partes[0].trim() : "";
-    const hora  = partes[1] ? partes[1].trim() : "";
-    let actionsHtml = "";
-    if (s.miEstado === "confirmado") {
-      actionsHtml = '<span class="status st-confirmado">✓ Confirmado</span>';
-    } else if (s.miEstado === "ausente") {
-      actionsHtml = '<span class="status st-ausente">✗ Avisé ausencia</span>';
-    } else {
-      actionsHtml =
-        '<button class="btn btn-success" data-accion="confirmar" data-mesaid="' + s.mesaId + '">✓ Confirmar</button> '
-        + '<button class="btn btn-outline" data-accion="ausente" data-mesaid="' + s.mesaId + '">✗ Ausencia</button>';
-    }
+    const dia    = partes[0] ? partes[0].trim() : "";
+    const hora   = partes[1] ? partes[1].trim() : "";
+    const est    = s.miEstado;
+
+    // Ambos botones siempre visibles, el activo resaltado
+    const btnConf = '<button class="btn ' + (est === "confirmado" ? "btn-success" : "btn-outline")
+      + '" data-accion="confirmar" data-mesaid="' + s.mesaId + '">'
+      + (est === "confirmado" ? "✓ Confirmado" : "✓ Confirmar")
+      + '</button>';
+    const btnAus = '<button class="btn ' + (est === "ausente" ? "btn-danger" : "btn-outline")
+      + '" data-accion="ausente" data-mesaid="' + s.mesaId + '">'
+      + (est === "ausente" ? "✗ Con ausencia" : "✗ Avisar ausencia")
+      + '</button>';
+
     return '<div class="sesion-row">'
       + '<div class="sesion-fecha-wrap"><div class="sesion-dia">' + esc(dia) + '</div><div class="sesion-hora">' + esc(hora) + '</div></div>'
       + '<div class="sesion-mesa-info">'
       +   '<div class="sesion-nombre"><div style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></div>' + esc(s.nombre) + '</div>'
       +   '<div class="sesion-dm">DM: ' + esc(s.dm || "A confirmar") + '</div>'
       + '</div>'
-      + '<div class="sesion-actions">' + actionsHtml + '</div>'
+      + '<div class="sesion-actions" style="display:flex;gap:6px;flex-wrap:wrap;">' + btnConf + ' ' + btnAus + '</div>'
       + '</div>';
   }).join("");
 }
@@ -439,6 +446,67 @@ function buildMisMesasHtml() {
       + '</div>'
       + '</div>';
   }).join("");
+}
+
+
+function buildMisMesasDMHtml() {
+  // Mesas donde soy DM (por nombre)
+  const firstName = (ME.displayName || "").split(" ")[0].toLowerCase();
+  const mesasDM = ALL_MESAS.filter(m => firstName && m.dm && m.dm.toLowerCase().includes(firstName));
+  if (!mesasDM.length) return "";
+
+  const rows = mesasDM.map(m => {
+    const dot      = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
+    const jugadores = (m.jugadores || []).filter(j => j.rol === "jugador");
+    const proxFecha = formatFecha(m.proximaFecha);
+
+    let jugadoresHtml = "";
+    if (!jugadores.length) {
+      jugadoresHtml = '<div style="font-size:12px;color:var(--muted);padding:4px 0;">Sin jugadores confirmados aún.</div>';
+    } else {
+      jugadoresHtml = jugadores.map(j => {
+        const est    = j.estadoSesion || "pendiente";
+        const stCls  = est === "confirmado" ? "st-confirmado" : est === "ausente" ? "st-ausente" : "st-pendiente";
+        const stTxt  = est === "confirmado" ? "✓ Confirmado" : est === "ausente" ? "✗ Con ausencia" : "⏳ Sin confirmar";
+        const uData  = ALL_USUARIOS.find(u => u.uid === j.uid) || {};
+        const uName  = uData.displayName || uData.email || j.uid;
+        const uAv    = uData.photoURL || ("https://ui-avatars.com/api/?name=" + encodeURIComponent(uName) + "&background=E8E6E0&color=111110&size=24");
+        return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;">'
+          + '<img src="' + uAv + '" style="width:24px;height:24px;border-radius:50%;border:1px solid var(--brd);" alt="">'
+          + '<span style="font-size:13px;font-weight:500;color:var(--ink);flex:1;">' + esc(uName) + '</span>'
+          + '<span class="status ' + stCls + '">' + stTxt + '</span>'
+          + '</div>';
+      }).join("");
+    }
+
+    return '<div class="item-row" style="flex-direction:column;align-items:stretch;gap:10px;">'
+      + '<div style="display:flex;align-items:center;gap:10px;">'
+      +   '<div class="item-dot" style="background:' + dot + '"></div>'
+      +   '<div style="flex:1;">'
+      +     '<div class="item-nombre">' + esc(m.nombre) + '</div>'
+      +     '<div class="item-meta">'
+      +       '<span>' + esc(m.sistema || "Otro sistema") + '</span>'
+      +       '<span class="item-prox">📅 ' + proxFecha + '</span>'
+      +       (m.periodicidad ? '<span>' + esc(m.periodicidad) + '</span>' : "")
+      +     '</div>'
+      +   '</div>'
+      +   '<span class="status st-aprobado">DM</span>'
+      + '</div>'
+      + '<div style="padding:8px 12px;background:var(--bg2);border-radius:6px;">'
+      +   '<div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">'
+      +     'Jugadores — próxima sesión (' + jugadores.length + ')'
+      +   '</div>'
+      +   jugadoresHtml
+      + '</div>'
+      + '</div>';
+  }).join("");
+
+  const count = mesasDM.length;
+  return '<div class="card">'
+    + '<div class="card-header"><span class="card-icon">🎭</span><span class="card-title">Mis mesas como DM</span>'
+    + '<span class="card-sub">' + count + ' mesa' + (count !== 1 ? "s" : "") + '</span></div>'
+    + rows
+    + '</div>';
 }
 
 function buildSolicitudesCard() {
