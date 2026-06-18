@@ -883,14 +883,13 @@ function formatTimeA(ts){
   if(diff<86400000) return Math.floor(diff/3600000)+'h';
   return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
 }
-// ══ MESAS & SOLICITUDES (ADMIN) ═══════════════════════════
+
+// ══ MESAS & SOLICITUDES (ADMIN) — Firebase compat ════════
 var _todasMesas = [];
 
 async function loadMesasAdmin() {
-  await window._fbReady;
-  var { collection, getDocs, query, orderBy, db } = window.FB;
   try {
-    var snap = await getDocs(collection(db, 'mesas'));
+    var snap = await db.collection('mesas').get();
     _todasMesas = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
     _todasMesas.sort(function(a,b){
       if (!a.proximaFecha && !b.proximaFecha) return 0;
@@ -906,33 +905,30 @@ async function loadMesasAdmin() {
 }
 
 function renderMesasAdmin() {
-  var list = document.getElementById('mesasAdminList');
+  var list  = document.getElementById('mesasAdminList');
   var count = document.getElementById('mesasAdminCount');
   if (!list) return;
+  if (count) count.textContent = _todasMesas.length + ' mesas';
 
-  var mesas = _todasMesas;
-  if (count) count.textContent = mesas.length + ' mesas';
-
-  if (!mesas.length) {
+  if (!_todasMesas.length) {
     list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sin mesas</div>';
     return;
   }
 
-  list.innerHTML = mesas.map(function(m) {
-    var estadoColor = m.estado === 'activa' ? '#166534' : '#B91C1C';
-    var estadoBg    = m.estado === 'activa' ? '#DCFCE7' : '#FEF2F2';
-    var jugCount    = (m.jugadores || []).filter(function(j){ return j.rol === 'jugador'; }).length;
-
+  list.innerHTML = _todasMesas.map(function(m) {
+    var estColor = m.estado === 'activa' ? '#166534' : '#B91C1C';
+    var estBg    = m.estado === 'activa' ? '#DCFCE7' : '#FEF2F2';
+    var jugCount = (m.jugadores||[]).filter(function(j){ return j.rol==='jugador'; }).length;
     return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd);">'
       + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
+      +   '<div style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
       +        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escA(m.nombre) + '</div>'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
-      +     escA(m.sistema || '') + (m.dm ? ' · DM: ' + escA(m.dm) : '') + ' · ' + jugCount + ' jugadores'
+      +   '<div style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
+      +     escA(m.sistema||'') + (m.dm?' · DM: '+escA(m.dm):'') + ' · ' + jugCount + ' jugadores'
       +   '</div>'
       + '</div>'
-      + '<span style="font-family:\'DM Sans\',sans-serif;font-size:10px;font-weight:600;'
-      +       'background:' + estadoBg + ';color:' + estadoColor + ';padding:2px 8px;border-radius:20px;">'
+      + '<span style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;'
+      +       'background:'+estBg+';color:'+estColor+';padding:2px 8px;border-radius:20px;">'
       +   m.estado
       + '</span>'
       + '</div>';
@@ -940,30 +936,22 @@ function renderMesasAdmin() {
 }
 
 async function loadSolicitudesPendientes() {
-  var { collection, getDocs, query, where, db } = window.FB;
   var pendientes = [];
 
-  // Buscar solicitudes pendientes en todas las mesas
   for (var i = 0; i < _todasMesas.length; i++) {
     var mesa = _todasMesas[i];
     try {
-      var snap = await getDocs(
-        query(collection(db, 'mesas', mesa.id, 'solicitudes'),
-              where('estado', '==', 'pendiente'))
-      );
+      var snap = await db.collection('mesas').doc(mesa.id)
+        .collection('solicitudes').where('estado','==','pendiente').get();
       snap.docs.forEach(function(d) {
-        pendientes.push(Object.assign({
-          mesaId:    mesa.id,
-          mesaNombre: mesa.nombre
-        }, d.data()));
+        pendientes.push(Object.assign({ mesaId: mesa.id, mesaNombre: mesa.nombre }, d.data()));
       });
     } catch(e) { /* sin solicitudes */ }
   }
 
   renderSolicitudes(pendientes);
 
-  // Actualizar badge
-  var badge = document.getElementById('solBadge');
+  var badge   = document.getElementById('solBadge');
   var countEl = document.getElementById('solCount');
   if (badge) {
     badge.textContent = pendientes.length;
@@ -984,20 +972,20 @@ function renderSolicitudes(solicitudes) {
   list.innerHTML = solicitudes.map(function(s) {
     return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--brd);">'
       + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);">'
+      +   '<div style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;color:var(--ink);">'
       +     escA(s.nombre || s.email || s.uid)
       +   '</div>'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
+      +   '<div style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
       +     'Mesa: ' + escA(s.mesaNombre || s.mesaId)
       +   '</div>'
       + '</div>'
-      + '<button onclick="resolverSolicitud(\'' + s.mesaId + '\',\'' + s.uid + '\',\'aprobada\')" '
-      +   'style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;'
+      + '<button onclick="resolverSolicitud(''+s.mesaId+'',''+s.uid+'','aprobada')" '
+      +   'style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;'
       +   'background:#166534;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;margin-right:6px;">'
       +   '✓ Aprobar'
       + '</button>'
-      + '<button onclick="resolverSolicitud(\'' + s.mesaId + '\',\'' + s.uid + '\',\'rechazada\')" '
-      +   'style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;'
+      + '<button onclick="resolverSolicitud(''+s.mesaId+'',''+s.uid+'','rechazada')" '
+      +   'style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;'
       +   'background:#B91C1C;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;">'
       +   '✗ Rechazar'
       + '</button>'
@@ -1006,47 +994,43 @@ function renderSolicitudes(solicitudes) {
 }
 
 async function resolverSolicitud(mesaId, solUid, decision) {
-  var { doc, setDoc, updateDoc, arrayUnion, addDoc, collection, serverTimestamp, db } = window.FB;
   var adminUser = window._authUser;
-
   try {
-    // 1. Actualizar estado de la solicitud
-    var solRef = doc(db, 'mesas', mesaId, 'solicitudes', solUid);
-    await setDoc(solRef, {
-      estado:      decision,
-      resueltaEn:  serverTimestamp(),
-      resueltaPor: adminUser ? adminUser.uid : 'admin'
-    }, { merge: true });
+    // 1. Actualizar solicitud
+    await db.collection('mesas').doc(mesaId)
+      .collection('solicitudes').doc(solUid)
+      .set({
+        estado:      decision,
+        resueltaEn:  firebase.firestore.FieldValue.serverTimestamp(),
+        resueltaPor: adminUser ? adminUser.uid : 'admin'
+      }, { merge: true });
 
-    // 2. Si aprobada, agregar jugador a la mesa
+    // 2. Si aprobada, agregar jugador
     if (decision === 'aprobada') {
-      var mesaRef = doc(db, 'mesas', mesaId);
-      await updateDoc(mesaRef, {
-        jugadores: arrayUnion({
-          uid:    solUid,
-          rol:    'jugador',
-          estado: 'confirmado',
+      await db.collection('mesas').doc(mesaId).update({
+        jugadores: firebase.firestore.FieldValue.arrayUnion({
+          uid:     solUid,
+          rol:     'jugador',
+          estado:  'confirmado',
           unidoEn: new Date().toISOString()
         })
       });
     }
 
     // 3. Notificar al jugador
-    var mesa = _todasMesas.find(function(m){ return m.id === mesaId; }) || {};
-    var titulo = decision === 'aprobada'
-      ? '¡Tu solicitud fue aprobada!'
-      : 'Tu solicitud fue rechazada';
+    var mesa   = _todasMesas.find(function(m){ return m.id === mesaId; }) || {};
+    var titulo = decision === 'aprobada' ? '¡Tu solicitud fue aprobada!' : 'Tu solicitud fue rechazada';
     var cuerpo = decision === 'aprobada'
-      ? 'Ya sos parte de la mesa "' + (mesa.nombre || mesaId) + '".'
-      : 'Tu solicitud para "' + (mesa.nombre || mesaId) + '" no fue aceptada.';
+      ? 'Ya sos parte de la mesa "' + (mesa.nombre||mesaId) + '".'
+      : 'Tu solicitud para "' + (mesa.nombre||mesaId) + '" no fue aceptada.';
 
-    await addDoc(collection(db, 'notificaciones', solUid, 'items'), {
+    await db.collection('notificaciones').doc(solUid).collection('items').add({
       tipo:     'solicitud_' + decision,
-      titulo,
-      cuerpo,
-      mesaId,
+      titulo:   titulo,
+      cuerpo:   cuerpo,
+      mesaId:   mesaId,
       leida:    false,
-      creadoEn: serverTimestamp()
+      creadoEn: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     // 4. Recargar
@@ -1065,16 +1049,16 @@ function showToastAdmin(msg, isError) {
     t = document.createElement('div');
     t.id = 'adminToast';
     t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);'
-      + 'background:var(--ink);color:#fff;padding:10px 20px;font-family:\'DM Sans\',sans-serif;'
+      + 'background:var(--ink);color:#fff;padding:10px 20px;font-family:'DM Sans',sans-serif;'
       + 'font-size:13px;font-weight:600;border-radius:8px;opacity:0;transition:all .3s;z-index:999;';
     document.body.appendChild(t);
   }
   t.textContent = msg;
   t.style.background = isError ? '#B91C1C' : 'var(--ink)';
-  t.style.opacity = '1';
-  t.style.transform = 'translateX(-50%) translateY(0)';
+  t.style.opacity    = '1';
+  t.style.transform  = 'translateX(-50%) translateY(0)';
   setTimeout(function(){
-    t.style.opacity = '0';
+    t.style.opacity   = '0';
     t.style.transform = 'translateX(-50%) translateY(60px)';
   }, 3000);
 }
