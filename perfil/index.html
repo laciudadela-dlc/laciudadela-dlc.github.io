@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Perfil · La Ciudadela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#FFFFFF;--bg2:#F4F3F0;--bg3:#E8E7E3;
+  --ink:#111110;--ink2:#383836;--muted:#6B6A67;
+  --brd:#DDDBD4;--brd-dark:#C4C2BA;
+  --red:#B91C1C;--red-light:#FEF2F2;
+  --green:#166534;--green-light:#DCFCE7;
+  --blue:#3730A3;--blue-light:#EEF2FF;
+  --yellow:#92400E;--yellow-light:#FEF3C7;
+}
+html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+.header{background:var(--bg);border-bottom:1px solid var(--brd);padding:0 20px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.header-logo{height:34px;width:auto;object-fit:contain;flex-shrink:0;}
+.header-wordmark{font-family:"Cinzel",serif;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.02em;flex:1;}
+.header-back{font-size:13px;font-weight:600;color:var(--ink2);border:1px solid var(--brd);padding:6px 14px;border-radius:6px;text-decoration:none;transition:background .12s;white-space:nowrap;}
+.header-back:hover{background:var(--bg2);}
+
+.guard{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;}
+.guard.show{display:flex;}
+.guard-icon{font-size:48px;opacity:.3;}
+.guard-title{font-family:"Cinzel",serif;font-size:20px;font-weight:700;color:var(--ink);}
+.guard-sub{font-size:14px;color:var(--muted);max-width:360px;line-height:1.6;}
+.guard-btn{font-size:13px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block;margin-top:8px;}
+
+.page{max-width:860px;margin:0 auto;padding:24px 20px;display:flex;flex-direction:column;gap:20px;}
+@media(max-width:600px){.page{padding:16px 12px;gap:14px;}}
+
+.card{background:var(--bg);border:1px solid var(--brd);border-radius:10px;overflow:hidden;}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;}
+.card-icon{font-size:18px;}
+.card-title{font-family:"Cinzel",serif;font-size:14px;font-weight:700;color:var(--ink);flex:1;}
+.card-sub{font-size:12px;color:var(--muted);}
+.card-body{padding:20px;}
+.card-empty{padding:28px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;}
+
+.user-row{display:flex;align-items:center;gap:16px;}
+.user-avatar{width:72px;height:72px;border-radius:50%;border:3px solid var(--brd);object-fit:cover;flex-shrink:0;}
+.user-info{flex:1;}
+.user-name{font-family:"Cinzel",serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.user-email{font-size:13px;color:var(--muted);margin-bottom:8px;}
+.user-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.role-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.role-admin{background:var(--red-light);color:var(--red);}
+.role-dm{background:var(--blue-light);color:var(--blue);}
+.role-jugador{background:var(--green-light);color:var(--green);}
+
+.item-row{display:flex;align-items:flex-start;gap:12px;padding:14px 20px;border-bottom:1px solid var(--brd);}
+.item-row:last-child{border-bottom:none;}
+.item-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.item-info{flex:1;min-width:0;}
+.item-nombre{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.item-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;}
+.item-prox{color:var(--ink);font-weight:500;}
+.item-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;}
+
+.sesion-row{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--brd);}
+.sesion-row:last-child{border-bottom:none;}
+.sesion-fecha-wrap{min-width:130px;flex-shrink:0;}
+.sesion-dia{font-size:13px;font-weight:700;color:var(--ink);}
+.sesion-hora{font-size:11px;color:var(--muted);}
+.sesion-mesa-info{flex:1;}
+.sesion-nombre{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px;}
+.sesion-dm{font-size:11px;color:var(--muted);margin-top:2px;}
+.sesion-actions{flex-shrink:0;}
+
+.btn{font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;border:none;transition:opacity .12s;white-space:nowrap;}
+.btn:hover{opacity:.8;}
+.btn:disabled{opacity:.5;cursor:default;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-secondary{background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--brd);}
+
+.status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.st-pendiente{background:var(--yellow-light);color:var(--yellow);}
+.st-aprobado,.st-confirmado{background:var(--green-light);color:var(--green);}
+.st-rechazado,.st-ausente{background:var(--red-light);color:var(--red);}
+
+.link-row{display:flex;align-items:center;gap:12px;padding:14px 20px;text-decoration:none;color:inherit;border-bottom:1px solid var(--brd);transition:background .1s;cursor:pointer;}
+.link-row:last-child{border-bottom:none;}
+.link-row:hover{background:var(--bg2);}
+.link-icon{font-size:20px;flex-shrink:0;}
+.link-info{flex:1;}
+.link-title{font-size:14px;font-weight:600;color:var(--ink);}
+.link-sub{font-size:12px;color:var(--muted);}
+.link-arrow{color:var(--muted);font-size:18px;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg);border-radius:12px;padding:28px 24px;width:90%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.12);}
+.modal-title{font-family:"Cinzel",serif;font-size:16px;font-weight:700;margin-bottom:8px;color:var(--ink);}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+.modal-btns{display:flex;gap:10px;justify-content:center;}
+
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;font-size:14px;font-weight:600;transition:background .12s;}
+.google-btn:hover{background:var(--bg2);}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
+.modal-cancel-link{display:block;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:var(--red);}
+</style>
+</head>
+<body>
+
+<div class="guard" id="guard">
+  <div class="guard-icon">⚔</div>
+  <div class="guard-title">Mi Perfil</div>
+  <div class="guard-sub">Necesitás iniciar sesión para ver tu perfil.</div>
+  <button class="guard-btn" id="guardLoginBtn">Ingresar con Google</button>
+  <a href="../" style="margin-top:8px;font-size:12px;color:var(--muted);">← Volver al portal</a>
+</div>
+
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <img src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="" style="height:48px;margin-bottom:14px;">
+    <div class="modal-title">La Ciudadela</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Ingresá con tu cuenta de Google.</p>
+    <button class="google-btn" id="googleBtn">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continuar con Google
+    </button>
+    <span class="modal-cancel-link" id="cancelLoginBtn">Cancelar</span>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-title" id="confirmTitle">¿Estás seguro?</div>
+    <p class="modal-sub" id="confirmText"></p>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" id="confirmCancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirmOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<header class="header">
+  <img class="header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela">
+  <span class="header-wordmark">Mi Perfil</span>
+  <a class="header-back" href="../">← Portal</a>
+</header>
+
+<div class="page" id="page">
+  <div style="text-align:center;padding:48px;color:var(--muted);">Cargando perfil…</div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, collectionGroup, getDocs, doc, getDoc,
+         setDoc, addDoc, updateDoc, deleteDoc, query, where, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const app = initializeApp({
+  apiKey:            "AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
+  authDomain:        "ciudadela-portal-88111.firebaseapp.com",
+  projectId:         "ciudadela-portal-88111",
+  storageBucket:     "ciudadela-portal-88111.firebasestorage.app",
+  messagingSenderId: "629290273583",
+  appId:             "1:629290273583:web:47e321d389fb0e49a6afda"
+});
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ── Estado ──────────────────────────────────────────────
+let ME = null, MY_PROFILE = null;
+let ALL_MESAS = [], MIS_MESAS = [], MIS_SOLICITUDES = [], PROXIMAS_SESIONES = [];
+
+const SYS_DOT = {
+  dnd:"#7a1515", d55:"#7a4a0a", pf:"#1a4a8a",
+  vam:"#4a1a5a", hw:"#1a4a1a", mag:"#1a1a6a", hun:"#6a3a0a", oth:"#555"
+};
+
+function sistemaToCode(s) {
+  if (!s) return "oth";
+  const n = s.toLowerCase();
+  if (n.includes("d&d 5.5") || n.includes("5.5e")) return "d55";
+  if (n.includes("d&d") || n.includes("dnd"))       return "dnd";
+  if (n.includes("pathfinder"))                       return "pf";
+  if (n.includes("vampiro"))                          return "vam";
+  if (n.includes("hombre lobo"))                      return "hw";
+  if (n.includes("mago"))                             return "mag";
+  if (n.includes("hunter"))                           return "hun";
+  return "oth";
+}
+
+function formatFecha(iso) {
+  if (!iso) return "Sin fecha";
+  const d     = new Date(iso);
+  const dias  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const hh    = String(d.getHours()).padStart(2,"0");
+  const mm    = String(d.getMinutes()).padStart(2,"0");
+  return dias[d.getDay()] + " " + d.getDate() + " " + meses[d.getMonth()] + " · " + hh + ":" + mm + "hs";
+}
+
+function esc(s) {
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function showToast(msg, isErr) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = "toast show" + (isErr ? " err" : "");
+  setTimeout(() => { t.className = "toast"; }, 3500);
+}
+
+// ── Modal confirmación ──────────────────────────────────
+let _confirmResolve = null;
+
+function askConfirm(title, text) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById("confirmTitle").textContent = title;
+    document.getElementById("confirmText").textContent  = text;
+    document.getElementById("confirmModal").classList.add("open");
+  });
+}
+
+document.getElementById("confirmOk").addEventListener("click", () => {
+  document.getElementById("confirmModal").classList.remove("open");
+  if (_confirmResolve) { _confirmResolve(true); _confirmResolve = null; }
+});
+document.getElementById("confirmCancel").addEventListener("click", () => {
+  document.getElementById("confirmModal").classList.remove("open");
+  if (_confirmResolve) { _confirmResolve(false); _confirmResolve = null; }
+});
+
+// ── Auth ────────────────────────────────────────────────
+async function doLogin() {
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+    document.getElementById("loginModal").classList.remove("open");
+  } catch(e) { console.error(e); }
+}
+
+document.getElementById("guardLoginBtn").addEventListener("click", () => {
+  document.getElementById("loginModal").classList.add("open");
+});
+document.getElementById("googleBtn").addEventListener("click", doLogin);
+document.getElementById("cancelLoginBtn").addEventListener("click", () => {
+  document.getElementById("loginModal").classList.remove("open");
+});
+
+onAuthStateChanged(auth, async user => {
+  ME = user;
+  if (!user) {
+    document.getElementById("guard").classList.add("show");
+    return;
+  }
+  document.getElementById("guard").classList.remove("show");
+  const snap = await getDoc(doc(db, "usuarios", ME.uid));
+  MY_PROFILE  = snap.exists() ? snap.data() : { roles: ["jugador"] };
+  await loadData();
+  renderPage();
+});
+
+// ── Carga de datos ──────────────────────────────────────
+async function loadData() {
+  const [mesasSnap, solSnap] = await Promise.all([
+    getDocs(collection(db, "mesas")),
+    getDocs(query(collectionGroup(db, "solicitudes"), where("uid", "==", ME.uid)))
+      .catch(() => ({ docs: [] }))
+  ]);
+
+  ALL_MESAS = mesasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  // Mesas donde soy jugador o DM por nombre
+  const firstName = (ME.displayName || "").split(" ")[0].toLowerCase();
+  MIS_MESAS = ALL_MESAS.filter(m => {
+    const jugadores = m.jugadores || [];
+    const esJugador = jugadores.some(j => j.uid === ME.uid);
+    const esDM = firstName && m.dm && m.dm.toLowerCase().includes(firstName);
+    return esJugador || esDM;
+  });
+
+  // Solicitudes que no sean aprobadas (pendientes o rechazadas)
+  MIS_SOLICITUDES = solSnap.docs
+    .map(d => ({ solId: d.id, ...d.data() }))
+    .filter(s => s.estado !== "aprobada");
+
+  // Próximas sesiones de mis mesas
+  const ahora = new Date();
+  PROXIMAS_SESIONES = MIS_MESAS
+    .filter(m => m.proximaFecha && new Date(m.proximaFecha) >= ahora)
+    .map(m => {
+      const jugadores = m.jugadores || [];
+      const yoEnMesa  = jugadores.find(j => j.uid === ME.uid);
+      return {
+        mesaId:   m.id,
+        nombre:   m.nombre,
+        dm:       m.dm,
+        fecha:    m.proximaFecha,
+        sistema:  m.sistema,
+        miEstado: yoEnMesa ? (yoEnMesa.estadoSesion || "pendiente") : "pendiente",
+      };
+    })
+    .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+}
+
+// ── Render ──────────────────────────────────────────────
+function renderPage() {
+  const roles   = MY_PROFILE.roles || ["jugador"];
+  const name    = ME.displayName || ME.email || "Usuario";
+  const av      = ME.photoURL || ("https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=E8E6E0&color=111110&size=72");
+  const rolesBadges = roles.map(r => {
+    const cls = r === "admin" ? "role-admin" : r === "dm" ? "role-dm" : "role-jugador";
+    return '<span class="role-badge ' + cls + '">' + r + '</span>';
+  }).join("");
+
+  const sesionesHtml   = buildSesionesHtml();
+  const misMesasHtml   = buildMisMesasHtml();
+  const solicitudesHtml = MIS_SOLICITUDES.length > 0 ? buildSolicitudesCard() : "";
+
+  document.getElementById("page").innerHTML =
+    // Datos del usuario
+    '<div class="card">'
+    + '<div class="card-header"><span class="card-icon">⚔</span><span class="card-title">Mi cuenta</span></div>'
+    + '<div class="card-body">'
+    +   '<div class="user-row">'
+    +     '<img class="user-avatar" src="' + av + '" alt="">'
+    +     '<div class="user-info">'
+    +       '<div class="user-name">' + esc(name) + '</div>'
+    +       '<div class="user-email">' + esc(ME.email || "") + '</div>'
+    +       '<div class="user-badges">' + rolesBadges + '</div>'
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+    + '</div>'
+
+    // Próximas sesiones
+    + '<div class="card" id="sesionesCard">'
+    + '<div class="card-header"><span class="card-icon">📅</span><span class="card-title">Próximas sesiones</span>'
+    + '<span class="card-sub">' + PROXIMAS_SESIONES.length + ' sesión' + (PROXIMAS_SESIONES.length !== 1 ? "es" : "") + '</span></div>'
+    + sesionesHtml
+    + '</div>'
+
+    // Mis mesas
+    + '<div class="card" id="misMesasCard">'
+    + '<div class="card-header"><span class="card-icon">🎲</span><span class="card-title">Mis mesas</span>'
+    + '<span class="card-sub">' + MIS_MESAS.length + ' mesa' + (MIS_MESAS.length !== 1 ? "s" : "") + '</span></div>'
+    + misMesasHtml
+    + '</div>'
+
+    // Solicitudes pendientes/rechazadas
+    + solicitudesHtml
+
+    // Accesos rápidos
+    + '<div class="card">'
+    + '<div class="card-header"><span class="card-icon">🔗</span><span class="card-title">Accesos rápidos</span></div>'
+    + '<a class="link-row" href="../mensajes/"><span class="link-icon">💬</span><div class="link-info"><div class="link-title">Mensajes</div><div class="link-sub">Conversaciones con admins y DMs</div></div><span class="link-arrow">›</span></a>'
+    + '<a class="link-row" href="../mesas/"><span class="link-icon">🎲</span><div class="link-info"><div class="link-title">Inscripción a Mesas</div><div class="link-sub">Explorá campañas y solicitá unirte</div></div><span class="link-arrow">›</span></a>'
+    + '<a class="link-row" href="../calendario/index.html"><span class="link-icon">📅</span><div class="link-info"><div class="link-title">Calendario</div><div class="link-sub">Agenda de mesas y eventos</div></div><span class="link-arrow">›</span></a>'
+    + '<div class="link-row" id="logoutRow"><span class="link-icon">🚪</span><div class="link-info"><div class="link-title">Cerrar sesión</div><div class="link-sub">' + esc(ME.email || "") + '</div></div><span class="link-arrow">›</span></div>'
+    + '</div>';
+
+  document.getElementById("logoutRow").addEventListener("click", async () => {
+    await signOut(auth);
+    location.href = "../";
+  });
+
+  // Event delegation
+  document.getElementById("page").addEventListener("click", handleAction);
+}
+
+function buildSesionesHtml() {
+  if (!PROXIMAS_SESIONES.length) {
+    return '<div class="card-empty">No tenés sesiones próximas agendadas.</div>';
+  }
+  return PROXIMAS_SESIONES.map(s => {
+    const dot   = SYS_DOT[sistemaToCode(s.sistema)] || "#888";
+    const partes = formatFecha(s.fecha).split("·");
+    const dia   = partes[0] ? partes[0].trim() : "";
+    const hora  = partes[1] ? partes[1].trim() : "";
+    let actionsHtml = "";
+    if (s.miEstado === "confirmado") {
+      actionsHtml = '<span class="status st-confirmado">✓ Confirmado</span>';
+    } else if (s.miEstado === "ausente") {
+      actionsHtml = '<span class="status st-ausente">✗ Avisé ausencia</span>';
+    } else {
+      actionsHtml =
+        '<button class="btn btn-success" data-accion="confirmar" data-mesaid="' + s.mesaId + '">✓ Confirmar</button> '
+        + '<button class="btn btn-outline" data-accion="ausente" data-mesaid="' + s.mesaId + '">✗ Ausencia</button>';
+    }
+    return '<div class="sesion-row">'
+      + '<div class="sesion-fecha-wrap"><div class="sesion-dia">' + esc(dia) + '</div><div class="sesion-hora">' + esc(hora) + '</div></div>'
+      + '<div class="sesion-mesa-info">'
+      +   '<div class="sesion-nombre"><div style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></div>' + esc(s.nombre) + '</div>'
+      +   '<div class="sesion-dm">DM: ' + esc(s.dm || "A confirmar") + '</div>'
+      + '</div>'
+      + '<div class="sesion-actions">' + actionsHtml + '</div>'
+      + '</div>';
+  }).join("");
+}
+
+function buildMisMesasHtml() {
+  if (!MIS_MESAS.length) {
+    return '<div class="card-empty">Todavía no sos parte de ninguna mesa. <a href="../mesas/" style="color:var(--ink);font-weight:600;">Explorá las campañas →</a></div>';
+  }
+  return MIS_MESAS.map(m => {
+    const dot      = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
+    const jugadores = m.jugadores || [];
+    const yoEnMesa  = jugadores.find(j => j.uid === ME.uid);
+    const rol       = yoEnMesa ? yoEnMesa.rol : "dm";
+    const rolCls    = rol === "dm" ? "st-aprobado" : "st-confirmado";
+    const retiroBtn = rol === "jugador"
+      ? ' <button class="btn btn-danger" data-accion="retiro" data-mesaid="' + m.id + '" data-nombre="' + esc(m.nombre) + '">Retirarse</button>'
+      : "";
+    return '<div class="item-row">'
+      + '<div class="item-dot" style="background:' + dot + '"></div>'
+      + '<div class="item-info">'
+      +   '<div class="item-nombre">' + esc(m.nombre) + '</div>'
+      +   '<div class="item-meta">'
+      +     '<span>' + esc(m.sistema || "Otro sistema") + '</span>'
+      +     '<span>DM: ' + esc(m.dm || "A confirmar") + '</span>'
+      +     '<span class="item-prox">📅 ' + formatFecha(m.proximaFecha) + '</span>'
+      +     (m.periodicidad ? '<span>' + esc(m.periodicidad) + '</span>' : "")
+      +   '</div>'
+      + '</div>'
+      + '<div class="item-actions">'
+      +   '<span class="status ' + rolCls + '">' + rol + '</span>'
+      +   retiroBtn
+      + '</div>'
+      + '</div>';
+  }).join("");
+}
+
+function buildSolicitudesCard() {
+  const rows = MIS_SOLICITUDES.map(s => {
+    const mesa   = ALL_MESAS.find(m => m.id === s.mesaId) || {};
+    const dot    = SYS_DOT[sistemaToCode(mesa.sistema)] || "#888";
+    const stCls  = s.estado === "pendiente" ? "st-pendiente" : "st-rechazado";
+    const stTxt  = s.estado === "pendiente" ? "⏳ Pendiente" : "✗ Rechazada";
+    const cancelBtn = s.estado === "pendiente"
+      ? ' <button class="btn btn-secondary" data-accion="cancelar" data-mesaid="' + s.mesaId + '" data-nombre="' + esc(mesa.nombre || s.mesaId) + '">Cancelar</button>'
+      : "";
+    return '<div class="item-row">'
+      + '<div class="item-dot" style="background:' + dot + '"></div>'
+      + '<div class="item-info">'
+      +   '<div class="item-nombre">' + esc(mesa.nombre || s.mesaId) + '</div>'
+      +   '<div class="item-meta"><span>' + esc(mesa.sistema || "") + '</span><span>DM: ' + esc(mesa.dm || "A confirmar") + '</span></div>'
+      + '</div>'
+      + '<div class="item-actions"><span class="status ' + stCls + '">' + stTxt + '</span>' + cancelBtn + '</div>'
+      + '</div>';
+  }).join("");
+
+  return '<div class="card">'
+    + '<div class="card-header"><span class="card-icon">⏳</span><span class="card-title">Solicitudes</span>'
+    + '<span class="card-sub">' + MIS_SOLICITUDES.length + ' pendiente' + (MIS_SOLICITUDES.length !== 1 ? "s" : "") + '</span></div>'
+    + rows
+    + '</div>';
+}
+
+// ── Event delegation ────────────────────────────────────
+async function handleAction(e) {
+  const btn = e.target.closest("[data-accion]");
+  if (!btn) return;
+  const accion = btn.dataset.accion;
+  const mesaId = btn.dataset.mesaid;
+  const nombre = btn.dataset.nombre || mesaId;
+
+  btn.disabled = true;
+
+  try {
+    if (accion === "confirmar") {
+      await registrarAsistencia(mesaId, "confirmado");
+    } else if (accion === "ausente") {
+      await registrarAsistencia(mesaId, "ausente");
+    } else if (accion === "cancelar") {
+      const ok = await askConfirm("Cancelar solicitud", "¿Cancelás tu solicitud para unirte a \"" + nombre + "\"?");
+      if (ok) await cancelarSolicitud(mesaId);
+    } else if (accion === "retiro") {
+      const ok = await askConfirm("Solicitar retiro", "¿Querés solicitar retirarte de \"" + nombre + "\"? Un admin deberá aprobar el retiro.");
+      if (ok) await solicitarRetiro(mesaId, nombre);
+    }
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Acciones ────────────────────────────────────────────
+async function registrarAsistencia(mesaId, estado) {
+  try {
+    const mesaRef  = doc(db, "mesas", mesaId);
+    const mesaSnap = await getDoc(mesaRef);
+    if (!mesaSnap.exists()) return;
+
+    const jugadores = (mesaSnap.data().jugadores || []).map(j =>
+      j.uid === ME.uid ? { ...j, estadoSesion: estado } : j
+    );
+    await updateDoc(mesaRef, { jugadores });
+
+    const idx = PROXIMAS_SESIONES.findIndex(s => s.mesaId === mesaId);
+    if (idx >= 0) PROXIMAS_SESIONES[idx].miEstado = estado;
+
+    showToast(estado === "confirmado" ? "✓ Asistencia confirmada" : "✗ Ausencia registrada");
+    renderPage();
+  } catch(e) {
+    console.error(e);
+    showToast("Error al registrar asistencia", true);
+  }
+}
+
+async function cancelarSolicitud(mesaId) {
+  try {
+    await deleteDoc(doc(db, "mesas", mesaId, "solicitudes", ME.uid));
+    MIS_SOLICITUDES = MIS_SOLICITUDES.filter(s => s.mesaId !== mesaId);
+    showToast("Solicitud cancelada");
+    renderPage();
+  } catch(e) {
+    console.error(e);
+    showToast("Error al cancelar la solicitud", true);
+  }
+}
+
+async function solicitarRetiro(mesaId, nombre) {
+  try {
+    await setDoc(doc(db, "mesas", mesaId, "solicitudes_retiro", ME.uid), {
+      uid:      ME.uid,
+      nombre:   ME.displayName || "",
+      email:    ME.email || "",
+      estado:   "pendiente",
+      mesaId,
+      creadaEn: serverTimestamp(),
+    });
+
+    const admins = await getDocs(
+      query(collection(db, "usuarios"), where("roles", "array-contains", "admin"))
+    );
+    const nombreUser = ME.displayName || ME.email || "Un usuario";
+    for (const a of admins.docs) {
+      await addDoc(collection(db, "notificaciones", a.id, "items"), {
+        tipo:     "retiro_mesa",
+        titulo:   nombreUser + " solicita retirarse de una mesa",
+        cuerpo:   '"' + nombre + '"',
+        mesaId,
+        solUid:   ME.uid,
+        leida:    false,
+        creadoEn: serverTimestamp(),
+      });
+    }
+    showToast("Solicitud de retiro enviada. El admin la procesará pronto.");
+  } catch(e) {
+    console.error(e);
+    showToast("Error al enviar la solicitud", true);
+  }
+}
+</script>
+</body>
+</html>
