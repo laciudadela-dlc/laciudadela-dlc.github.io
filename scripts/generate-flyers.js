@@ -58,37 +58,63 @@ async function generarImagen(prompt, mesaId) {
       parameters: { width: 768, height: 512, num_inference_steps: 25 }
     });
 
+    // Endpoint nuevo HF (2025) — inference providers
     const options = {
-      hostname: 'api-inference.huggingface.co',
-      path:     '/models/stabilityai/stable-diffusion-xl-base-1.0',
+      hostname: 'huggingface.co',
+      path:     '/api/inference-proxy/replicate/v1/models/stability-ai/sdxl/predictions',
       method:   'POST',
       headers:  {
         'Authorization': 'Bearer ' + HF_TOKEN,
         'Content-Type':  'application/json',
-        'x-wait-for-model': 'true',
-        'Content-Length':   Buffer.byteLength(body)
+        'Content-Length': Buffer.byteLength(body)
       }
     };
 
-    const req = https.request(options, res => {
+    // Fallback: usar fetch nativo de Node 18+ con URL alternativa
+    const https2 = require('https');
+    const url    = `https://huggingface.co/api/inference-proxy/together/v1/images/generations`;
+
+    const bodyTogether = JSON.stringify({
+      model:  "black-forest-labs/FLUX.1-schnell",
+      prompt: prompt,
+      n:      1,
+      size:   "1024x576"
+    });
+
+    const opts2 = {
+      hostname: 'huggingface.co',
+      path:     '/api/inference-proxy/together/v1/images/generations',
+      method:   'POST',
+      headers:  {
+        'Authorization': 'Bearer ' + HF_TOKEN,
+        'Content-Type':  'application/json',
+        'Content-Length': Buffer.byteLength(bodyTogether)
+      }
+    };
+
+    const req = https2.request(opts2, res => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
       res.on('end', () => {
+        const txt = Buffer.concat(chunks).toString('utf8');
         if (res.statusCode !== 200) {
-          const txt = Buffer.concat(chunks).toString('utf8').substring(0, 200);
-          reject(new Error(`HF ${res.statusCode}: ${txt}`));
+          reject(new Error(`HF ${res.statusCode}: ${txt.substring(0,200)}`));
           return;
         }
-        const buf    = Buffer.concat(chunks);
-        const b64    = buf.toString('base64');
-        const dataUrl = `data:image/jpeg;base64,${b64}`;
-        resolve(dataUrl);
+        try {
+          const json  = JSON.parse(txt);
+          const item  = json?.data?.[0];
+          if (!item) { reject(new Error('Sin datos: ' + txt.substring(0,100))); return; }
+          if (item.url)      { resolve(item.url); return; }
+          if (item.b64_json) { resolve('data:image/png;base64,' + item.b64_json); return; }
+          reject(new Error('Formato inesperado: ' + txt.substring(0,100)));
+        } catch(e) { reject(new Error('JSON parse error: ' + txt.substring(0,100))); }
       });
     });
 
     req.on('error', reject);
     req.setTimeout(120000, () => { req.destroy(); reject(new Error('Timeout 120s')); });
-    req.write(body);
+    req.write(bodyTogether);
     req.end();
   });
 }
