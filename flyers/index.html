@@ -197,12 +197,12 @@ function sistemaToCode(s) {
 function formatFechaFlyer(iso) {
   if (!iso) return "A confirmar";
   const d    = new Date(iso);
-  const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-  const meses= ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  const dias  = ["Domingos","Lunes","Martes","Miércoles","Jueves","Viernes","Sábados"];
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
                  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   const hh   = String(d.getHours()).padStart(2,"0");
   const mm   = String(d.getMinutes()).padStart(2,"0");
-  return dias[d.getDay()]+"s · "+hh+":"+mm+"hs · "+meses[d.getMonth()]+" "+d.getFullYear();
+  return dias[d.getDay()] + " · " + hh + ":" + mm + "hs · " + meses[d.getMonth()] + " " + d.getFullYear();
 }
 
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -441,7 +441,7 @@ async function dibujarFlyer(mesa, imgUrl) {
   ctx.strokeRect(IMG_X, IMG_Y, IMG_W, IMG_H);
 
   // ── Sinopsis ──
-  const SIN_Y = IMG_Y + IMG_H + 20;
+  const SIN_Y = IMG_Y + IMG_H + 48;
   ctx.fillStyle = "#1a0e05";
   ctx.font = "bold 24px 'Oswald', sans-serif";
   ctx.textAlign = "left";
@@ -481,7 +481,7 @@ async function dibujarFlyer(mesa, imgUrl) {
   ctx.fillStyle = sysColor;
   ctx.font = "bold 36px 'Oswald', sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText((mesa.sistema || "OTRO SISTEMA").toUpperCase(), 50, FOOT_Y+52);
+  ctx.fillText((mesa.sistema || "Otro sistema").toUpperCase(), 50, FOOT_Y+52);
 
   ctx.font = "500 20px 'DM Sans', sans-serif";
   ctx.fillStyle = "#2a1a08";
