@@ -834,12 +834,13 @@ async function initTimbre() {
   // Verificar override de GPS desde Firestore
   let gpsOverride = false;
   try {
-    const configSnap = await db.collection("timbres").limit(0).get().catch(() => null);
     const metaSnap = await db.collection("meta").doc("config").get();
-    if (metaSnap.exists) {
+    if (metaSnap.exists && metaSnap.data()) {
       gpsOverride = metaSnap.data().gps_override === true;
     }
-  } catch(e) { /* sin override */ }
+  } catch(e) {
+    console.log("Override GPS no disponible:", e.message);
+  }
 
   if (gpsOverride) {
     btn.disabled = false;
@@ -986,8 +987,22 @@ async function dispararWorkflow(timbreId, timbreData) {
   }
 }
 
-// Iniciar
-initTimbre();
+// Iniciar — esperar un tick para que Firebase esté listo
+setTimeout(() => initTimbre(), 500);
+// Re-verificar override cada 30 segundos
+setInterval(async () => {
+  try {
+    const metaSnap = await db.collection("meta").doc("config").get();
+    if (metaSnap.exists && metaSnap.data() && metaSnap.data().gps_override === true) {
+      const btn = document.getElementById("timbreBtn");
+      const sub = document.getElementById("timbreSub");
+      if (btn && btn.disabled) {
+        btn.disabled = false;
+        if (sub) sub.textContent = "⚠️ Modo prueba — verificación GPS desactivada";
+      }
+    }
+  } catch(e) {}
+}, 30000);
 
 // ── Suscripción push (para admins) ────────────────────
 async function suscribirPushAdmin() {
