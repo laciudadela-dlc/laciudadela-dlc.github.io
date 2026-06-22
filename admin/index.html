@@ -287,6 +287,7 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
   <div class="admin-tab" onclick="showSection('roles')">🏷 Roles</div>
   <div class="admin-tab" onclick="showSection('difusion')">📢 Difusión</div>
   <div class="admin-tab" onclick="showSection('mesas')">🎲 Mesas <span id="solBadge" style="display:none;background:#B91C1C;color:#fff;font-size:8px;padding:1px 5px;border-radius:6px;margin-left:3px;"></span></div>
+  <div class="admin-tab" onclick="showSection('sistema')">⚙ Sistema</div>
   <div class="admin-tab" onclick="showSection('conversaciones')">💬 Mensajes <span id="adminMsgBadge" style="display:none;background:var(--red);color:#fff;font-size:7px;padding:1px 5px;border-radius:6px;margin-left:3px;"></span></div>
 </nav>
 
@@ -412,22 +413,7 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 
   <!-- ── SECCIÓN MESAS ── -->
   <div class="section" id="sec-mesas">
-        <!-- Panel GPS Override -->
-    <div class="panel-card" style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <span style="font-size:24px;">📍</span>
-        <div style="flex:1;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--ink);">Override GPS del timbre</div>
-          <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);margin-top:2px;" id="gpsOverrideStatus">Cargando…</div>
-        </div>
-        <button id="gpsOverrideBtn" onclick="toggleGpsOverride()"
-          style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:7px 16px;border-radius:6px;cursor:pointer;border:none;background:#F3F4F6;color:#374151;">
-          Cargando…
-        </button>
-      </div>
-    </div>
-
-<div class="panel-card">
+    <div class="panel-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h2 style="font-family:\'DM Sans\',sans-serif;font-size:16px;font-weight:700;color:var(--ink);">
           Solicitudes de ingreso
@@ -450,6 +436,27 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
       </div>
     </div>
   </div>
+
+  <!-- ── SECCIÓN SISTEMA ── -->
+  <div class="section" id="sec-sistema">
+
+    <!-- Override GPS -->
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="font-size:28px;">📍</span>
+        <div style="flex:1;">
+          <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--ink);">Override GPS del timbre</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);margin-top:3px;" id="gpsOverrideStatus">Cargando…</div>
+        </div>
+        <button id="gpsOverrideBtn" onclick="toggleGpsOverride()"
+          style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:8px 18px;border-radius:6px;cursor:pointer;border:none;background:#F3F4F6;color:#374151;">
+          Cargando…
+        </button>
+      </div>
+    </div>
+
+  </div>
+
 
 </div><!-- /admin-body -->
 
@@ -484,6 +491,9 @@ function showSection(id){
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
   event.currentTarget.classList.add('active');
+  // Recargar datos según la sección
+  if (id === 'mesas') { loadMesasAdmin(); }
+  if (id === 'sistema') { loadGpsOverride(); }
 }
 
 // ── TOAST ────────────────────────────────────────────
