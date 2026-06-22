@@ -375,6 +375,62 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
   .section-label{max-width:860px;}
   .hero{padding:60px 20px 52px;}
 }
+
+/* ── TIMBRE ─────────────────────────────────────────── */
+.timbre-section{
+  max-width:860px;margin:0 auto 32px;padding:0 16px;
+  display:flex;justify-content:center;
+}
+.timbre-btn{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 32px;cursor:pointer;
+  transition:transform .15s, box-shadow .15s;text-decoration:none;
+  color:inherit;
+}
+.timbre-btn:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+  border-color:var(--border-strong);
+}
+.timbre-btn:disabled{
+  opacity:.5;cursor:not-allowed;
+}
+.timbre-btn:active:not(:disabled){
+  transform:scale(.97);
+}
+.timbre-icon{font-size:36px;line-height:1;}
+.timbre-label{
+  font-family:"DM Sans",sans-serif;font-size:13px;
+  font-weight:600;color:var(--text-1);
+}
+.timbre-sub{
+  font-size:11px;color:var(--text-3);text-align:center;
+  max-width:200px;line-height:1.4;
+}
+.timbre-btn.ringing .timbre-icon{
+  animation: ring 0.5s ease-in-out 3;
+}
+@keyframes ring {
+  0%,100%{transform:rotate(0);}
+  20%{transform:rotate(-15deg);}
+  40%{transform:rotate(15deg);}
+  60%{transform:rotate(-10deg);}
+  80%{transform:rotate(10deg);}
+}
+.timbre-toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--ink);color:#fff;
+  padding:10px 20px;border-radius:8px;
+  font-size:13px;font-weight:600;
+  opacity:0;transition:all .3s;pointer-events:none;z-index:999;
+  white-space:nowrap;
+}
+.timbre-toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.timbre-toast.ok{background:#166534;}
+.timbre-toast.err{background:#B91C1C;}
+.timbre-toast.warn{background:#92400E;}
 </style>
 </head>
 <body>
@@ -507,6 +563,17 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
 
 </div>
 
+<!-- TIMBRE -->
+<div class="timbre-section">
+  <button class="timbre-btn" id="timbreBtn" disabled>
+    <span class="timbre-icon">🔔</span>
+    <span class="timbre-label">Tocar timbre</span>
+    <span class="timbre-sub" id="timbreSub">Verificando ubicación…</span>
+  </button>
+</div>
+<div class="timbre-toast" id="timbreToast"></div>
+
+
 <footer class="footer">La Ciudadela de los Confines · Lima 575, CABA · 2025</footer>
 
 <!-- FIREBASE -->
@@ -601,6 +668,7 @@ window.AUTH = (function(){
 
     startNotifListener(user.uid);
     startMsgListener(user.uid);
+    setTimeout(suscribirPushAdmin, 2000);
   }
 
   function updateAdminBanner(profile){
@@ -727,6 +795,232 @@ function formatTime(ts){
 function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+// ══ TIMBRE ════════════════════════════════════════════
+const CIUDADELA_LAT  = -34.60876;
+const CIUDADELA_LNG  = -58.37218;
+const RADIO_MAX_M    = 35;        // metros de tolerancia
+const COOLDOWN_ANON  = 5 * 60 * 1000; // 5 min para anónimos
+const GH_REPO        = "laciudadela-dlc/laciudadela-dlc.github.io";
+const GH_TOKEN_KEY   = "gh_dispatch_token"; // NO guardar token real acá
+
+// Haversine distance en metros
+function distanciaMetros(lat1, lng1, lat2, lng2) {
+  const R  = 6371000;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lng2 - lng1) * Math.PI / 180;
+  const a  = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function showTimbreToast(msg, tipo) {
+  const t = document.getElementById("timbreToast");
+  t.textContent = msg;
+  t.className   = "timbre-toast show " + (tipo || "");
+  setTimeout(() => { t.className = "timbre-toast"; }, 4000);
+}
+
+// Verificar geolocalización al cargar
+function initTimbre() {
+  const btn = document.getElementById("timbreBtn");
+  const sub = document.getElementById("timbreSub");
+
+  if (!navigator.geolocation) {
+    sub.textContent = "GPS no disponible en este dispositivo";
+    return;
+  }
+
+  navigator.geolocation.watchPosition(
+    pos => {
+      const dist = distanciaMetros(
+        pos.coords.latitude, pos.coords.longitude,
+        CIUDADELA_LAT, CIUDADELA_LNG
+      );
+
+      if (dist <= RADIO_MAX_M) {
+        btn.disabled = false;
+        sub.textContent = "Estás en La Ciudadela · " + Math.round(dist) + "m";
+      } else {
+        btn.disabled = true;
+        sub.textContent = "Debés estar en Lima 575 para tocar el timbre (" + Math.round(dist) + "m)";
+      }
+    },
+    err => {
+      btn.disabled = true;
+      if (err.code === err.PERMISSION_DENIED) {
+        sub.textContent = "Activá el GPS para usar el timbre";
+      } else {
+        sub.textContent = "No se pudo obtener tu ubicación";
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+// Tocar timbre
+document.getElementById("timbreBtn").addEventListener("click", async () => {
+  const btn  = document.getElementById("timbreBtn");
+  const user = AUTH.getUser();
+
+  // Verificar cooldown para anónimos
+  if (!user) {
+    const lastRing = parseInt(localStorage.getItem("timbre_last") || "0");
+    const now      = Date.now();
+    if (now - lastRing < COOLDOWN_ANON) {
+      const restante = Math.ceil((COOLDOWN_ANON - (now - lastRing)) / 1000 / 60);
+      showTimbreToast("Podés tocar el timbre nuevamente en " + restante + " min", "warn");
+      return;
+    }
+  }
+
+  // Animar
+  btn.disabled = true;
+  btn.classList.add("ringing");
+  setTimeout(() => btn.classList.remove("ringing"), 1600);
+
+  // Datos del timbre
+  const ahora    = new Date();
+  const timbreData = {
+    uid:      user ? user.uid : null,
+    nombre:   user ? (user.displayName || user.email || "Usuario registrado") : "Usuario anónimo",
+    anonimo:  !user,
+    timestamp: ahora.toISOString(),
+    lat:      null,
+    lng:      null,
+  };
+
+  // Obtener posición exacta al momento del toque
+  try {
+    const pos = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 5000 })
+    );
+    timbreData.lat = pos.coords.latitude;
+    timbreData.lng = pos.coords.longitude;
+  } catch(e) { /* usar sin coordenadas exactas */ }
+
+  try {
+    // 1. Guardar en Firestore
+    const timbreRef = await db.collection("timbres").add({
+      ...timbreData,
+      creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log("Timbre registrado:", timbreRef.id);
+
+    // 2. Disparar GitHub Actions workflow
+    await dispararWorkflow(timbreRef.id, timbreData);
+
+    // 3. Guardar cooldown para anónimos
+    if (!user) localStorage.setItem("timbre_last", Date.now().toString());
+
+    showTimbreToast("¡Timbre enviado! Te responderemos en breve 🔔", "ok");
+
+  } catch(e) {
+    console.error("Error timbre:", e);
+    showTimbreToast("Error al enviar el timbre. Intentá de nuevo.", "err");
+  }
+
+  // Re-habilitar después de 10s
+  setTimeout(() => {
+    btn.disabled = false;
+    document.getElementById("timbreSub").textContent = "Estás en La Ciudadela";
+  }, 10000);
+});
+
+async function dispararWorkflow(timbreId, timbreData) {
+  // El token se guarda en Firestore config para no exponerlo en el código
+  // Primero intentamos leer el token de Firestore (solo admins pueden escribirlo)
+  try {
+    const configSnap = await db.collection("meta").doc("config").get();
+    const ghToken    = configSnap.exists ? configSnap.data().gh_dispatch_token : null;
+
+    if (!ghToken) {
+      console.warn("gh_dispatch_token no configurado en meta/config — workflow no disparado");
+      return;
+    }
+
+    const resp = await fetch(
+      "https://api.github.com/repos/" + GH_REPO + "/dispatches",
+      {
+        method:  "POST",
+        headers: {
+          "Accept":        "application/vnd.github+json",
+          "Authorization": "Bearer " + ghToken,
+          "Content-Type":  "application/json",
+          "X-GitHub-Api-Version": "2022-11-28"
+        },
+        body: JSON.stringify({
+          event_type:     "timbre",
+          client_payload: {
+            timbre_id:   timbreId,
+            timbre_data: timbreData
+          }
+        })
+      }
+    );
+
+    if (resp.status === 204) {
+      console.log("Workflow disparado OK");
+    } else {
+      console.error("Error disparando workflow:", resp.status, await resp.text());
+    }
+  } catch(e) {
+    console.error("dispararWorkflow error:", e);
+  }
+}
+
+// Iniciar
+initTimbre();
+
+// ── Suscripción push (para admins) ────────────────────
+async function suscribirPushAdmin() {
+  const user = AUTH.getUser();
+  const profile = AUTH.getProfile();
+  if (!user || !profile?.roles?.includes("admin")) return;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js");
+    const vapidPublicKey = await getVapidPublicKey();
+    if (!vapidPublicKey) return;
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly:      true,
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+    });
+
+    // Guardar suscripción en Firestore
+    await db.collection("push_subscriptions").add({
+      uid:          user.uid,
+      subscription: sub.toJSON(),
+      creadaEn:     firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log("Push subscription guardada OK");
+  } catch(e) {
+    console.log("Push subscription no configurada:", e.message);
+  }
+}
+
+async function getVapidPublicKey() {
+  try {
+    const snap = await db.collection("meta").doc("config").get();
+    return snap.exists ? snap.data().vapid_public_key : null;
+  } catch(e) { return null; }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw     = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+// Hook: suscribir push cuando el admin se loguea
+const _origRenderZone = window.AUTH ? null : null;
+// Se llama desde el onAuthStateChanged después de detectar rol admin
+
 function stopListeners(){
   if(unsubNotif){unsubNotif();unsubNotif=null;}
   if(unsubMsg){unsubMsg();unsubMsg=null;}
