@@ -317,8 +317,42 @@ async function loadData() {
 }
 
 // ── Render ──────────────────────────────────────────────
+function buildTimbreToggleHtml() {
+  const activo = MY_PROFILE.timbreActivo !== false; // true por defecto
+  return '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px;">'
+    + '<span style="font-size:20px;">🔔</span>'
+    + '<div style="flex:1;">'
+    +   '<div style="font-size:14px;font-weight:600;color:var(--ink);">Alertas de timbre</div>'
+    +   '<div style="font-size:12px;color:var(--muted);">'
+    +     (activo ? "Recibís notificaciones cuando suena el timbre" : "No recibís notificaciones del timbre")
+    +   '</div>'
+    + '</div>'
+    + '<button onclick="toggleTimbreActivo()" style="'
+    +   'font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;border:none;'
+    +   'background:' + (activo ? "#DCFCE7" : "#F3F4F6") + ';'
+    +   'color:' + (activo ? "#166534" : "#6B7280") + ';">'
+    +   (activo ? "✓ Activo" : "✗ Inactivo")
+    + '</button>'
+    + '</div>';
+}
+
+window.toggleTimbreActivo = async function() {
+  const activo = MY_PROFILE.timbreActivo !== false;
+  try {
+    await updateDoc(doc(db, "usuarios", ME.uid), { timbreActivo: !activo });
+    MY_PROFILE.timbreActivo = !activo;
+    showToast(!activo ? "Alertas de timbre activadas 🔔" : "Alertas de timbre desactivadas");
+    renderPage();
+  } catch(e) {
+    console.error(e);
+    showToast("Error al actualizar la preferencia", true);
+  }
+};
+
+
 function renderPage() {
   const roles   = MY_PROFILE.roles || ["jugador"];
+  const isAdmin = roles.includes("admin");
   const name    = ME.displayName || ME.email || "Usuario";
   const av      = ME.photoURL || ("https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=E8E6E0&color=111110&size=72");
   const rolesBadges = roles.map(r => {
@@ -343,6 +377,7 @@ function renderPage() {
     +       '<div class="user-badges">' + rolesBadges + '</div>'
     +     '</div>'
     +   '</div>'
+    +   (isAdmin ? buildTimbreToggleHtml() : '')
     + '</div>'
     + '</div>'
 
@@ -421,36 +456,50 @@ function buildMisMesasHtml() {
     return '<div class="card-empty">Todavía no sos parte de ninguna mesa. <a href="../mesas/" style="color:var(--ink);font-weight:600;">Explorá las campañas →</a></div>';
   }
   return MIS_MESAS.map(m => {
-    const dot       = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
-    const todosJug  = m.jugadores || [];
-    const yoEnMesa  = todosJug.find(j => j.uid === ME.uid);
-    const rol       = yoEnMesa ? yoEnMesa.rol : "dm";
-    const rolCls    = rol === "dm" ? "st-aprobado" : "st-confirmado";
+    const dot      = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
+    const todosJug = m.jugadores || [];
+    const yoEnMesa = todosJug.find(j => j.uid === ME.uid);
+    const rol      = yoEnMesa ? yoEnMesa.rol : "dm";
+    const rolCls   = rol === "dm" ? "st-aprobado" : "st-confirmado";
     const retiroBtn = rol === "jugador"
       ? ' <button class="btn btn-danger" data-accion="retiro" data-mesaid="' + m.id + '" data-nombre="' + esc(m.nombre) + '">Retirarse</button>'
       : "";
 
-    // Lista compacta de jugadores
-    const soloJug = todosJug.filter(j => j.rol === "jugador");
-    let jugHtml = "";
-    if (soloJug.length > 0) {
-      const names = soloJug.map(j => {
-        const est   = j.estadoSesion || "pendiente";
-        const icn   = est === "confirmado" ? "🟢" : est === "ausente" ? "🔴" : "⚪";
+    // Compañeros — deduplicar por uid y excluirme a mí
+    const jugMap = {};
+    todosJug.filter(j => j.rol === "jugador").forEach(j => {
+      if (!jugMap[j.uid]) jugMap[j.uid] = j;
+    });
+    const compas = Object.values(jugMap).filter(j => j.uid !== ME.uid);
+    let compasHtml = "";
+    if (compas.length > 0) {
+      const names = compas.map(j => {
         const uData = ALL_USUARIOS.find(u => u.uid === j.uid) || {};
-        const uName = j.nombre || uData.displayName || (uData.email ? uData.email.split("@")[0] : "?");
-        return icn + " " + esc(uName);
+        return esc(j.nombre || uData.displayName || (uData.email ? uData.email.split("@")[0] : "?"));
       }).join(" · ");
-      jugHtml = '<div style="font-size:11px;color:var(--muted);margin-top:5px;">'
-        + '<span style="font-weight:600;color:var(--ink2);">Jugadores: </span>' + names + '</div>';
+      compasHtml = '<div style="font-size:11px;color:var(--muted);margin-top:4px;">'
+        + '<span style="font-weight:600;color:var(--ink2);">Compañeros: </span>' + names + '</div>';
     }
 
-    return '<div class="item-row" style="flex-direction:column;align-items:stretch;gap:0;">'      + '<div style="display:flex;align-items:flex-start;gap:12px;">'      +   '<div class="item-dot" style="background:' + dot + ';margin-top:4px;"></div>'      +   '<div class="item-info">'      +     '<div class="item-nombre">' + esc(m.nombre) + '</div>'      +     '<div class="item-meta">'      +       '<span>' + esc(m.sistema || "Otro sistema") + '</span>'      +       '<span>DM: ' + esc(m.dm || "A confirmar") + '</span>'      +       '<span class="item-prox">📅 ' + formatFecha(m.proximaFecha) + '</span>'      +       (m.periodicidad ? '<span>' + esc(m.periodicidad) + '</span>' : "")      +     '</div>'      +     jugHtml      +   '</div>'      +   '<div class="item-actions">'      +     '<span class="status ' + rolCls + '">' + rol + '</span>'      +     retiroBtn      +   '</div>'      + '</div>'      + '</div>';
+    return '<div class="item-row">'
+      + '<div class="item-dot" style="background:' + dot + '"></div>'
+      + '<div class="item-info">'
+      +   '<div class="item-nombre">' + esc(m.nombre) + '</div>'
+      +   '<div class="item-meta">'
+      +     '<span>' + esc(m.sistema || "Otro sistema") + '</span>'
+      +     '<span>DM: ' + esc(m.dm || "A confirmar") + '</span>'
+      +     '<span class="item-prox">📅 ' + formatFecha(m.proximaFecha) + '</span>'
+      +     (m.periodicidad ? '<span>' + esc(m.periodicidad) + '</span>' : "")
+      +   '</div>'
+      +   compasHtml
+      + '</div>'
+      + '<div class="item-actions">'
+      +   '<span class="status ' + rolCls + '">' + rol + '</span>'
+      +   retiroBtn
+      + '</div>'
+      + '</div>';
   }).join("");
 }
-
-
-
 
 function buildMisMesasDMHtml() {
   // Mesas donde soy DM (por nombre)
@@ -460,7 +509,12 @@ function buildMisMesasDMHtml() {
 
   const rows = mesasDM.map(m => {
     const dot      = SYS_DOT[sistemaToCode(m.sistema)] || "#888";
-    const jugadores = (m.jugadores || []).filter(j => j.rol === "jugador");
+    // Deduplicar jugadores por uid
+    const _jugMap = {};
+    (m.jugadores || []).filter(j => j.rol === "jugador").forEach(j => {
+      if (!_jugMap[j.uid]) _jugMap[j.uid] = j;
+    });
+    const jugadores = Object.values(_jugMap);
     const proxFecha = formatFecha(m.proximaFecha);
 
     let jugadoresHtml = "";
