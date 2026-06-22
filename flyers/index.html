@@ -580,7 +580,7 @@ async function generarFlyers() {
         ).join("");
       }
 
-      if (job.estado === "completo" || job.estado === "completo_con_errores") {
+      if (job.estado === "completo" || job.estado === "completo_con_errores" || job.estado === "listo" || job.estado === "Listo") {
         unsub(); // dejar de escuchar
         fill.style.width  = "100%";
         label.textContent = `✓ ${listos} generados, ${enError} errores`;
@@ -605,13 +605,15 @@ async function generarFlyers() {
 }
 
 async function mostrarFlyers(mesas, job) {
+  console.log("mostrarFlyers llamado", JSON.stringify(job).substring(0,200));
   const grid = document.getElementById("flyersGrid");
   grid.innerHTML = "";
 
   let count = 0;
   for (const mesa of mesas) {
     const mesaJob = (job.mesas||{})[mesa.id];
-    if (!mesaJob || mesaJob.estado !== "listo") continue;
+    console.log("Mesa", mesa.id, "estado:", mesaJob?.estado);
+    if (!mesaJob || (mesaJob.estado !== "listo" && mesaJob.estado !== "Listo")) continue;
 
     // Leer datos del flyer generado
     const flyerSnap = await db.collection("flyers").doc(mesa.id).get();
