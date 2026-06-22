@@ -1,0 +1,38 @@
+name: Timbre Push Notification
+
+on:
+  repository_dispatch:
+    types: [timbre]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scripts/package.json
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+
+      - name: Send push notifications
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PUBLIC_KEY:          ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY:         ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:               ${{ secrets.VAPID_EMAIL }}
+          TIMBRE_ID:                 ${{ github.event.client_payload.timbre_id }}
+          TIMBRE_DATA:               ${{ toJson(github.event.client_payload.timbre_data) }}
+        run: |
+          cd scripts
+          node send-timbre-push.js
