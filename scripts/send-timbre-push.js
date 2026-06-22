@@ -1,14 +1,14 @@
 /**
  * send-timbre-push.js
  * 
- * Corre en GitHub Actions cuando se dispara repository_dispatch con event_type: 'timbre'
- * Lee el timbre de Firestore y envía Web Push solo a admins cercanos a La Ciudadela.
+ * Lógica de notificación:
+ * - timbreActivo: false → nunca notificar (admin lo desactivó manualmente)
+ * - timbreActivo: true (default) + ultimaUbicacion < 1h + ≤500m → notificar
+ * - timbreActivo: true + sin ubicación reciente → NO notificar (no está en LC)
+ * - timbreActivo: true + ubicación reciente pero lejos → NO notificar
  * 
- * Reglas:
- * - Admin debe tener ultimaUbicacion en Firestore
- * - Ubicación debe tener menos de 1 hora de antigüedad
- * - Admin debe estar a ≤500m de La Ciudadela
- * - Si el admin no tiene ubicación registrada, NO recibe notificación
+ * Excepción: si gps_override está activo en meta/config, 
+ * notificar a TODOS los admins con timbreActivo !== false
  */
 
 const admin   = require('firebase-admin');
@@ -27,56 +27,75 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-// Coordenadas de La Ciudadela
 const CIUDADELA_LAT = -34.614915916509204;
 const CIUDADELA_LNG = -58.381865638383225;
-const RADIO_ADMIN_M = 500;   // metros para recibir notificación
-const MAX_EDAD_MS   = 60 * 60 * 1000; // 1 hora máximo de antigüedad
+const RADIO_ADMIN_M = 500;
+const MAX_EDAD_MS   = 60 * 60 * 1000; // 1 hora
 
-// Haversine distance en metros
+const timbreId   = process.env.TIMBRE_ID   || '';
+const timbreData = process.env.TIMBRE_DATA ? JSON.parse(process.env.TIMBRE_DATA) : {};
+
 function distanciaMetros(lat1, lng1, lat2, lng2) {
   const R  = 6371000;
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
+  const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
   const Δφ = (lat2 - lat1) * Math.PI / 180;
   const Δλ = (lng2 - lng1) * Math.PI / 180;
   const a  = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function adminEstaCerca(adminData) {
-  const ub = adminData.ultimaUbicacion;
-  if (!ub || !ub.lat || !ub.lng || !ub.timestamp) {
-    console.log(`  ${adminData.displayName || adminData.uid}: sin ubicación registrada — no notificado`);
+function debeNotificar(adminData, gpsOverride) {
+  const nombre = adminData.displayName || adminData.uid;
+
+  // Desactivado manualmente → nunca
+  if (adminData.timbreActivo === false) {
+    console.log(`  ${nombre}: timbreActivo=false → no notificado`);
     return false;
   }
 
-  // Verificar antigüedad
+  // GPS override activo → notificar a todos con timbreActivo !== false
+  if (gpsOverride) {
+    console.log(`  ${nombre}: GPS override activo → notificado`);
+    return true;
+  }
+
+  // Sin ubicación → no notificar
+  const ub = adminData.ultimaUbicacion;
+  if (!ub || !ub.lat || !ub.lng || !ub.timestamp) {
+    console.log(`  ${nombre}: sin ubicación registrada → no notificado`);
+    return false;
+  }
+
+  // Ubicación vieja → no notificar
   const edad = Date.now() - new Date(ub.timestamp).getTime();
   if (edad > MAX_EDAD_MS) {
-    const mins = Math.round(edad / 60000);
-    console.log(`  ${adminData.displayName || adminData.uid}: ubicación de hace ${mins}min (> 60min) — no notificado`);
+    console.log(`  ${nombre}: ubicación de hace ${Math.round(edad/60000)}min (>60min) → no notificado`);
     return false;
   }
 
   // Verificar distancia
   const dist = distanciaMetros(ub.lat, ub.lng, CIUDADELA_LAT, CIUDADELA_LNG);
   if (dist > RADIO_ADMIN_M) {
-    console.log(`  ${adminData.displayName || adminData.uid}: a ${Math.round(dist)}m (> ${RADIO_ADMIN_M}m) — no notificado`);
+    console.log(`  ${nombre}: a ${Math.round(dist)}m (>${RADIO_ADMIN_M}m) → no notificado`);
     return false;
   }
 
-  console.log(`  ${adminData.displayName || adminData.uid}: a ${Math.round(dist)}m — ✓ notificar`);
+  console.log(`  ${nombre}: a ${Math.round(dist)}m, ubicación de hace ${Math.round(edad/60000)}min → ✓ notificar`);
   return true;
 }
-
-const timbreId   = process.env.TIMBRE_ID   || '';
-const timbreData = process.env.TIMBRE_DATA ? JSON.parse(process.env.TIMBRE_DATA) : {};
 
 async function main() {
   console.log('=== send-timbre-push.js ===');
   console.log(`Timestamp: ${new Date().toISOString()}`);
   console.log(`Timbre: ${timbreId} | Quien: ${timbreData.nombre || '?'}`);
+
+  // Leer config (gps_override)
+  let gpsOverride = false;
+  try {
+    const configSnap = await db.collection('meta').doc('config').get();
+    if (configSnap.exists) gpsOverride = configSnap.data().gps_override === true;
+  } catch(e) {}
+  console.log(`GPS Override: ${gpsOverride}`);
 
   // Obtener admins
   const adminsSnap = await db.collection('usuarios')
@@ -85,25 +104,22 @@ async function main() {
 
   const admins = adminsSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
   console.log(`\nAdmins totales: ${admins.length}`);
-  console.log('Verificando ubicación:');
+  console.log('Verificando:');
 
-  // Filtrar admins cercanos con ubicación reciente
-  const adminsANotificar = admins.filter(a => adminEstaCerca(a));
+  const adminsANotificar = admins.filter(a => debeNotificar(a, gpsOverride));
   console.log(`\nAdmins a notificar: ${adminsANotificar.length}`);
 
   if (!adminsANotificar.length) {
-    console.log('No hay admins cercanos con ubicación reciente. Push no enviado.');
+    console.log('Ningún admin cumple las condiciones. Push no enviado.');
     process.exit(0);
   }
 
-  // Preparar payload
   const hora = new Date(timbreData.timestamp || Date.now()).toLocaleTimeString('es-AR', {
     hour: '2-digit', minute: '2-digit', timeZone: 'America/Argentina/Buenos_Aires'
   });
-  const nombre  = timbreData.nombre || 'Alguien';
   const payload = JSON.stringify({
     title: '🔔 Timbre — La Ciudadela',
-    body:  `${nombre} tocó el timbre a las ${hora}hs`,
+    body:  `${timbreData.nombre || 'Alguien'} tocó el timbre a las ${hora}hs`,
     url:   'https://laciudadela-dlc.github.io/'
   });
 
@@ -115,20 +131,18 @@ async function main() {
       .get();
 
     if (subsSnap.empty) {
-      console.log(`  ${adminUser.displayName || adminUser.uid}: sin suscripción push`);
+      console.log(`  ${adminUser.displayName||adminUser.uid}: sin suscripción push registrada`);
       continue;
     }
 
     for (const subDoc of subsSnap.docs) {
-      const sub = subDoc.data().subscription;
       try {
-        await webpush.sendNotification(sub, payload);
+        await webpush.sendNotification(subDoc.data().subscription, payload);
         enviadas++;
-        console.log(`  ✓ Push enviado a ${adminUser.displayName || adminUser.uid}`);
+        console.log(`  ✓ Push enviado a ${adminUser.displayName||adminUser.uid}`);
       } catch(e) {
         errores++;
         console.error(`  ✗ Error ${adminUser.uid}:`, e.statusCode);
-        // Suscripción expirada → eliminar
         if (e.statusCode === 410 || e.statusCode === 404) {
           await subDoc.ref.delete();
           console.log('    Suscripción expirada eliminada');
@@ -137,28 +151,22 @@ async function main() {
     }
   }
 
-  console.log(`\nResumen: ${enviadas} push enviadas, ${errores} errores`);
+  console.log(`\nResumen: ${enviadas} enviadas, ${errores} errores`);
 
   // Limpieza semanal (sábados)
-  const hoy = new Date();
-  if (hoy.getDay() === 6) {
-    console.log('\nLimpieza semanal de timbres...');
-    const hace7dias = new Date(hoy - 7 * 24 * 60 * 60 * 1000);
+  if (new Date().getDay() === 6) {
+    const hace7dias = new Date(Date.now() - 7*24*60*60*1000);
     const viejosSnap = await db.collection('timbres')
-      .where('timestamp', '<', hace7dias.toISOString())
-      .get();
+      .where('timestamp', '<', hace7dias.toISOString()).get();
     if (viejosSnap.size > 0) {
       const batch = db.batch();
       viejosSnap.docs.forEach(d => batch.delete(d.ref));
       await batch.commit();
-      console.log(`  ${viejosSnap.size} timbres eliminados`);
+      console.log(`Limpieza: ${viejosSnap.size} timbres eliminados`);
     }
   }
 
   process.exit(0);
 }
 
-main().catch(e => {
-  console.error('ERROR:', e);
-  process.exit(1);
-});
+main().catch(e => { console.error('ERROR:', e); process.exit(1); });
