@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Flyers · La Ciudadela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F4F3F0;--bg2:#EEECEA;--bg3:#E4E2DE;
+  --ink:#111110;--ink2:#383836;--muted:#6B6A67;
+  --brd:#DDDBD4;--red:#B91C1C;
+  --parchment:#F2EDE4;--parchment2:#E8E0D2;
+}
+html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+.header{background:var(--bg);border-bottom:1px solid var(--brd);padding:0 20px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.header-logo{height:34px;width:auto;object-fit:contain;flex-shrink:0;}
+.header-wordmark{font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;color:var(--ink);flex:1;}
+.header-back{font-size:13px;font-weight:600;color:var(--ink2);border:1px solid var(--brd);padding:6px 14px;border-radius:6px;text-decoration:none;}
+
+.guard{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;}
+.guard.show{display:flex;}
+.guard-title{font-family:"DM Sans",sans-serif;font-size:18px;font-weight:700;}
+.guard-btn{background:var(--ink);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;}
+
+.page{max-width:1100px;margin:0 auto;padding:24px 20px;display:grid;grid-template-columns:320px 1fr;gap:24px;}
+@media(max-width:768px){.page{grid-template-columns:1fr;}}
+
+/* ── PANEL IZQUIERDO ── */
+.panel{background:var(--bg);border:1px solid var(--brd);border-radius:10px;overflow:hidden;}
+.panel-header{padding:14px 18px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--ink);}
+.mesa-list{max-height:400px;overflow-y:auto;}
+.mesa-item{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--brd);cursor:pointer;transition:background .1s;}
+.mesa-item:hover{background:var(--bg2);}
+.mesa-item:last-child{border-bottom:none;}
+.mesa-check{width:16px;height:16px;border:1.5px solid var(--brd);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;background:var(--bg);}
+.mesa-item.selected .mesa-check{background:var(--ink);border-color:var(--ink);color:#fff;}
+.mesa-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mesa-info{flex:1;min-width:0;}
+.mesa-nombre{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mesa-sistema{font-size:11px;color:var(--muted);}
+
+.panel-actions{padding:14px 18px;border-top:1px solid var(--brd);display:flex;flex-direction:column;gap:8px;}
+.panel-actions .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.btn-group{display:flex;gap:8px;}
+.btn{font-size:12px;font-weight:700;padding:8px 14px;border-radius:6px;cursor:pointer;border:none;flex:1;transition:opacity .12s;}
+.btn:hover{opacity:.85;}
+.btn:disabled{opacity:.4;cursor:default;}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-secondary{background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);}
+.btn-danger{background:var(--red);color:#fff;}
+
+.progress-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:8px;display:none;}
+.progress-fill{height:100%;background:var(--ink);border-radius:2px;transition:width .3s;}
+.progress-label{font-size:11px;color:var(--muted);margin-top:4px;display:none;}
+
+/* ── PANEL DERECHO — PREVIEW ── */
+.preview-area{display:flex;flex-direction:column;gap:16px;}
+.preview-header{display:flex;align-items:center;gap:10px;}
+.preview-title{font-size:14px;font-weight:700;color:var(--ink);flex:1;}
+.preview-sub{font-size:12px;color:var(--muted);}
+.flyers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;}
+.flyer-wrapper{display:flex;flex-direction:column;gap:8px;}
+.flyer-canvas-wrap{border:1px solid var(--brd);border-radius:8px;overflow:hidden;background:var(--parchment);aspect-ratio:1;display:flex;align-items:center;justify-content:center;}
+.flyer-canvas-wrap canvas{max-width:100%;max-height:100%;display:block;}
+.flyer-meta{display:flex;align-items:center;gap:8px;}
+.flyer-name{font-size:12px;font-weight:600;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.btn-download{font-size:11px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;}
+.btn-download:hover{opacity:.85;}
+
+.empty-state{padding:60px 24px;text-align:center;color:var(--muted);}
+.empty-icon{font-size:48px;opacity:.2;margin-bottom:12px;}
+.empty-text{font-size:14px;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:var(--red);}
+</style>
+</head>
+<body>
+
+<div class="guard" id="guard">
+  <div class="guard-title">Acceso restringido</div>
+  <p style="color:var(--muted);font-size:13px;">Solo admins pueden generar flyers.</p>
+  <a href="../" class="btn btn-primary" style="text-decoration:none;display:inline-block;margin-top:8px;">← Volver al portal</a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<header class="header">
+  <a href="../"><img class="header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela"></a>
+  <span class="header-wordmark">Generador de Flyers</span>
+  <a class="header-back" href="../admin/">← Admin</a>
+</header>
+
+<div class="page" id="page" style="display:none;">
+
+  <!-- Panel izquierdo: selector de mesas -->
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        Seleccionar mesas
+        <span id="selCount" style="color:var(--muted);font-weight:400;margin-left:6px;"></span>
+      </div>
+
+      <!-- Filtro rápido -->
+      <div style="padding:10px 18px;border-bottom:1px solid var(--brd);display:flex;gap:6px;">
+        <button class="btn btn-secondary" id="btnSelSemana" onclick="seleccionarRango('semana')" style="flex:1;font-size:11px;">Esta semana</button>
+        <button class="btn btn-secondary" id="btnSelMes" onclick="seleccionarRango('mes')" style="flex:1;font-size:11px;">Este mes</button>
+        <button class="btn btn-secondary" onclick="deseleccionarTodo()" style="flex:1;font-size:11px;">Limpiar</button>
+      </div>
+
+      <div class="mesa-list" id="mesaList">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando mesas…</div>
+      </div>
+
+      <div class="panel-actions">
+        <span class="label">Generar flyers</span>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnGenerar" onclick="generarFlyers()" disabled>
+            🎨 Generar selección
+          </button>
+        </div>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-label" id="progressLabel"></div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div style="padding:14px;font-size:11px;color:var(--muted);line-height:1.6;">
+      <strong style="color:var(--ink2);">Imágenes generadas con IA</strong><br>
+      Cada flyer usa Stable Diffusion para crear una imagen basada en la sinopsis y el sistema de juego. La primera generación puede tardar ~30 segundos por mesa.
+    </div>
+  </div>
+
+  <!-- Panel derecho: preview -->
+  <div class="preview-area">
+    <div class="preview-header">
+      <span class="preview-title">Flyers generados</span>
+      <span class="preview-sub" id="flyerCount"></span>
+    </div>
+    <div class="flyers-grid" id="flyersGrid">
+      <div class="empty-state">
+        <div class="empty-icon">🗞️</div>
+        <div class="empty-text">Seleccioná mesas y hacé click en "Generar"</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
+  authDomain:"ciudadela-portal-88111.firebaseapp.com",
+  projectId:"ciudadela-portal-88111",
+  storageBucket:"ciudadela-portal-88111.firebasestorage.app",
+  messagingSenderId:"629290273583",
+  appId:"1:629290273583:web:47e321d389fb0e49a6afda"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── Estado ──────────────────────────────────────────────
+let ME = null, IS_ADMIN = false;
+let ALL_MESAS   = [];
+let SELECTED    = new Set();
+let HF_TOKEN    = null;
+
+const SYS_DOT = {
+  dnd:"#7a1515",d55:"#7a4a0a",pf:"#1a4a8a",
+  vam:"#4a1a5a",hw:"#1a4a1a",mag:"#1a1a6a",hun:"#6a3a0a",oth:"#555"
+};
+
+function sistemaToCode(s) {
+  if (!s) return "oth";
+  const n = s.toLowerCase();
+  if (n.includes("d&d 5.5")||n.includes("5.5e")) return "d55";
+  if (n.includes("d&d")||n.includes("dnd"))       return "dnd";
+  if (n.includes("pathfinder"))                    return "pf";
+  if (n.includes("vampiro"))                       return "vam";
+  if (n.includes("hombre lobo"))                   return "hw";
+  if (n.includes("mago"))                          return "mag";
+  if (n.includes("hunter"))                        return "hun";
+  return "oth";
+}
+
+function formatFechaFlyer(iso) {
+  if (!iso) return "A confirmar";
+  const d    = new Date(iso);
+  const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  const meses= ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const hh   = String(d.getHours()).padStart(2,"0");
+  const mm   = String(d.getMinutes()).padStart(2,"0");
+  return dias[d.getDay()]+"s · "+hh+":"+mm+"hs · "+meses[d.getMonth()]+" "+d.getFullYear();
+}
+
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function showToast(msg,err){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.className="toast show"+(err?" err":"");
+  setTimeout(()=>{t.className="toast";},4000);
+}
+
+// ── Auth ────────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  ME = user;
+  if (!user) { document.getElementById("guard").classList.add("show"); return; }
+
+  const snap = await db.collection("usuarios").doc(user.uid).get();
+  const profile = snap.exists ? snap.data() : {};
+  IS_ADMIN = (profile.roles||[]).includes("admin");
+
+  if (!IS_ADMIN) { document.getElementById("guard").classList.add("show"); return; }
+
+  document.getElementById("page").style.display = "grid";
+
+  // Cargar token HF y mesas
+  const [configSnap, mesasSnap] = await Promise.all([
+    db.collection("meta").doc("config").get(),
+    db.collection("mesas").get()
+  ]);
+
+  if (configSnap.exists) HF_TOKEN = configSnap.data().hf_token || null;
+  if (!HF_TOKEN) showToast("⚠️ hf_token no configurado en meta/config", true);
+
+  ALL_MESAS = mesasSnap.docs
+    .map(d => ({id:d.id,...d.data()}))
+    .filter(m => m.estado === "activa")
+    .sort((a,b) => {
+      if (!a.proximaFecha&&!b.proximaFecha) return 0;
+      if (!a.proximaFecha) return 1;
+      if (!b.proximaFecha) return -1;
+      return new Date(a.proximaFecha)-new Date(b.proximaFecha);
+    });
+
+  renderMesaList();
+});
+
+// ── Lista de mesas ───────────────────────────────────────
+function renderMesaList() {
+  const list = document.getElementById("mesaList");
+  if (!ALL_MESAS.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Sin mesas activas</div>';
+    return;
+  }
+  list.innerHTML = ALL_MESAS.map(m => {
+    const code = sistemaToCode(m.sistema);
+    const dot  = SYS_DOT[code]||"#888";
+    const sel  = SELECTED.has(m.id);
+    return `<div class="mesa-item ${sel?"selected":""}" onclick="toggleMesa('${m.id}')">
+      <div class="mesa-check">${sel?"✓":""}</div>
+      <div class="mesa-dot" style="background:${dot}"></div>
+      <div class="mesa-info">
+        <div class="mesa-nombre">${esc(m.nombre)}</div>
+        <div class="mesa-sistema">${esc(m.sistema||"Otro")} · ${m.proximaFecha ? new Date(m.proximaFecha).toLocaleDateString("es-AR",{day:"numeric",month:"short"}) : "Sin fecha"}</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  const count = SELECTED.size;
+  document.getElementById("selCount").textContent = count > 0 ? `(${count} seleccionadas)` : "";
+  document.getElementById("btnGenerar").disabled = count === 0;
+}
+
+function toggleMesa(id) {
+  if (SELECTED.has(id)) SELECTED.delete(id);
+  else SELECTED.add(id);
+  renderMesaList();
+}
+
+function seleccionarRango(rango) {
+  const ahora = new Date();
+  SELECTED.clear();
+  ALL_MESAS.forEach(m => {
+    if (!m.proximaFecha) return;
+    const f = new Date(m.proximaFecha);
+    if (rango === "semana") {
+      const fin = new Date(ahora); fin.setDate(ahora.getDate()+7);
+      if (f >= ahora && f <= fin) SELECTED.add(m.id);
+    } else {
+      if (f.getMonth()===ahora.getMonth() && f.getFullYear()===ahora.getFullYear()) SELECTED.add(m.id);
+    }
+  });
+  renderMesaList();
+}
+
+function deseleccionarTodo() { SELECTED.clear(); renderMesaList(); }
+
+// ── Generación de imagen con HF ──────────────────────────
+function buildPrompt(mesa) {
+  const code = sistemaToCode(mesa.sistema);
+  const basePrompts = {
+    dnd:  "fantasy dungeon scene, medieval adventurers, dragons, epic battle, digital painting",
+    d55:  "fantasy dungeon scene, epic heroes, magic spells, dark dungeon, cinematic",
+    pf:   "pathfinder fantasy rpg, exotic creatures, arcane magic, adventure scene",
+    vam:  "gothic vampire scene, dark city night, blood moon, neo-gothic architecture, mysterious",
+    hw:   "werewolf apocalypse scene, full moon, dark forest, gothic horror, atmospheric",
+    mag:  "mage wizard casting spells, arcane library, mystical portals, fantasy art",
+    hun:  "hunter vs supernatural, dark urban environment, noir style, gothic horror",
+    oth:  "tabletop rpg adventure scene, fantasy artwork, epic scene, dramatic lighting",
+  };
+  const base = basePrompts[code] || basePrompts.oth;
+  // Agregar keywords de la sinopsis
+  const sinopsis = (mesa.sinopsis || "").substring(0, 100);
+  return `${base}, ${sinopsis}, comic book style, ink outlines, vintage newspaper illustration, black and white with sepia tones, high contrast, detailed linework, no text`;
+}
+
+async function generarImagenHF(prompt) {
+  if (!HF_TOKEN) throw new Error("HF_TOKEN no configurado");
+
+  const resp = await fetch(
+    "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + HF_TOKEN,
+        "Content-Type":  "application/json"
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: { width: 768, height: 512, num_inference_steps: 4 }
+      })
+    }
+  );
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`HF API error ${resp.status}: ${err.substring(0,100)}`);
+  }
+
+  const blob = await resp.blob();
+  return URL.createObjectURL(blob);
+}
+
+// ── Dibujador del flyer en Canvas ────────────────────────
+async function dibujarFlyer(mesa, imgUrl) {
+  const W = 1080, H = 1080;
+  const canvas = document.createElement("canvas");
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // ── Fondo pergamino ──
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,   "#F5EDD8");
+  grad.addColorStop(0.3, "#EDE0C4");
+  grad.addColorStop(0.7, "#E8D8B8");
+  grad.addColorStop(1,   "#F0E6CC");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  // Textura de papel (ruido suave)
+  for (let i=0; i<8000; i++) {
+    const x = Math.random()*W, y = Math.random()*H;
+    const a = Math.random()*0.06;
+    ctx.fillStyle = `rgba(0,0,0,${a})`;
+    ctx.fillRect(x,y,1,1);
+  }
+
+  // ── Borde exterior ──
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(18,18,W-36,H-36);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(26,26,W-52,H-52);
+
+  // ── Header: "La Ciudadela" ──
+  ctx.fillStyle = "#1a0e05";
+  ctx.font = "bold 108px 'UnifrakturMaguntia', serif";
+  ctx.textAlign = "center";
+  ctx.fillText("La Ciudadela", W/2, 120);
+
+  // Línea separadora doble bajo título
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40,138); ctx.lineTo(W-40,138); ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40,145); ctx.lineTo(W-40,145); ctx.stroke();
+
+  // ── Subtítulo: Año · dirección · fecha ──
+  ctx.fillStyle = "#2a1a08";
+  ctx.font = "500 26px 'DM Sans', sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("AÑO 2", 50, 175);
+
+  ctx.textAlign = "center";
+  ctx.fillText("✦  LIMA 575 10° PISO · CABA  ✦", W/2, 175);
+
+  const mesAnio = new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"}).toUpperCase();
+  ctx.textAlign = "right";
+  ctx.fillText(mesAnio, W-50, 175);
+
+  // Línea bajo subtítulo
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(40,190); ctx.lineTo(W-40,190); ctx.stroke();
+
+  // ── Título de la aventura ──
+  ctx.fillStyle = "#1a0e05";
+  ctx.font = "bold 78px 'Oswald', sans-serif";
+  ctx.textAlign = "center";
+  const titulo = (mesa.nombre || "").toUpperCase();
+  // Ajustar tamaño si es muy largo
+  let fontSize = 78;
+  while (ctx.measureText(titulo).width > W-80 && fontSize > 36) {
+    fontSize -= 4;
+    ctx.font = `bold ${fontSize}px 'Oswald', sans-serif`;
+  }
+  ctx.fillText(titulo, W/2, 268);
+
+  // Línea bajo título
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40,286); ctx.lineTo(W-40,286); ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40,292); ctx.lineTo(W-40,292); ctx.stroke();
+
+  // ── Imagen central ──
+  const IMG_Y = 306, IMG_H = 400, IMG_X = 40, IMG_W = W-80;
+  if (imgUrl) {
+    try {
+      const img = await new Promise((res,rej) => {
+        const i = new Image(); i.crossOrigin="anonymous";
+        i.onload=()=>res(i); i.onerror=rej; i.src=imgUrl;
+      });
+      // Clip a rect
+      ctx.save();
+      ctx.beginPath(); ctx.rect(IMG_X, IMG_Y, IMG_W, IMG_H);
+      ctx.clip();
+      // Fit cover
+      const scale = Math.max(IMG_W/img.width, IMG_H/img.height);
+      const sw = img.width*scale, sh = img.height*scale;
+      ctx.drawImage(img, IMG_X+(IMG_W-sw)/2, IMG_Y+(IMG_H-sh)/2, sw, sh);
+      ctx.restore();
+      // Overlay sepia leve
+      ctx.fillStyle = "rgba(139,90,30,0.18)";
+      ctx.fillRect(IMG_X, IMG_Y, IMG_W, IMG_H);
+    } catch(e) {
+      drawImagePlaceholder(ctx, IMG_X, IMG_Y, IMG_W, IMG_H, mesa);
+    }
+  } else {
+    drawImagePlaceholder(ctx, IMG_X, IMG_Y, IMG_W, IMG_H, mesa);
+  }
+  // Borde de la imagen
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(IMG_X, IMG_Y, IMG_W, IMG_H);
+
+  // ── Sinopsis ──
+  const SIN_Y = IMG_Y + IMG_H + 20;
+  ctx.fillStyle = "#1a0e05";
+  ctx.font = "bold 24px 'Oswald', sans-serif";
+  ctx.textAlign = "left";
+  const sinTrunc = (mesa.sinopsis || "Sin sinopsis disponible").substring(0, 180);
+  ctx.fillText("BREVE SINOPSIS", 50, SIN_Y);
+
+  ctx.font = "400 22px 'DM Sans', sans-serif";
+  ctx.fillStyle = "#2a1a08";
+  const palabras = sinTrunc.split(" ");
+  let linea = "", y2 = SIN_Y + 30, maxW = W-100;
+  for (const p of palabras) {
+    const prueba = linea ? linea+" "+p : p;
+    if (ctx.measureText(prueba).width > maxW) {
+      ctx.fillText(linea, 50, y2); y2+=28; linea=p;
+      if (y2 > SIN_Y+90) { ctx.fillText(linea+"…", 50, y2); linea=""; break; }
+    } else { linea = prueba; }
+  }
+  if (linea) ctx.fillText(linea, 50, y2);
+
+  // ── Línea separadora footer ──
+  const FOOT_Y = H - 140;
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40, FOOT_Y); ctx.lineTo(W-40, FOOT_Y); ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, FOOT_Y+7); ctx.lineTo(W-40, FOOT_Y+7); ctx.stroke();
+
+  // ── Footer: sistema + días/horarios + narrador ──
+  const code = sistemaToCode(mesa.sistema);
+  const sysColors = {
+    dnd:"#7a1515",d55:"#7a4a0a",pf:"#1a4a8a",
+    vam:"#4a1a5a",hw:"#1a4a1a",mag:"#1a1a6a",hun:"#6a3a0a",oth:"#2a1a08"
+  };
+  const sysColor = sysColors[code]||"#2a1a08";
+
+  // Columna izquierda: sistema
+  ctx.fillStyle = sysColor;
+  ctx.font = "bold 36px 'Oswald', sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText((mesa.sistema || "OTRO SISTEMA").toUpperCase(), 50, FOOT_Y+52);
+
+  ctx.font = "500 20px 'DM Sans', sans-serif";
+  ctx.fillStyle = "#2a1a08";
+  ctx.fillText(mesa.periodicidad || "", 50, FOOT_Y+80);
+
+  // Columna derecha: días/horarios y narrador
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#1a0e05";
+  ctx.font = "bold 28px 'Oswald', sans-serif";
+  ctx.fillText("DÍAS Y HORARIOS", W-50, FOOT_Y+45);
+  ctx.font = "500 24px 'DM Sans', sans-serif";
+  ctx.fillStyle = "#2a1a08";
+  ctx.fillText(formatFechaFlyer(mesa.proximaFecha), W-50, FOOT_Y+75);
+  ctx.font = "bold 22px 'Oswald', sans-serif";
+  ctx.fillStyle = "#1a0e05";
+  ctx.fillText("NARRADOR: " + (mesa.dm || "A confirmar").toUpperCase(), W-50, FOOT_Y+105);
+
+  return canvas;
+}
+
+function drawImagePlaceholder(ctx, x, y, w, h, mesa) {
+  ctx.fillStyle = "#D4C4A0";
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = "#8a7050";
+  ctx.font = "bold 32px 'Oswald', sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("[ IMAGEN DE LA AVENTURA ]", x+w/2, y+h/2);
+}
+
+// ── Generador principal ──────────────────────────────────
+async function generarFlyers() {
+  const mesasSelec = ALL_MESAS.filter(m => SELECTED.has(m.id));
+  if (!mesasSelec.length) return;
+
+  const btn   = document.getElementById("btnGenerar");
+  const bar   = document.getElementById("progressBar");
+  const fill  = document.getElementById("progressFill");
+  const label = document.getElementById("progressLabel");
+  const grid  = document.getElementById("flyersGrid");
+
+  btn.disabled = true;
+  bar.style.display   = "block";
+  label.style.display = "block";
+  grid.innerHTML      = "";
+
+  let done = 0;
+  for (const mesa of mesasSelec) {
+    label.textContent = `Generando "${mesa.nombre}"… (${done+1}/${mesasSelec.length})`;
+    fill.style.width  = (done/mesasSelec.length*100)+"%";
+
+    let imgUrl = null;
+    if (HF_TOKEN) {
+      try {
+        const prompt = buildPrompt(mesa);
+        imgUrl = await generarImagenHF(prompt);
+      } catch(e) {
+        console.warn("HF error para", mesa.nombre, e.message);
+        showToast("Imagen no disponible para "+mesa.nombre+" — usando placeholder", false);
+      }
+    }
+
+    const canvas = await dibujarFlyer(mesa, imgUrl);
+
+    // Insertar en el grid
+    const wrap = document.createElement("div");
+    wrap.className = "flyer-wrapper";
+
+    const canvasWrap = document.createElement("div");
+    canvasWrap.className = "flyer-canvas-wrap";
+    canvasWrap.appendChild(canvas);
+
+    const meta = document.createElement("div");
+    meta.className = "flyer-meta";
+    meta.innerHTML = `
+      <span class="flyer-name">${esc(mesa.nombre)}</span>
+      <button class="btn-download" onclick="descargarFlyer(this)">↓ PNG</button>`;
+    meta.querySelector(".btn-download")._canvas = canvas;
+    meta.querySelector(".btn-download")._nombre = mesa.nombre;
+
+    wrap.appendChild(canvasWrap);
+    wrap.appendChild(meta);
+    grid.appendChild(wrap);
+
+    done++;
+    fill.style.width = (done/mesasSelec.length*100)+"%";
+  }
+
+  label.textContent   = `✓ ${done} flyer${done!==1?"s":""} generado${done!==1?"s":""}`;
+  btn.disabled        = false;
+  document.getElementById("flyerCount").textContent = `${done} generado${done!==1?"s":""}`;
+  showToast(`✓ ${done} flyer${done!==1?"s":""} listos para descargar`);
+}
+
+function descargarFlyer(btn) {
+  const canvas = btn._canvas;
+  const nombre = btn._nombre || "flyer";
+  const link   = document.createElement("a");
+  link.download = nombre.replace(/[^a-z0-9]/gi,"_").toLowerCase() + "_flyer.png";
+  link.href      = canvas.toDataURL("image/png");
+  link.click();
+}
+</script>
+</body>
+</html>
