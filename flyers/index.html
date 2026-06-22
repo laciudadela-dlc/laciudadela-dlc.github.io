@@ -298,59 +298,33 @@ function seleccionarRango(rango) {
 
 function deseleccionarTodo() { SELECTED.clear(); renderMesaList(); }
 
-// ── Generación de imagen con HF ──────────────────────────
-function buildPrompt(mesa) {
-  const code = sistemaToCode(mesa.sistema);
-  const basePrompts = {
-    dnd:  "fantasy dungeon scene, medieval adventurers, dragons, epic battle, digital painting",
-    d55:  "fantasy dungeon scene, epic heroes, magic spells, dark dungeon, cinematic",
-    pf:   "pathfinder fantasy rpg, exotic creatures, arcane magic, adventure scene",
-    vam:  "gothic vampire scene, dark city night, blood moon, neo-gothic architecture, mysterious",
-    hw:   "werewolf apocalypse scene, full moon, dark forest, gothic horror, atmospheric",
-    mag:  "mage wizard casting spells, arcane library, mystical portals, fantasy art",
-    hun:  "hunter vs supernatural, dark urban environment, noir style, gothic horror",
-    oth:  "tabletop rpg adventure scene, fantasy artwork, epic scene, dramatic lighting",
-  };
-  const base = basePrompts[code] || basePrompts.oth;
-  // Agregar keywords de la sinopsis
-  const sinopsis = (mesa.sinopsis || "").substring(0, 100);
-  return `${base}, ${sinopsis}, comic book style, ink outlines, vintage newspaper illustration, black and white with sepia tones, high contrast, detailed linework, no text`;
-}
+// ── Generación via GitHub Actions ───────────────────────
+async function dispararGeneracion(mesaIds, jobId) {
+  const configSnap = await db.collection('meta').doc('config').get();
+  const ghToken    = configSnap.exists ? configSnap.data().gh_dispatch_token : null;
+  if (!ghToken) throw new Error("gh_dispatch_token no configurado");
 
-async function generarImagenHF(prompt) {
-  if (!HF_TOKEN) throw new Error("HF_TOKEN no configurado");
-
-  // Endpoint Together via HF proxy (2025)
   const resp = await fetch(
-    "https://huggingface.co/api/inference-proxy/together/v1/images/generations",
+    "https://api.github.com/repos/laciudadela-dlc/laciudadela-dlc.github.io/dispatches",
     {
-      method: "POST",
+      method:  "POST",
       headers: {
-        "Authorization": "Bearer " + HF_TOKEN,
-        "Content-Type":  "application/json"
+        "Accept":               "application/vnd.github+json",
+        "Authorization":        "Bearer " + ghToken,
+        "Content-Type":         "application/json",
+        "X-GitHub-Api-Version": "2022-11-28"
       },
       body: JSON.stringify({
-        model:  "black-forest-labs/FLUX.1-schnell",
-        prompt: prompt,
-        n:      1,
-        size:   "1024x576"
+        event_type:     "generate_flyers",
+        client_payload: { mesa_ids: mesaIds, job_id: jobId }
       })
     }
   );
-
-  if (!resp.ok) {
+  if (resp.status !== 204) {
     const txt = await resp.text();
-    throw new Error("HF API error " + resp.status + ": " + txt.substring(0,150));
+    throw new Error("GitHub dispatch error " + resp.status + ": " + txt.substring(0,100));
   }
-
-  const json = await resp.json();
-  const item = json?.data?.[0];
-  if (!item) throw new Error("Sin datos: " + JSON.stringify(json).substring(0,100));
-  if (item.url)      return item.url;
-  if (item.b64_json) return "data:image/png;base64," + item.b64_json;
-  throw new Error("Formato inesperado");
 }
-
 
 // ── Dibujador del flyer en Canvas ────────────────────────
 async function dibujarFlyer(mesa, imgUrl) {
@@ -548,58 +522,130 @@ async function generarFlyers() {
   const label = document.getElementById("progressLabel");
   const grid  = document.getElementById("flyersGrid");
 
-  btn.disabled = true;
-  bar.style.display   = "block";
+  btn.disabled      = true;
+  bar.style.display = "block";
   label.style.display = "block";
-  grid.innerHTML      = "";
+  fill.style.width  = "5%";
 
-  let done = 0;
-  for (const mesa of mesasSelec) {
-    label.textContent = `Generando "${mesa.nombre}"… (${done+1}/${mesasSelec.length})`;
-    fill.style.width  = (done/mesasSelec.length*100)+"%";
+  // Generar Job ID único
+  const jobId = "job_" + Date.now();
 
-    let imgUrl = null;
-    if (HF_TOKEN) {
-      try {
-        const prompt = buildPrompt(mesa);
-        imgUrl = await generarImagenHF(prompt);
-      } catch(e) {
-        console.warn("HF error para", mesa.nombre, e.message);
-        showToast("Imagen no disponible para "+mesa.nombre+" — usando placeholder", false);
+  // Mostrar estado de espera
+  grid.innerHTML = `
+    <div style="grid-column:1/-1;text-align:center;padding:48px 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px;">
+        Generando ${mesasSelec.length} flyer${mesasSelec.length!==1?"s":""}…
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);max-width:360px;margin:0 auto;line-height:1.6;">
+        Las imágenes se están generando con IA en el servidor.<br>
+        Esto puede tardar <strong>1-2 minutos</strong>. No cierres esta página.
+      </div>
+      <div id="jobStatus" style="margin-top:20px;font-size:13px;color:var(--muted);"></div>
+    </div>`;
+
+  label.textContent = "Enviando solicitud a GitHub Actions…";
+
+  try {
+    await dispararGeneracion(mesasSelec.map(m => m.id), jobId);
+    label.textContent = "✓ Solicitud enviada — esperando generación…";
+    fill.style.width  = "15%";
+  } catch(e) {
+    showToast("Error al disparar la generación: " + e.message, true);
+    btn.disabled = false;
+    bar.style.display = label.style.display = "none";
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Error al iniciar la generación</div></div>';
+    return;
+  }
+
+  // Escuchar Firestore para saber cuando terminan
+  const unsub = db.collection("flyer_jobs").doc(jobId)
+    .onSnapshot(async snap => {
+      if (!snap.exists) return;
+      const job = snap.data();
+
+      const total    = job.total || mesasSelec.length;
+      const listos   = Object.values(job.mesas || {}).filter(m => m.estado === "listo").length;
+      const enError  = Object.values(job.mesas || {}).filter(m => m.estado === "error").length;
+      const progreso = Math.round((listos + enError) / total * 100);
+
+      fill.style.width  = Math.max(15, progreso) + "%";
+      label.textContent = `Generando imágenes… ${listos}/${total} listos`;
+
+      const statusEl = document.getElementById("jobStatus");
+      if (statusEl) {
+        const items = Object.values(job.mesas || {});
+        statusEl.innerHTML = items.map(m =>
+          `<div style="margin:4px 0;">${m.estado==="listo"?"✅":m.estado==="error"?"❌":"⏳"} ${esc(m.nombre||"")}</div>`
+        ).join("");
       }
+
+      if (job.estado === "completo" || job.estado === "completo_con_errores") {
+        unsub(); // dejar de escuchar
+        fill.style.width  = "100%";
+        label.textContent = `✓ ${listos} generados, ${enError} errores`;
+        await mostrarFlyers(mesasSelec, job);
+        btn.disabled = false;
+      }
+    }, err => {
+      console.error("Firestore listener error:", err);
+      showToast("Error al escuchar el estado", true);
+      btn.disabled = false;
+    });
+
+  // Timeout de seguridad (5 minutos)
+  setTimeout(() => {
+    unsub();
+    btn.disabled = false;
+    if (label.textContent.includes("Generando")) {
+      label.textContent = "⚠️ Timeout — revisá Actions en GitHub";
+      showToast("La generación tardó demasiado. Revisá GitHub Actions.", true);
     }
+  }, 5 * 60 * 1000);
+}
 
-    const canvas = await dibujarFlyer(mesa, imgUrl);
+async function mostrarFlyers(mesas, job) {
+  const grid = document.getElementById("flyersGrid");
+  grid.innerHTML = "";
 
-    // Insertar en el grid
+  let count = 0;
+  for (const mesa of mesas) {
+    const mesaJob = (job.mesas||{})[mesa.id];
+    if (!mesaJob || mesaJob.estado !== "listo") continue;
+
+    // Leer datos del flyer generado
+    const flyerSnap = await db.collection("flyers").doc(mesa.id).get();
+    if (!flyerSnap.exists) continue;
+
+    const flyerData = flyerSnap.data();
+    const canvas    = await dibujarFlyer(flyerData, flyerData.imgDataUrl);
+
     const wrap = document.createElement("div");
     wrap.className = "flyer-wrapper";
 
-    const canvasWrap = document.createElement("div");
-    canvasWrap.className = "flyer-canvas-wrap";
-    canvasWrap.appendChild(canvas);
+    const cWrap = document.createElement("div");
+    cWrap.className = "flyer-canvas-wrap";
+    cWrap.appendChild(canvas);
 
     const meta = document.createElement("div");
     meta.className = "flyer-meta";
-    meta.innerHTML = `
-      <span class="flyer-name">${esc(mesa.nombre)}</span>
-      <button class="btn-download" onclick="descargarFlyer(this)">↓ PNG</button>`;
-    meta.querySelector(".btn-download")._canvas = canvas;
-    meta.querySelector(".btn-download")._nombre = mesa.nombre;
+    meta.innerHTML = `<span class="flyer-name">${esc(mesa.nombre)}</span>
+      <button class="btn-download">↓ PNG</button>`;
+    const dlBtn = meta.querySelector(".btn-download");
+    dlBtn._canvas = canvas;
+    dlBtn._nombre = mesa.nombre;
+    dlBtn.addEventListener("click", () => descargarFlyer(dlBtn));
 
-    wrap.appendChild(canvasWrap);
+    wrap.appendChild(cWrap);
     wrap.appendChild(meta);
     grid.appendChild(wrap);
-
-    done++;
-    fill.style.width = (done/mesasSelec.length*100)+"%";
+    count++;
   }
 
-  label.textContent   = `✓ ${done} flyer${done!==1?"s":""} generado${done!==1?"s":""}`;
-  btn.disabled        = false;
-  document.getElementById("flyerCount").textContent = `${done} generado${done!==1?"s":""}`;
-  showToast(`✓ ${done} flyer${done!==1?"s":""} listos para descargar`);
+  document.getElementById("flyerCount").textContent = `${count} generado${count!==1?"s":""}`;
+  if (count > 0) showToast(`✓ ${count} flyer${count!==1?"s":""} listos para descargar`);
 }
+
 
 function descargarFlyer(btn) {
   const canvas = btn._canvas;
