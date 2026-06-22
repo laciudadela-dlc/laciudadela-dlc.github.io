@@ -320,20 +320,24 @@ function buildPrompt(mesa) {
 async function generarImagenHF(prompt) {
   if (!HF_TOKEN) throw new Error("HF_TOKEN no configurado");
 
-  // Usar router HF que tiene CORS habilitado
+  // HF Inference API — text-to-image, devuelve blob
   const resp = await fetch(
-    "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell/v1/images/generations",
+    "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
     {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + HF_TOKEN,
         "Content-Type":  "application/json",
-        "x-use-cache":   "0"
+        "x-wait-for-model": "true"
       },
       body: JSON.stringify({
-        prompt:  prompt,
-        n:       1,
-        size:    "1024x512"
+        inputs: prompt,
+        parameters: {
+          width:               768,
+          height:              512,
+          num_inference_steps: 20,
+          guidance_scale:      7.5
+        }
       })
     }
   );
@@ -343,11 +347,13 @@ async function generarImagenHF(prompt) {
     throw new Error(`HF API error ${resp.status}: ${err.substring(0,100)}`);
   }
 
-  const json = await resp.json();
-  // Router devuelve { data: [{ url: "..." }] } o { images: [{ url: "..." }] }
-  const imgUrl = json?.data?.[0]?.url || json?.images?.[0]?.url || null;
-  if (!imgUrl) throw new Error("Sin URL de imagen: " + JSON.stringify(json).substring(0,100));
-  return imgUrl;
+  // SDXL devuelve la imagen como blob binario
+  if (!resp.ok) {
+    const txt = await resp.text();
+    throw new Error("HF API error " + resp.status + ": " + txt.substring(0,150));
+  }
+  const blob = await resp.blob();
+  return URL.createObjectURL(blob);
 }
 
 // ── Dibujador del flyer en Canvas ────────────────────────
