@@ -412,7 +412,22 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 
   <!-- ── SECCIÓN MESAS ── -->
   <div class="section" id="sec-mesas">
-    <div class="panel-card">
+        <!-- Panel GPS Override -->
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="font-size:24px;">📍</span>
+        <div style="flex:1;">
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--ink);">Override GPS del timbre</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);margin-top:2px;" id="gpsOverrideStatus">Cargando…</div>
+        </div>
+        <button id="gpsOverrideBtn" onclick="toggleGpsOverride()"
+          style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:7px 16px;border-radius:6px;cursor:pointer;border:none;background:#F3F4F6;color:#374151;">
+          Cargando…
+        </button>
+      </div>
+    </div>
+
+<div class="panel-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h2 style="font-family:\'DM Sans\',sans-serif;font-size:16px;font-weight:700;color:var(--ink);">
           Solicitudes de ingreso
@@ -501,6 +516,7 @@ auth.onAuthStateChanged(async function(user){
   loadRoles();
   loadAdminConversations(user.uid);
   loadMesasAdmin();
+  loadGpsOverride();
 });
 
 // ── USUARIOS ─────────────────────────────────────────
@@ -1067,6 +1083,50 @@ function showToastAdmin(msg, isError) {
   }, 3000);
 }
 
+
+
+// ══ GPS OVERRIDE (ADMIN) ══════════════════════════════
+async function loadGpsOverride() {
+  try {
+    var snap = await db.collection('meta').doc('config').get();
+    var override = snap.exists ? (snap.data().gps_override === true) : false;
+    updateGpsOverrideUI(override);
+  } catch(e) { console.error('loadGpsOverride:', e); }
+}
+
+function updateGpsOverrideUI(active) {
+  var btn    = document.getElementById('gpsOverrideBtn');
+  var status = document.getElementById('gpsOverrideStatus');
+  if (!btn || !status) return;
+  if (active) {
+    btn.textContent      = '✓ Activo';
+    btn.style.background = '#DCFCE7';
+    btn.style.color      = '#166534';
+    status.textContent   = '⚠️ Verificación GPS desactivada — cualquiera puede tocar el timbre';
+  } else {
+    btn.textContent      = '✗ Inactivo';
+    btn.style.background = '#F3F4F6';
+    btn.style.color      = '#374151';
+    status.textContent   = 'Normal — solo desde Lima 575 (≤35m)';
+  }
+}
+
+window.toggleGpsOverride = async function() {
+  try {
+    var snap    = await db.collection('meta').doc('config').get();
+    var current = snap.exists ? (snap.data().gps_override === true) : false;
+    var next    = !current;
+    await db.collection('meta').doc('config').set(
+      { gps_override: next },
+      { merge: true }
+    );
+    updateGpsOverrideUI(next);
+    showToastAdmin(next ? '⚠️ Override GPS activado — modo prueba' : '✓ Override GPS desactivado');
+  } catch(e) {
+    console.error('toggleGpsOverride:', e);
+    showToastAdmin('Error al cambiar el override', true);
+  }
+};
 
 </script>
 </body>
