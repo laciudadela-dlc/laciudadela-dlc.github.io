@@ -167,10 +167,10 @@ html,body{min-height:100%;background:var(--bg2);font-family:'DM Sans',sans-serif
 
 <!-- Header -->
 <header class="header">
+  <a class="header-back" href="../">← Portal</a>
   <img class="header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela">
   <span class="header-wordmark">Inscripción a Mesas</span>
-  <a class="header-back" href="../">← Portal</a>
-  <div class="header-user" id="headerUser"></div>
+    <div class="header-user" id="headerUser"></div>
 </header>
 
 <!-- Mobile filter bar -->
@@ -360,7 +360,7 @@ async function loadMesas() {
 
 // ── Filtros ─────────────────────────────────────────────
 function buildSysFilters() {
-  const isAdmin = MY_PROFILE?.roles?.includes('admin');
+  const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   const mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
 
   // Contar por sistema
@@ -419,7 +419,7 @@ window.setSubView = (sub) => {
 
 // ── Render ──────────────────────────────────────────────
 function render() {
-  const isAdmin = MY_PROFILE?.roles?.includes('admin');
+  const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   let mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
 
   // Filtrar por sistema
@@ -529,6 +529,9 @@ function makeCard(mesa, isAdmin) {
     } else if (!isAdmin) {
       actionHtml = `<button class="btn-solicitar" onclick="solicitarMesa('${mesa.id}')">+ Solicitar unirse</button>`;
     }
+  } else {
+    // No logueado: mostrar botón que pide login
+    actionHtml = `<button class="btn-solicitar" onclick="openLogin()" style="background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);">Ingresá para solicitar</button>`;
   }
 
   // Jugadores confirmados
