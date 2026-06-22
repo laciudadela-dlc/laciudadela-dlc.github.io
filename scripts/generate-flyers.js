@@ -102,6 +102,31 @@ async function generarImagen(prompt, mesaId) {
 }
 
 
+async function urlToBase64(url) {
+  return new Promise((resolve, reject) => {
+    const mod = url.startsWith('https') ? require('https') : require('http');
+    mod.get(url, res => {
+      // Seguir redirects
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        urlToBase64(res.headers.location).then(resolve).catch(reject);
+        return;
+      }
+      if (res.statusCode !== 200) {
+        reject(new Error(`Download error ${res.statusCode}`));
+        return;
+      }
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        const b64 = Buffer.concat(chunks).toString('base64');
+        const mime = res.headers['content-type'] || 'image/jpeg';
+        resolve(`data:${mime};base64,${b64}`);
+      });
+    }).on('error', reject);
+  });
+}
+
+
 async function actualizarEstado(jobId, mesaId, estado, extra) {
   await db.collection('flyer_jobs').doc(jobId).set({
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -148,6 +173,19 @@ async function main() {
       console.log(`  Prompt: ${prompt.substring(0, 80)}...`);
       const dataUrl = await generarImagen(prompt, mesaId);
 
+      // Convertir URL a base64 para evitar CORS en el browser
+      let imgFinal = dataUrl;
+      if (dataUrl && dataUrl.startsWith('http')) {
+        console.log('  Descargando imagen para convertir a base64...');
+        try {
+          imgFinal = await urlToBase64(dataUrl);
+          console.log('  ✓ Convertida a base64 (' + Math.round(imgFinal.length/1024) + 'KB)');
+        } catch(e) {
+          console.warn('  No se pudo convertir a base64:', e.message);
+          imgFinal = dataUrl; // usar URL original como fallback
+        }
+      }
+
       // Guardar en Firestore
       await db.collection('flyers').doc(mesaId).set({
         mesaId,
@@ -157,7 +195,7 @@ async function main() {
         sinopsis:  mesa.sinopsis || '',
         periodicidad: mesa.periodicidad || '',
         proximaFecha: mesa.proximaFecha || null,
-        imgDataUrl: dataUrl,
+        imgDataUrl: imgFinal,
         generadoEn: admin.firestore.FieldValue.serverTimestamp(),
         jobId:      JOB_ID,
       });
