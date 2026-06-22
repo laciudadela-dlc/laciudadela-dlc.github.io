@@ -320,17 +320,20 @@ function buildPrompt(mesa) {
 async function generarImagenHF(prompt) {
   if (!HF_TOKEN) throw new Error("HF_TOKEN no configurado");
 
+  // Usar router HF que tiene CORS habilitado
   const resp = await fetch(
-    "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+    "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell/v1/images/generations",
     {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + HF_TOKEN,
-        "Content-Type":  "application/json"
+        "Content-Type":  "application/json",
+        "x-use-cache":   "0"
       },
       body: JSON.stringify({
-        inputs: prompt,
-        parameters: { width: 768, height: 512, num_inference_steps: 4 }
+        prompt:  prompt,
+        n:       1,
+        size:    "1024x512"
       })
     }
   );
@@ -340,8 +343,11 @@ async function generarImagenHF(prompt) {
     throw new Error(`HF API error ${resp.status}: ${err.substring(0,100)}`);
   }
 
-  const blob = await resp.blob();
-  return URL.createObjectURL(blob);
+  const json = await resp.json();
+  // Router devuelve { data: [{ url: "..." }] } o { images: [{ url: "..." }] }
+  const imgUrl = json?.data?.[0]?.url || json?.images?.[0]?.url || null;
+  if (!imgUrl) throw new Error("Sin URL de imagen: " + JSON.stringify(json).substring(0,100));
+  return imgUrl;
 }
 
 // ── Dibujador del flyer en Canvas ────────────────────────
