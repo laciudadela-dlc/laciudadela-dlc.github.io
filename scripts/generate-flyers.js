@@ -53,46 +53,26 @@ function buildPrompt(mesa) {
 
 async function generarImagen(prompt, mesaId) {
   return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      inputs: prompt,
-      parameters: { width: 768, height: 512, num_inference_steps: 25 }
-    });
-
-    // Endpoint nuevo HF (2025) — inference providers
-    const options = {
-      hostname: 'huggingface.co',
-      path:     '/api/inference-proxy/replicate/v1/models/stability-ai/sdxl/predictions',
-      method:   'POST',
-      headers:  {
-        'Authorization': 'Bearer ' + HF_TOKEN,
-        'Content-Type':  'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
-    };
-
-    // Fallback: usar fetch nativo de Node 18+ con URL alternativa
-    const https2 = require('https');
-    const url    = `https://huggingface.co/api/inference-proxy/together/v1/images/generations`;
-
-    const bodyTogether = JSON.stringify({
+    // Endpoint correcto: router.huggingface.co (inference providers 2025)
+    const bodyStr = JSON.stringify({
       model:  "black-forest-labs/FLUX.1-schnell",
       prompt: prompt,
       n:      1,
       size:   "1024x576"
     });
 
-    const opts2 = {
-      hostname: 'huggingface.co',
-      path:     '/api/inference-proxy/together/v1/images/generations',
+    const opts = {
+      hostname: 'router.huggingface.co',
+      path:     '/together/v1/images/generations',
       method:   'POST',
       headers:  {
         'Authorization': 'Bearer ' + HF_TOKEN,
         'Content-Type':  'application/json',
-        'Content-Length': Buffer.byteLength(bodyTogether)
+        'Content-Length': Buffer.byteLength(bodyStr)
       }
     };
 
-    const req = https2.request(opts2, res => {
+    const req = https.request(opts, res => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
       res.on('end', () => {
@@ -102,22 +82,25 @@ async function generarImagen(prompt, mesaId) {
           return;
         }
         try {
-          const json  = JSON.parse(txt);
-          const item  = json?.data?.[0];
+          const json = JSON.parse(txt);
+          const item = json?.data?.[0];
           if (!item) { reject(new Error('Sin datos: ' + txt.substring(0,100))); return; }
           if (item.url)      { resolve(item.url); return; }
           if (item.b64_json) { resolve('data:image/png;base64,' + item.b64_json); return; }
-          reject(new Error('Formato inesperado: ' + txt.substring(0,100)));
-        } catch(e) { reject(new Error('JSON parse error: ' + txt.substring(0,100))); }
+          reject(new Error('Formato inesperado: ' + JSON.stringify(item).substring(0,100)));
+        } catch(e) {
+          reject(new Error('JSON parse error: ' + txt.substring(0,150)));
+        }
       });
     });
 
     req.on('error', reject);
     req.setTimeout(120000, () => { req.destroy(); reject(new Error('Timeout 120s')); });
-    req.write(bodyTogether);
+    req.write(bodyStr);
     req.end();
   });
 }
+
 
 async function actualizarEstado(jobId, mesaId, estado, extra) {
   await db.collection('flyer_jobs').doc(jobId).set({
