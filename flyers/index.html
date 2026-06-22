@@ -565,8 +565,12 @@ async function generarFlyers() {
       const job = snap.data();
 
       const total    = job.total || mesasSelec.length;
-      const listos   = Object.values(job.mesas || {}).filter(m => m.estado === "listo").length;
-      const enError  = Object.values(job.mesas || {}).filter(m => m.estado === "error").length;
+      // Los campos se guardan como "mesas.{id}" con notación de punto
+      const mesaVals = Object.entries(job)
+        .filter(([k]) => k.startsWith("mesas."))
+        .map(([,v]) => v);
+      const listos  = mesaVals.filter(m => m.estado === "listo").length;
+      const enError = mesaVals.filter(m => m.estado === "error").length;
       const progreso = Math.round((listos + enError) / total * 100);
 
       fill.style.width  = Math.max(15, progreso) + "%";
@@ -574,7 +578,9 @@ async function generarFlyers() {
 
       const statusEl = document.getElementById("jobStatus");
       if (statusEl) {
-        const items = Object.values(job.mesas || {});
+        const items = Object.entries(job)
+          .filter(([k]) => k.startsWith("mesas."))
+          .map(([,v]) => v);
         statusEl.innerHTML = items.map(m =>
           `<div style="margin:4px 0;">${m.estado==="listo"?"✅":m.estado==="error"?"❌":"⏳"} ${esc(m.nombre||"")}</div>`
         ).join("");
@@ -611,8 +617,9 @@ async function mostrarFlyers(mesas, job) {
 
   let count = 0;
   for (const mesa of mesas) {
-    const mesaJob = (job.mesas||{})[mesa.id];
-    console.log("Mesa", mesa.id, "estado:", mesaJob?.estado);
+    // Firestore guarda con notación de punto: "mesas.{id}" como campo literal
+    const mesaJob = job["mesas." + mesa.id] || (job.mesas||{})[mesa.id];
+    console.log("Mesa", mesa.id, "estado:", mesaJob?.estado, "key:", "mesas."+mesa.id);
     if (!mesaJob || (mesaJob.estado !== "listo" && mesaJob.estado !== "Listo")) continue;
 
     // Leer datos del flyer generado
