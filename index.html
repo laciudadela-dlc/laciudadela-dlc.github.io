@@ -796,8 +796,8 @@ function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 // ══ TIMBRE ════════════════════════════════════════════
-const CIUDADELA_LAT  = -34.60876;
-const CIUDADELA_LNG  = -58.37218;
+const CIUDADELA_LAT  = -34.614915916509204;
+const CIUDADELA_LNG  = -58.381865638383225;
 const RADIO_MAX_M    = 35;        // metros de tolerancia
 const COOLDOWN_ANON  = 5 * 60 * 1000; // 5 min para anónimos
 const GH_REPO        = "laciudadela-dlc/laciudadela-dlc.github.io";
@@ -822,12 +822,28 @@ function showTimbreToast(msg, tipo) {
 }
 
 // Verificar geolocalización al cargar
-function initTimbre() {
+async function initTimbre() {
   const btn = document.getElementById("timbreBtn");
   const sub = document.getElementById("timbreSub");
 
   if (!navigator.geolocation) {
     sub.textContent = "GPS no disponible en este dispositivo";
+    return;
+  }
+
+  // Verificar override de GPS desde Firestore
+  let gpsOverride = false;
+  try {
+    const configSnap = await db.collection("timbres").limit(0).get().catch(() => null);
+    const metaSnap = await db.collection("meta").doc("config").get();
+    if (metaSnap.exists) {
+      gpsOverride = metaSnap.data().gps_override === true;
+    }
+  } catch(e) { /* sin override */ }
+
+  if (gpsOverride) {
+    btn.disabled = false;
+    sub.textContent = "⚠️ Modo prueba — verificación GPS desactivada";
     return;
   }
 
