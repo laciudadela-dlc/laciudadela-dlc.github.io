@@ -113,6 +113,13 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
         <button class="btn btn-secondary" onclick="deseleccionarTodo()" style="flex:1;font-size:11px;">Limpiar</button>
       </div>
 
+      <div style="padding:8px 0 4px;">
+        <input id="flyerSearch" type="text" placeholder="Buscar mesa…"
+          oninput="filtrarMesasList(this.value)"
+          style="width:100%;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;
+          border:1px solid var(--brd);border-radius:6px;background:var(--bg2);
+          color:var(--ink);outline:none;">
+      </div>
       <div class="mesa-list" id="mesaList">
         <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando mesas…</div>
       </div>
@@ -249,6 +256,21 @@ auth.onAuthStateChanged(async user => {
 });
 
 // ── Lista de mesas ───────────────────────────────────────
+function filtrarMesasList(q) {
+  var term = (q || '').toLowerCase().trim();
+  var items = document.querySelectorAll('.mesa-item');
+  items.forEach(function(item) {
+    var nombre  = (item.querySelector('.mesa-nombre')?.textContent || '').toLowerCase();
+    var sistema = (item.querySelector('.mesa-sistema')?.textContent || '').toLowerCase();
+    if (!term || nombre.includes(term) || sistema.includes(term)) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+
 function renderMesaList() {
   const list = document.getElementById("mesaList");
   if (!ALL_MESAS.length) {
