@@ -169,14 +169,40 @@ async function main() {
     await actualizarEstado(JOB_ID, mesaId, 'generando', { nombre: mesa.nombre });
 
     try {
-      const prompt  = buildPrompt(mesa);
-      console.log(`  Prompt: ${prompt.substring(0, 80)}...`);
-      let dataUrl = await generarImagen(prompt, mesaId);
+      let dataUrl = null;
 
-      // Si la mesa tiene imagen manual, usarla en lugar de la generada por IA
+      // Si la mesa tiene imagen manual, usarla directamente sin llamar a HF
       if (mesa.imagenFlyer) {
-        console.log('  ✓ Usando imagen manual de la mesa');
+        console.log('  ✓ Usando imagen manual — sin llamada a HF');
         dataUrl = mesa.imagenFlyer;
+      } else {
+        const prompt = buildPrompt(mesa);
+        console.log(`  Prompt: ${prompt.substring(0, 80)}...`);
+
+        // Delay entre mesas que usan HF para evitar rate limit
+        const mesasQueNecesitanHF = MESA_IDS.filter((id, i) => {
+          const m = mesasMap[id];
+          return m && !m.imagenFlyer && MESA_IDS.indexOf(id) < MESA_IDS.indexOf(mesaId);
+        });
+        if (mesasQueNecesitanHF.length > 0) {
+          console.log('  Esperando 10s para evitar rate limit...');
+          await new Promise(r => setTimeout(r, 10000));
+        }
+
+        // Hasta 2 intentos en caso de 429
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            dataUrl = await generarImagen(prompt, mesaId);
+            break;
+          } catch(retryErr) {
+            if (retryErr.message.includes('429') && attempt < 2) {
+              console.log(`  Rate limit, reintentando en 30s...`);
+              await new Promise(r => setTimeout(r, 30000));
+            } else {
+              throw retryErr;
+            }
+          }
+        }
       }
 
       // Convertir URL a base64 para evitar CORS en el browser
