@@ -330,12 +330,23 @@ async function dispararGeneracion(mesaIds, jobId) {
 async function dibujarFlyer(mesa, imgUrl) {
   // Esperar que las fuentes estén completamente cargadas
   await document.fonts.ready;
-  // Forzar carga de fuentes específicas
   await Promise.all([
     document.fonts.load("bold 108px 'UnifrakturMaguntia'"),
     document.fonts.load("bold 78px 'Oswald'"),
     document.fonts.load("400 22px 'DM Sans'"),
   ]).catch(() => {});
+
+  // Forzar que el browser active las fuentes dibujando texto invisible en un canvas temporal
+  const _tmpCanvas = document.createElement("canvas");
+  _tmpCanvas.width = 10; _tmpCanvas.height = 10;
+  const _tmpCtx = _tmpCanvas.getContext("2d");
+  _tmpCtx.globalAlpha = 0;
+  _tmpCtx.font = "bold 108px 'UnifrakturMaguntia', serif";
+  _tmpCtx.fillText("La Ciudadela", 0, 10);
+  _tmpCtx.font = "bold 78px 'Oswald', sans-serif";
+  _tmpCtx.fillText("X", 0, 10);
+  // Pequeña pausa para que el render se complete
+  await new Promise(r => setTimeout(r, 200));
 
   const W = 1080, H = 1080;
   const canvas = document.createElement("canvas");
