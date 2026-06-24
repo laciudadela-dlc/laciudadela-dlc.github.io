@@ -173,6 +173,12 @@ async function main() {
       console.log(`  Prompt: ${prompt.substring(0, 80)}...`);
       const dataUrl = await generarImagen(prompt, mesaId);
 
+      // Si la mesa tiene imagen manual, usarla en lugar de la generada por IA
+      if (mesa.imagenFlyer) {
+        console.log('  ✓ Usando imagen manual de la mesa');
+        dataUrl = mesa.imagenFlyer;
+      }
+
       // Convertir URL a base64 para evitar CORS en el browser
       let imgFinal = dataUrl;
       if (dataUrl && dataUrl.startsWith('http')) {
