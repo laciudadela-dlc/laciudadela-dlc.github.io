@@ -551,10 +551,11 @@ async function generarFlyers() {
     label.textContent = "✓ Solicitud enviada — esperando generación…";
     fill.style.width  = "15%";
   } catch(e) {
-    showToast("Error al disparar la generación: " + e.message, true);
+    console.error("Dispatch error:", e);
+    showToast("Error de red al conectar con GitHub. Probá desde otra red o datos móviles.", true);
     btn.disabled = false;
     bar.style.display = label.style.display = "none";
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Error al iniciar la generación</div></div>';
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Error de conexión. Probá desde otra red.</div></div>';
     return;
   }
 
@@ -619,8 +620,9 @@ async function mostrarFlyers(mesas, job) {
   for (const mesa of mesas) {
     // Firestore guarda con notación de punto: "mesas.{id}" como campo literal
     const mesaJob = job["mesas." + mesa.id] || (job.mesas||{})[mesa.id];
-    console.log("Mesa", mesa.id, "estado:", mesaJob?.estado, "key:", "mesas."+mesa.id);
-    if (!mesaJob || (mesaJob.estado !== "listo" && mesaJob.estado !== "Listo")) continue;
+    if (!mesaJob) { console.log("Mesa", mesa.id, "sin datos en job"); continue; }
+    if (mesaJob.estado === "error") { console.log("Mesa", mesa.id, "con error:", mesaJob.error); continue; }
+    if (mesaJob.estado !== "listo" && mesaJob.estado !== "Listo") continue;
 
     // Leer datos del flyer generado
     const flyerSnap = await db.collection("flyers").doc(mesa.id).get();
