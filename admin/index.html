@@ -432,6 +432,12 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
         </h2>
         <span id="mesasAdminCount" style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:var(--muted);"></span>
       </div>
+      <div style="padding:10px 0 14px;">
+        <input id="mesaSearchAdmin" type="text" placeholder="Buscar mesa por nombre, sistema o DM…"
+          oninput="filtrarMesasAdmin(this.value)"
+          style="width:100%;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;
+          border:1px solid var(--brd);border-radius:6px;background:var(--bg2);color:var(--ink);outline:none;">
+      </div>
       <div id="mesasAdminList">
         <div style="color:var(--muted);font-size:13px;text-align:center;padding:32px;">Cargando mesas…</div>
       </div>
@@ -930,6 +936,20 @@ async function loadMesasAdmin() {
     console.error('loadMesasAdmin:', e);
   }
 }
+
+function filtrarMesasAdmin(q) {
+  var term = (q||'').toLowerCase().trim();
+  if (!term) { renderMesasAdmin(); return; }
+  var original = _todasMesas;
+  _todasMesas = original.filter(function(m) {
+    return (m.nombre||'').toLowerCase().includes(term)
+        || (m.sistema||'').toLowerCase().includes(term)
+        || (m.dm||'').toLowerCase().includes(term);
+  });
+  renderMesasAdmin();
+  _todasMesas = original; // restaurar para no perder datos
+}
+
 
 function renderMesasAdmin() {
   var list  = document.getElementById('mesasAdminList');
