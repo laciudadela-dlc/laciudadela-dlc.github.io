@@ -77,7 +77,18 @@ async function syncMesas(eventos) {
     const nombre = (ev.title || '').trim();
     if (!nombre) continue;
     const dm           = (ev.dm || '').trim();
-    const sistema      = nombreSistema(ev.sys);
+    // Primero usar el campo sys, luego intentar detectar del título
+    let sistema = nombreSistema(ev.sys);
+    if (!sistema || sistema === ev.sys) {
+      // Intentar detectar del título
+      const tl = (ev.title||'').toLowerCase();
+      if      (tl.includes('pathfinder')) sistema = 'Pathfinder 2e';
+      else if (tl.includes('vampiro') || tl.includes('vtm')) sistema = 'Vampiro: La Mascarada';
+      else if (tl.includes('hombre lobo')) sistema = 'Hombre Lobo: El Apocalipsis';
+      else if (tl.includes('hunter'))      sistema = 'Hunter: The Reckoning';
+      else if (tl.includes('mago'))        sistema = 'Mago: La Ascensión';
+      else if (tl.includes('d&d') || tl.includes('dnd')) sistema = 'D&D 5e (2014)';
+    }
     const periodicidad = (ev.periodicidad || '').trim();
     const sinopsis     = (ev.sinopsis || '').trim();
     const cupos        = (ev.cupos || '').toString().trim();
@@ -87,11 +98,12 @@ async function syncMesas(eventos) {
       grupos.set(key, { nombre, dm, sistema, periodicidad, sinopsis, cupos, fechas:[], eventosIds:[] });
     }
     const g = grupos.get(key);
-    if (!g.dm && dm)               g.dm = dm;
-    if (!g.sistema && sistema)     g.sistema = sistema;
-    if (!g.periodicidad && periodicidad) g.periodicidad = periodicidad;
-    if (!g.sinopsis && sinopsis)   g.sinopsis = sinopsis;
-    if (!g.cupos && cupos)         g.cupos = cupos;
+    // Siempre tomar el valor más reciente — sobreescribir si el evento trae datos
+    if (dm)           g.dm = dm;
+    if (sistema)      g.sistema = sistema;
+    if (periodicidad) g.periodicidad = periodicidad;
+    if (sinopsis)     g.sinopsis = sinopsis;
+    if (cupos)        g.cupos = cupos;
     if (dateISO) g.fechas.push(dateISO);
     g.eventosIds.push(ev.id);
   }
@@ -118,6 +130,7 @@ async function syncMesas(eventos) {
       actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
     };
     if (existentes.has(key)) {
+      // Forzar update de sistema para corregir códigos viejos
       batch.update(existentes.get(key), mesaData);
       actualizadas++;
     } else {
