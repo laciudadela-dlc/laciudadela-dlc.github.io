@@ -204,6 +204,11 @@ html,body{min-height:100%;background:var(--bg2);font-family:'DM Sans',sans-serif
     <div class="top-bar">
       <span class="top-bar-title">Campañas activas</span>
       <span class="top-bar-count" id="topBarCount"></span>
+      <input id="mesaSearch" type="text" placeholder="Buscar…"
+        oninput="buscarMesas(this.value)"
+        style="flex:1;max-width:220px;padding:6px 10px;font-family:'DM Sans',sans-serif;
+        font-size:12px;border:1px solid var(--brd);border-radius:6px;
+        background:var(--bg2);color:var(--ink);outline:none;">
       <div class="top-bar-subtabs" id="topSubtabs">
         <button class="top-subtab active" data-sub="sistema" onclick="setSubView('sistema')">Por sistema</button>
         <button class="top-subtab" data-sub="dm" onclick="setSubView('dm')">Por DM</button>
@@ -418,6 +423,15 @@ window.setSubView = (sub) => {
 };
 
 // ── Render ──────────────────────────────────────────────
+// ── Búsqueda ─────────────────────────────────────────
+let searchTerm = '';
+
+function buscarMesas(q) {
+  searchTerm = (q || '').toLowerCase().trim();
+  render();
+}
+
+
 function render() {
   const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   let mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
@@ -426,6 +440,16 @@ function render() {
   const active = Object.keys(sysFilter).filter(k => sysFilter[k]);
   if (active.length > 0) {
     mesas = mesas.filter(m => active.includes(sistemaToCode(m.sistema)));
+  }
+
+  // Filtrar por búsqueda de texto
+  if (searchTerm) {
+    mesas = mesas.filter(m =>
+      (m.nombre||'').toLowerCase().includes(searchTerm) ||
+      (m.sistema||'').toLowerCase().includes(searchTerm) ||
+      (m.dm||'').toLowerCase().includes(searchTerm) ||
+      (m.sinopsis||'').toLowerCase().includes(searchTerm)
+    );
   }
 
   document.getElementById('topBarCount').textContent = mesas.length + ' mesa' + (mesas.length !== 1 ? 's' : '');
