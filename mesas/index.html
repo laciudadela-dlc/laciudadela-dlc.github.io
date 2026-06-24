@@ -224,7 +224,7 @@ html,body{min-height:100%;background:var(--bg2);font-family:'DM Sans',sans-serif
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, collectionGroup, getDocs, doc, getDoc, setDoc, addDoc, query, where, serverTimestamp }
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -336,27 +336,14 @@ async function loadMesas() {
       return new Date(a.proximaFecha) - new Date(b.proximaFecha);
     });
 
-  // Cargar mis solicitudes — una sola query con collectionGroup
+  // Cargar mis solicitudes — parallel getDoc por cada mesa
   if (ME) {
-    try {
-      const solSnap = await getDocs(
-        query(collectionGroup(db, 'solicitudes'), where('uid', '==', ME.uid))
-      );
-      solSnap.docs.forEach(d => {
-        const data = d.data();
-        if (data.mesaId) MIS_SOLICITUDES[data.mesaId] = data.estado;
-      });
-    } catch(e) {
-      console.warn('collectionGroup no disponible, usando fallback:', e.message);
-      // Fallback: solo buscar en las primeras 10 mesas activas
-      const activas = ALL_MESAS.filter(m => m.estado === 'activa').slice(0, 10);
-      await Promise.all(activas.map(async m => {
-        try {
-          const s = await getDoc(doc(db, 'mesas', m.id, 'solicitudes', ME.uid));
-          if (s.exists()) MIS_SOLICITUDES[m.id] = s.data().estado;
-        } catch(e) {}
-      }));
-    }
+    await Promise.all(ALL_MESAS.map(async m => {
+      try {
+        const s = await getDoc(doc(db, 'mesas', m.id, 'solicitudes', ME.uid));
+        if (s.exists()) MIS_SOLICITUDES[m.id] = s.data().estado;
+      } catch(e) {}
+    }));
   }
 
   buildSysFilters();
