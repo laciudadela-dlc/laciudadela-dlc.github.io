@@ -328,6 +328,15 @@ async function dispararGeneracion(mesaIds, jobId) {
 
 // ── Dibujador del flyer en Canvas ────────────────────────
 async function dibujarFlyer(mesa, imgUrl) {
+  // Esperar que las fuentes estén completamente cargadas
+  await document.fonts.ready;
+  // Forzar carga de fuentes específicas
+  await Promise.all([
+    document.fonts.load("bold 108px 'UnifrakturMaguntia'"),
+    document.fonts.load("bold 78px 'Oswald'"),
+    document.fonts.load("400 22px 'DM Sans'"),
+  ]).catch(() => {});
+
   const W = 1080, H = 1080;
   const canvas = document.createElement("canvas");
   canvas.width  = W;
