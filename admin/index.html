@@ -943,21 +943,39 @@ function renderMesasAdmin() {
   }
 
   list.innerHTML = _todasMesas.map(function(m) {
-    var estColor = m.estado === 'activa' ? '#166534' : '#B91C1C';
-    var estBg    = m.estado === 'activa' ? '#DCFCE7' : '#FEF2F2';
-    var jugCount = (m.jugadores||[]).filter(function(j){ return j.rol==='jugador'; }).length;
-    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd);">'
+    var estColor  = m.estado === 'activa' ? '#166534' : '#B91C1C';
+    var estBg     = m.estado === 'activa' ? '#DCFCE7' : '#FEF2F2';
+    var jugCount  = (m.jugadores||[]).filter(function(j){ return j.rol==='jugador'; }).length;
+    var tieneImg  = !!m.imagenFlyer;
+    var imgPreview = tieneImg
+      ? '<img src="'+m.imagenFlyer+'" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid var(--brd);flex-shrink:0;">'
+      : '<div style="width:48px;height:48px;border-radius:4px;border:1px dashed var(--brd);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">🖼</div>';
+    var imgBtnLabel = tieneImg ? '🔄 Cambiar' : '📷 Subir imagen';
+
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--brd);">'
+      + imgPreview
       + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
+      +   '<div style="font-family:\"DM Sans\",sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
       +        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escA(m.nombre) + '</div>'
-      +   '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
+      +   '<div style="font-family:\"DM Sans\",sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
       +     escA(m.sistema||'') + (m.dm?' · DM: '+escA(m.dm):'') + ' · ' + jugCount + ' jugadores'
       +   '</div>'
       + '</div>'
-      + '<span style="font-family:\'DM Sans\',sans-serif;font-size:10px;font-weight:600;'
-      +       'background:'+estBg+';color:'+estColor+';padding:2px 8px;border-radius:20px;">'
+      + '<span style="font-family:\"DM Sans\",sans-serif;font-size:10px;font-weight:600;'
+      +       'background:'+estBg+';color:'+estColor+';padding:2px 8px;border-radius:20px;margin-right:6px;">'
       +   m.estado
       + '</span>'
+      + '<label style="font-family:\"DM Sans\",sans-serif;font-size:11px;font-weight:600;'
+      +        'background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);padding:4px 10px;'
+      +        'border-radius:6px;cursor:pointer;white-space:nowrap;">'
+      +   imgBtnLabel
+      +   '<input type="file" accept="image/*" style="display:none;" onchange="subirImagenMesa(\''+m.id+'\',this)">'
+      + '</label>'
+      + (tieneImg
+        ? '<button onclick="eliminarImagenMesa(\''+m.id+'\')" style="font-family:\"DM Sans\",sans-serif;'
+          + 'font-size:11px;font-weight:600;background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;'
+          + 'padding:4px 8px;border-radius:6px;cursor:pointer;">✕</button>'
+        : '')
       + '</div>';
   }).join('');
 }
@@ -1121,6 +1139,73 @@ function updateGpsOverrideUI(active) {
     status.textContent   = 'Normal — solo desde Lima 575 (≤35m)';
   }
 }
+
+
+// ── Imagen de mesa ────────────────────────────────────
+window.subirImagenMesa = function(mesaId, input) {
+  var file = input.files[0];
+  if (!file) return;
+
+  // Validar tamaño máximo 5MB
+  if (file.size > 5 * 1024 * 1024) {
+    showToastAdmin('La imagen no puede superar 5MB', true);
+    return;
+  }
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      // Comprimir: máximo 800x600, JPEG 70%
+      var MAX_W = 800, MAX_H = 600;
+      var w = img.width, h = img.height;
+      if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+      if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
+
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+
+      var kb = Math.round(dataUrl.length * 0.75 / 1024);
+      if (kb > 900) {
+        // Comprimir más
+        dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        kb = Math.round(dataUrl.length * 0.75 / 1024);
+      }
+
+      // Guardar en Firestore
+      db.collection('mesas').doc(mesaId).update({ imagenFlyer: dataUrl })
+        .then(function() {
+          // Actualizar cache local
+          var mesa = _todasMesas.find(function(m){ return m.id === mesaId; });
+          if (mesa) mesa.imagenFlyer = dataUrl;
+          renderMesasAdmin();
+          showToastAdmin('✓ Imagen guardada (' + kb + 'KB)');
+        })
+        .catch(function(e) {
+          console.error('subirImagenMesa:', e);
+          showToastAdmin('Error al guardar la imagen', true);
+        });
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.eliminarImagenMesa = function(mesaId) {
+  if (!confirm('¿Eliminar la imagen de esta mesa?')) return;
+  db.collection('mesas').doc(mesaId).update({
+    imagenFlyer: firebase.firestore.FieldValue.delete()
+  }).then(function() {
+    var mesa = _todasMesas.find(function(m){ return m.id === mesaId; });
+    if (mesa) delete mesa.imagenFlyer;
+    renderMesasAdmin();
+    showToastAdmin('Imagen eliminada');
+  }).catch(function(e) {
+    showToastAdmin('Error al eliminar la imagen', true);
+  });
+};
 
 window.toggleGpsOverride = async function() {
   try {
