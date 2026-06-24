@@ -402,11 +402,11 @@ function buildSysFilters() {
   });
 }
 
-function toggleSysFilter(code) {
+window.toggleSysFilter = function(code) {
   sysFilter[code] = !sysFilter[code];
   buildSysFilters();
   render();
-}
+};
 
 function toggleShowAll() {
   showAllSys = !showAllSys;
@@ -426,10 +426,10 @@ window.setSubView = (sub) => {
 // ── Búsqueda ─────────────────────────────────────────
 let searchTerm = '';
 
-function buscarMesas(q) {
+window.buscarMesas = function(q) {
   searchTerm = (q || '').toLowerCase().trim();
   render();
-}
+};
 
 
 function render() {
