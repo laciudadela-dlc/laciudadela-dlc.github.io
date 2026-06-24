@@ -75,10 +75,11 @@ function resolveSys(texto) {
     const kNorm = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (k === kNorm) return val;
   }
-  // Buscar match parcial (el texto contiene la clave)
-  for (const [key, val] of Object.entries(SYS_KEYS)) {
+  // Buscar match parcial — ordenar por longitud descendente para que las claves más específicas ganen
+  const sorted = Object.entries(SYS_KEYS).sort((a, b) => b[0].length - a[0].length);
+  for (const [key, val] of sorted) {
     const kNorm = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (k.includes(kNorm) || kNorm.includes(k)) return val;
+    if (k.includes(kNorm)) return val;
   }
   return null;
 }
