@@ -171,7 +171,7 @@ async function main() {
     try {
       const prompt  = buildPrompt(mesa);
       console.log(`  Prompt: ${prompt.substring(0, 80)}...`);
-      const dataUrl = await generarImagen(prompt, mesaId);
+      let dataUrl = await generarImagen(prompt, mesaId);
 
       // Si la mesa tiene imagen manual, usarla en lugar de la generada por IA
       if (mesa.imagenFlyer) {
