@@ -39,9 +39,8 @@ function nombreSistema(cod) {
 }
 
 function mesaKey(title, dm) {
-  const t = (title || '').toLowerCase().trim().replace(/\s+/g, ' ');
-  const d = (dm || '').toLowerCase().trim();
-  return `${t}||${d}`;
+  // Usar solo el título para deduplicar — evita duplicados cuando cambia el DM
+  return (title || '').toLowerCase().trim().replace(/\s+/g, ' ');
 }
 
 function camposFaltantes(datos) {
