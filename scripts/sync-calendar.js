@@ -15,7 +15,7 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-const GOOGLE_API_KEY = 'AIzaSyDzOx_J54fC6L1-O1hzyeTmg9U4LROB3nk';
+const GOOGLE_API_KEY = process.env.GOOGLE_CALENDAR_API_KEY || 'AIzaSyDzOx_J54fC6L1-O1hzyeTmg9U4LROB3nk';
 const CALENDAR_ID    = 'laciudadeladelosconfines@gmail.com';
 
 const SISTEMAS = {
