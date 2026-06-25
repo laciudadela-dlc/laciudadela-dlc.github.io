@@ -26,5 +26,6 @@ jobs:
 
       - name: Sync Google Calendar → Firestore → Mesas
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT:    ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_CALENDAR_API_KEY:     ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
         run: cd scripts && node sync-calendar.js
