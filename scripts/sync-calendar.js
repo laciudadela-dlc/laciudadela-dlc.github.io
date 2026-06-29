@@ -82,10 +82,13 @@ function parseDesc(raw) {
   const out = { sistema:'', dm:'', cupos:'', periodicidad:'', sinopsis:'' };
   if (!raw) return out;
   const text = raw.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&');
-  for (const line of text.split('\n')) {
+  // Normalizar: reemplazar punto seguido de mayúscula con salto de línea
+  // para manejar "Modalidad: Campaña.Sinopsis: texto"
+  const textNorm = text.replace(/\.\s*([A-ZÁÉÍÓÚÑ])/g, '.\n$1');
+  for (const line of textNorm.split('\n')) {
     const m = line.match(/^(nombre de partida|juego|sistema|modalidad|periodicidad|sinopsis|narra|narrador|dm|director|game master|cupos)\s*:\s*(.+)$/i);
     if (!m) continue;
-    const k = m[1].toLowerCase(), v = m[2].trim();
+    const k = m[1].toLowerCase(), v = m[2].trim().replace(/\.$/, ''); // quitar punto final
     if (['juego','sistema'].includes(k))                         out.sistema    = v;
     if (['narra','narrador','dm','director','game master'].includes(k)) out.dm = v;
     if (['modalidad','periodicidad'].includes(k))                out.periodicidad = v;
