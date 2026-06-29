@@ -91,9 +91,10 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 <div class="toast" id="toast"></div>
 
 <header class="header">
+  <a class="header-back" href="../">← Portal</a>
   <a href="../"><img class="header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela"></a>
   <span class="header-wordmark">Generador de Flyers</span>
-  <a class="header-back" href="../admin/">← Admin</a>
+  <a class="header-back" href="../admin/" style="font-size:12px;">← Admin</a>
 </header>
 
 <div class="page" id="page" style="display:none;">
@@ -113,7 +114,7 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
         <button class="btn btn-secondary" onclick="deseleccionarTodo()" style="flex:1;font-size:11px;">Limpiar</button>
       </div>
 
-      <div style="padding:8px 18px 10px;">
+      <div style="padding:8px 0 4px;">
         <input id="flyerSearch" type="text" placeholder="Buscar mesa…"
           oninput="filtrarMesasList(this.value)"
           style="width:100%;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;
