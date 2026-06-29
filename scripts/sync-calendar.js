@@ -136,12 +136,14 @@ async function syncEventos(year, month, items) {
       const p     = parseDesc(item.description || '');
       const sysCode = resolveSys(p.sistema) || resolveSys(item.summary) || 'oth';
       const tipo = detectarTipo(p.periodicidad);
+      // Usar timezone de Argentina (UTC-3) para h y mn
+      const startAR = new Date(start.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
       batch.set(ref, {
         id:          item.id,
         title:       item.summary || '(Sin título)',
         dateISO:     start.toISOString(),
-        h:           start.getHours(),
-        mn:          start.getMinutes(),
+        h:           startAR.getHours(),
+        mn:          startAR.getMinutes(),
         dur,
         sys:         sysCode,
         dm:          p.dm,
