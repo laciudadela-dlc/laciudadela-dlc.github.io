@@ -39,6 +39,33 @@ const SYS_KEYS = {
   'hunter':'hun','hunter: the reckoning':'hun',
 };
 
+// Modalidades que definen el tipo
+const TIPO_MESA = ['campaña', 'campaña corta', 'modulo', 'módulo', 'modulo oficial',
+  'módulo oficial', 'one-shot', 'one shot', 'oneshot', 'aventura corta', 'mini serie',
+  'miniserie', 'mini-serie'];
+const TIPO_ACTIVIDAD = ['taller', 'evento', 'ludoteca'];
+
+function detectarTipo(periodicidad) {
+  if (!periodicidad) return 'mesa';
+  const p = periodicidad.toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  for (const t of TIPO_ACTIVIDAD) {
+    if (p.includes(t)) return 'actividad';
+  }
+  return 'mesa';
+}
+
+function detectarSubtipo(periodicidad) {
+  if (!periodicidad) return null;
+  const p = periodicidad.toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (p.includes('taller'))    return 'taller';
+  if (p.includes('ludoteca'))  return 'ludoteca';
+  if (p.includes('evento'))    return 'evento';
+  return null;
+}
+
+
 function resolveSys(texto) {
   if (!texto) return null;
   const k = texto.toLowerCase().trim()
@@ -108,6 +135,7 @@ async function syncEventos(year, month, items) {
       const dur   = Math.round((end - start) / 60000);
       const p     = parseDesc(item.description || '');
       const sysCode = resolveSys(p.sistema) || resolveSys(item.summary) || 'oth';
+      const tipo = detectarTipo(p.periodicidad);
       batch.set(ref, {
         id:          item.id,
         title:       item.summary || '(Sin título)',
@@ -122,6 +150,7 @@ async function syncEventos(year, month, items) {
         sinopsis:    p.sinopsis,
         updatedRaw:  item.updated || '',
         description: item.description || '',
+        tipo:        tipo,
       }, { merge: true });
     }
     changes++;
@@ -157,7 +186,10 @@ async function syncMesas() {
     } catch(e) {}
   }
 
-  const grupos = new Map();
+  // Separar en grupos por tipo
+  const gruposMesas = new Map();
+  const gruposActividades = new Map();
+
   for (const ev of eventos) {
     const nombre = (ev.title||'').trim();
     if (!nombre) continue;
@@ -166,9 +198,14 @@ async function syncMesas() {
     const periodicidad = (ev.periodicidad||'').trim();
     const sinopsis     = (ev.sinopsis||'').trim();
     const cupos        = (ev.cupos||'').toString().trim();
+    const tipo         = detectarTipo(periodicidad);
+    const subtipo      = detectarSubtipo(periodicidad);
     const key          = mesaKey(nombre, dm);
+
+    const grupos = tipo === 'actividad' ? gruposActividades : gruposMesas;
     if (!grupos.has(key)) {
-      grupos.set(key, { nombre, dm, sistema, periodicidad, sinopsis, cupos, fechas:[], eventosIds:[] });
+      grupos.set(key, { nombre, dm, sistema, periodicidad, sinopsis, cupos,
+        tipo, subtipo, fechas:[], eventosIds:[] });
     }
     const g = grupos.get(key);
     if (dm)           g.dm = dm;
@@ -180,19 +217,18 @@ async function syncMesas() {
     g.eventosIds.push(ev.id);
   }
 
-  const existentesSnap = await db.collection('mesas').get();
-  const existentes = new Map();
-  existentesSnap.docs.forEach(d => {
-    const k = d.data()._key; if (k) existentes.set(k, d.ref);
-  });
+  // Sync mesas
+  const existMesasSnap = await db.collection('mesas').get();
+  const existMesas = new Map();
+  existMesasSnap.docs.forEach(d => { const k=d.data()._key; if(k) existMesas.set(k,d.ref); });
 
-  const batch = db.batch();
-  let creadas = 0, actualizadas = 0;
-  for (const [key, g] of grupos) {
+  const batchMesas = db.batch();
+  let mesasCreadas = 0, mesasActualizadas = 0;
+  for (const [key, g] of gruposMesas) {
     const faltantes = CAMPOS_MINIMOS.filter(c => !g[c]||g[c].toString().trim()==='');
     const estado    = faltantes.length === 0 ? 'activa' : 'incompleta';
     const proxFecha = proximaFecha(g.fechas);
-    const mesaData  = {
+    const data = {
       _key: key, nombre: g.nombre, sistema: g.sistema||'',
       dm: g.dm||'', periodicidad: g.periodicidad||'',
       sinopsis: g.sinopsis||'', cupos: g.cupos||'',
@@ -201,19 +237,51 @@ async function syncMesas() {
       eventosIds: g.eventosIds, creadaDe: 'calendario',
       actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
     };
-    if (existentes.has(key)) {
-      batch.update(existentes.get(key), mesaData);
-      actualizadas++;
+    if (existMesas.has(key)) {
+      batchMesas.update(existMesas.get(key), data);
+      mesasActualizadas++;
     } else {
       const ref = db.collection('mesas').doc();
-      mesaData.creadaEn  = admin.firestore.FieldValue.serverTimestamp();
-      mesaData.jugadores = [];
-      batch.set(ref, mesaData);
-      creadas++;
+      data.creadaEn = admin.firestore.FieldValue.serverTimestamp();
+      data.jugadores = [];
+      batchMesas.set(ref, data);
+      mesasCreadas++;
     }
   }
-  await batch.commit();
-  console.log(`Mesas: ${creadas} creadas, ${actualizadas} actualizadas`);
+  await batchMesas.commit();
+  console.log(`Mesas: ${mesasCreadas} creadas, ${mesasActualizadas} actualizadas`);
+
+  // Sync actividades
+  const existActSnap = await db.collection('actividades').get();
+  const existAct = new Map();
+  existActSnap.docs.forEach(d => { const k=d.data()._key; if(k) existAct.set(k,d.ref); });
+
+  const batchAct = db.batch();
+  let actCreadas = 0, actActualizadas = 0;
+  for (const [key, g] of gruposActividades) {
+    const proxFecha = proximaFecha(g.fechas);
+    const data = {
+      _key: key, nombre: g.nombre, tipo: g.subtipo || g.tipo,
+      dm: g.dm||'', periodicidad: g.periodicidad||'',
+      sinopsis: g.sinopsis||'', cupos: g.cupos||'',
+      costo: '', estado: 'activa',
+      proximaFecha: proxFecha, todasLasFechas: g.fechas.sort(),
+      eventosIds: g.eventosIds, creadaDe: 'calendario',
+      actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (existAct.has(key)) {
+      batchAct.update(existAct.get(key), data);
+      actActualizadas++;
+    } else {
+      const ref = db.collection('actividades').doc();
+      data.creadaEn = admin.firestore.FieldValue.serverTimestamp();
+      data.inscriptos = [];
+      batchAct.set(ref, data);
+      actCreadas++;
+    }
+  }
+  await batchAct.commit();
+  console.log(`Actividades: ${actCreadas} creadas, ${actActualizadas} actualizadas`);
 }
 
 async function main() {
