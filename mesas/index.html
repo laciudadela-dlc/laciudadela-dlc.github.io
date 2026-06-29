@@ -264,7 +264,7 @@ const SYS_ORDER = ['dnd','d55','pf','vam','hw','mag','hun','oth'];
 function sistemaToCode(s) {
   if (!s) return 'oth';
   const n = s.toLowerCase();
-  if (n.includes('d&d 5.5') || n.includes('5.5e')) return 'd55';
+  if (n.includes('d&d 5.5') || n.includes('5.5e') || n.includes('2024') || n.includes('one d&d')) return 'd55';
   if (n.includes('d&d') || n.includes('dnd'))       return 'dnd';
   if (n.includes('pathfinder'))                       return 'pf';
   if (n.includes('vampiro'))                          return 'vam';
