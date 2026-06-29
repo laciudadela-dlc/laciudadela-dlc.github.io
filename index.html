@@ -343,6 +343,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
 /* Backgrounds banners */
 .bg-calendario{background-image:url("https://laciudadela-dlc.github.io/img/botcalendario.png");}
 .bg-mesas{background-image:url("https://laciudadela-dlc.github.io/img/botmesas.png");}
+.bg-actividades{background-image:url("https://laciudadela-dlc.github.io/img/botactividades.png");background-color:#1a0830;}
 .bg-buffet{background-image:url("https://laciudadela-dlc.github.io/img/botbuffet.png");}
 .bg-anuncios{background-image:url("https://laciudadela-dlc.github.io/img/botanuncios.png");}
 .bg-biblioteca{background-image:url("https://laciudadela-dlc.github.io/img/botbiblioteca.png");}
@@ -530,6 +531,12 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
     <div class="banner-content"><div class="banner-icon">🎲</div><div class="banner-title">Inscripción a Mesas</div><div class="banner-desc">Explorá las campañas activas y solicitá unirte</div></div>
     <span class="banner-chip chip-active">Disponible</span>
   </a>
+  <a class="banner" id="bannerActividades" href="https://laciudadela-dlc.github.io/actividades/">
+    <div class="banner-bg bg-actividades"></div><div class="banner-overlay"></div>
+    <div class="banner-content"><div class="banner-icon">🎪</div><div class="banner-title">Actividades</div><div class="banner-desc">Talleres, eventos y ludoteca</div></div>
+    <span class="banner-chip chip-active">Disponible</span>
+  </a>
+
 
   <div class="banner disabled">
     <div class="banner-bg bg-buffet"></div><div class="banner-overlay"></div>
@@ -552,7 +559,7 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
   <a class="banner" id="bannerPerfil" href="https://laciudadela-dlc.github.io/perfil/" style="display:none;">
     <div class="banner-bg bg-perfil"></div><div class="banner-overlay"></div>
     <div class="banner-content"><div class="banner-icon">⚔</div><div class="banner-title">Mi Perfil</div><div class="banner-desc">Tus mesas, sesiones, solicitudes y mensajes</div></div>
-    <span class="banner-chip chip-active">Disponible</span>
+    <span class="banner-chip chip-new">Nuevo</span>
   </a>
 
   <a class="banner" id="bannerAdmin" href="https://laciudadela-dlc.github.io/admin/" style="display:none;">
@@ -669,7 +676,6 @@ window.AUTH = (function(){
     startNotifListener(user.uid);
     startMsgListener(user.uid);
     setTimeout(suscribirPushAdmin, 2000);
-    actualizarUbicacionAdmin(_user, _profile);
   }
 
   function updateAdminBanner(profile){
@@ -835,13 +841,12 @@ async function initTimbre() {
   // Verificar override de GPS desde Firestore
   let gpsOverride = false;
   try {
+    const configSnap = await db.collection("timbres").limit(0).get().catch(() => null);
     const metaSnap = await db.collection("meta").doc("config").get();
-    if (metaSnap.exists && metaSnap.data()) {
+    if (metaSnap.exists) {
       gpsOverride = metaSnap.data().gps_override === true;
     }
-  } catch(e) {
-    console.log("Override GPS no disponible:", e.message);
-  }
+  } catch(e) { /* sin override */ }
 
   if (gpsOverride) {
     btn.disabled = false;
@@ -988,22 +993,8 @@ async function dispararWorkflow(timbreId, timbreData) {
   }
 }
 
-// Iniciar — esperar un tick para que Firebase esté listo
-setTimeout(() => initTimbre(), 500);
-// Re-verificar override cada 30 segundos
-setInterval(async () => {
-  try {
-    const metaSnap = await db.collection("meta").doc("config").get();
-    if (metaSnap.exists && metaSnap.data() && metaSnap.data().gps_override === true) {
-      const btn = document.getElementById("timbreBtn");
-      const sub = document.getElementById("timbreSub");
-      if (btn && btn.disabled) {
-        btn.disabled = false;
-        if (sub) sub.textContent = "⚠️ Modo prueba — verificación GPS desactivada";
-      }
-    }
-  } catch(e) {}
-}, 30000);
+// Iniciar
+initTimbre();
 
 // ── Suscripción push (para admins) ────────────────────
 async function suscribirPushAdmin() {
@@ -1052,38 +1043,6 @@ function urlBase64ToUint8Array(base64String) {
 // Hook: suscribir push cuando el admin se loguea
 const _origRenderZone = window.AUTH ? null : null;
 // Se llama desde el onAuthStateChanged después de detectar rol admin
-
-// ── Ubicación del admin ───────────────────────────────
-function actualizarUbicacionAdmin(user, profile) {
-  if (!user || !profile) return;
-  const roles = profile.roles || [];
-  if (!roles.includes('admin')) return;
-  if (!navigator.geolocation) return;
-
-  function guardarUbicacion() {
-    navigator.geolocation.getCurrentPosition(
-      async pos => {
-        try {
-          await db.collection('usuarios').doc(user.uid).update({
-            ultimaUbicacion: {
-              lat:       pos.coords.latitude,
-              lng:       pos.coords.longitude,
-              timestamp: new Date().toISOString()
-            }
-          });
-          console.log('Ubicación admin actualizada');
-        } catch(e) { console.log('Error guardando ubicación:', e.message); }
-      },
-      err => { console.log('GPS no disponible para admin:', err.message); },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
-    );
-  }
-
-  // Actualizar ahora y cada 10 minutos
-  guardarUbicacion();
-  setInterval(guardarUbicacion, 10 * 60 * 1000);
-}
-
 
 function stopListeners(){
   if(unsubNotif){unsubNotif();unsubNotif=null;}
