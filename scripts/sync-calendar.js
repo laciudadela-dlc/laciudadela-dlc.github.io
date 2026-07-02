@@ -82,13 +82,10 @@ function parseDesc(raw) {
   const out = { sistema:'', dm:'', cupos:'', periodicidad:'', sinopsis:'' };
   if (!raw) return out;
   const text = raw.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&');
-  // Normalizar: reemplazar punto seguido de mayúscula con salto de línea
-  // para manejar "Modalidad: Campaña.Sinopsis: texto"
-  const textNorm = text.replace(/\.\s*([A-ZÁÉÍÓÚÑ])/g, '.\n$1');
-  for (const line of textNorm.split('\n')) {
+  for (const line of text.split('\n')) {
     const m = line.match(/^(nombre de partida|juego|sistema|modalidad|periodicidad|sinopsis|narra|narrador|dm|director|game master|cupos)\s*:\s*(.+)$/i);
     if (!m) continue;
-    const k = m[1].toLowerCase(), v = m[2].trim().replace(/\.$/, ''); // quitar punto final
+    const k = m[1].toLowerCase(), v = m[2].trim();
     if (['juego','sistema'].includes(k))                         out.sistema    = v;
     if (['narra','narrador','dm','director','game master'].includes(k)) out.dm = v;
     if (['modalidad','periodicidad'].includes(k))                out.periodicidad = v;
@@ -126,12 +123,30 @@ async function fetchGCalMonth(year, month) {
 
 async function syncEventos(year, month, items) {
   const colId = year + '-' + String(month+1).padStart(2,'0');
+
+  // Obtener IDs actuales en Firestore para este mes
+  const existSnap = await db.collection('eventos').doc(colId).collection('items').get();
+  const existIds  = new Set(existSnap.docs.map(d => d.id));
+
+  // IDs que vienen de Google Calendar (activos)
+  const gcalIds = new Set(items.filter(i => i.status !== 'cancelled').map(i => i.id));
+
+  // Eliminar los que ya no están en Google Calendar
   const batch = db.batch();
-  let changes = 0;
+  let eliminados = 0;
+  for (const id of existIds) {
+    if (!gcalIds.has(id)) {
+      batch.delete(db.collection('eventos').doc(colId).collection('items').doc(id));
+      eliminados++;
+    }
+  }
+
+  let changes = eliminados;
   for (const item of items) {
     const ref = db.collection('eventos').doc(colId).collection('items').doc(item.id);
     if (item.status === 'cancelled') {
       batch.delete(ref);
+      changes++;
     } else {
       const start = new Date(item.start.dateTime || item.start.date);
       const end   = new Date(item.end.dateTime   || item.end.date);
@@ -139,14 +154,12 @@ async function syncEventos(year, month, items) {
       const p     = parseDesc(item.description || '');
       const sysCode = resolveSys(p.sistema) || resolveSys(item.summary) || 'oth';
       const tipo = detectarTipo(p.periodicidad);
-      // Usar timezone de Argentina (UTC-3) para h y mn
-      const startAR = new Date(start.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
       batch.set(ref, {
         id:          item.id,
         title:       item.summary || '(Sin título)',
         dateISO:     start.toISOString(),
-        h:           startAR.getHours(),
-        mn:          startAR.getMinutes(),
+        h:           start.getHours(),
+        mn:          start.getMinutes(),
         dur,
         sys:         sysCode,
         dm:          p.dm,
@@ -161,7 +174,7 @@ async function syncEventos(year, month, items) {
     changes++;
   }
   if (changes > 0) await batch.commit();
-  console.log(`  ${colId}: ${changes} eventos sincronizados`);
+  console.log(`  ${colId}: ${gcalIds.size} eventos de GCal, ${eliminados} eliminados de Firestore`);
   return changes;
 }
 
