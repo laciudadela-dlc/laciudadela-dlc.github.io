@@ -209,7 +209,7 @@ function proximaFecha(fechas) {
 async function syncMesas() {
   const ahora = new Date();
   const eventos = [];
-  for (let i = -1; i < 3; i++) {
+  for (let i = -1; i <= 4; i++) {
     const d = new Date(ahora); d.setMonth(d.getMonth()+i);
     const colId = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     try {
@@ -360,8 +360,8 @@ async function main() {
   const ahora = new Date();
   let totalEventos = 0;
 
-  // Sincronizar mes anterior, actual y próximo
-  for (let i = -1; i <= 1; i++) {
+  // Sincronizar mes anterior, actual y 4 meses adelante
+  for (let i = -1; i <= 4; i++) {
     const d = new Date(ahora); d.setMonth(d.getMonth()+i);
     const y = d.getFullYear(), m = d.getMonth();
     console.log(`\nFetching Google Calendar ${y}-${String(m+1).padStart(2,'0')}...`);
@@ -376,6 +376,32 @@ async function main() {
   }
 
   console.log(`\nTotal eventos actualizados: ${totalEventos}`);
+
+  // Limpiar meses fuera del rango sincronizado (más de 1 mes atrás o más de 4 adelante)
+  console.log('\nLimpiando meses fuera del rango...');
+  const mesesSnap = await db.collection('eventos').get();
+  const ahora2    = new Date();
+  const minMes    = new Date(ahora2); minMes.setMonth(minMes.getMonth() - 1);
+  const maxMes    = new Date(ahora2); maxMes.setMonth(maxMes.getMonth() + 4);
+  const minKey    = `${minMes.getFullYear()}-${String(minMes.getMonth()+1).padStart(2,'0')}`;
+  const maxKey    = `${maxMes.getFullYear()}-${String(maxMes.getMonth()+1).padStart(2,'0')}`;
+  let mesesEliminados = 0;
+  for (const mesDoc of mesesSnap.docs) {
+    const mesId = mesDoc.id;
+    if (mesId < minKey || mesId > maxKey) {
+      // Eliminar todos los items de este mes
+      const itemsSnap = await db.collection('eventos').doc(mesId).collection('items').get();
+      if (!itemsSnap.empty) {
+        const batchViejo = db.batch();
+        itemsSnap.docs.forEach(d => batchViejo.delete(d.ref));
+        await batchViejo.commit();
+        console.log(`  Limpiado mes fuera de rango: ${mesId} (${itemsSnap.size} eventos)`);
+        mesesEliminados += itemsSnap.size;
+      }
+    }
+  }
+  if (mesesEliminados === 0) console.log('  Sin meses fuera de rango');
+
   console.log('\nSincronizando mesas...');
   await syncMesas();
 
