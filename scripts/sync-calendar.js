@@ -237,8 +237,15 @@ async function syncMesas() {
 
   // Sync mesas
   const existMesasSnap = await db.collection('mesas').get();
-  const existMesas = new Map();
-  existMesasSnap.docs.forEach(d => { const k=d.data()._key; if(k) existMesas.set(k,d.ref); });
+  const existMesas = new Map();      // key → ref
+  const existMesasData = new Map();  // key → data completa
+  existMesasSnap.docs.forEach(d => {
+    const k = d.data()._key;
+    if (k) {
+      existMesas.set(k, d.ref);
+      existMesasData.set(k, d.data());
+    }
+  });
 
   const batchMesas = db.batch();
   let mesasCreadas = 0, mesasActualizadas = 0;
@@ -268,6 +275,36 @@ async function syncMesas() {
   }
   await batchMesas.commit();
   console.log(`Mesas: ${mesasCreadas} creadas, ${mesasActualizadas} actualizadas`);
+
+  // Detectar mesas que ya no tienen eventos en el calendario
+  let desactualizadas = 0, eliminadasSinJug = 0;
+  const keysActivas = new Set(gruposMesas.keys());
+  const batchObsoletas = db.batch();
+  for (const [key, ref] of existMesas) {
+    if (!keysActivas.has(key)) {
+      const data = existMesasData.get(key);
+      const tieneJugadores = (data.jugadores||[]).length > 0;
+      if (tieneJugadores) {
+        // Conservar pero marcar como desactualizada
+        batchObsoletas.update(ref, {
+          estado: 'desactualizada',
+          proximaFecha: null,
+          todasLasFechas: [],
+          eventosIds: [],
+          actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(`  ⚠ Desactualizada (tiene jugadores): "${data.nombre}"`);
+        desactualizadas++;
+      } else {
+        // Sin jugadores → eliminar
+        batchObsoletas.delete(ref);
+        console.log(`  ✗ Eliminada (sin jugadores): "${data.nombre}"`);
+        eliminadasSinJug++;
+      }
+    }
+  }
+  if (desactualizadas + eliminadasSinJug > 0) await batchObsoletas.commit();
+  console.log(`Mesas obsoletas: ${desactualizadas} desactualizadas, ${eliminadasSinJug} eliminadas`);
 
   // Sync actividades
   const existActSnap = await db.collection('actividades').get();

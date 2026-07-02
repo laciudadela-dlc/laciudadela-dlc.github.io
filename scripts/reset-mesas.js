@@ -165,7 +165,33 @@ async function main() {
   console.log('=== reset-mesas.js ===');
   console.log(`Timestamp: ${new Date().toISOString()}`);
   try {
-    await eliminarColeccion('mesas');
+    // Mesas: respetar las que tienen jugadores
+    console.log('\nRevisando mesas existentes...');
+    const mesasSnap = await db.collection('mesas').get();
+    const batchDel = db.batch();
+    let mesasEliminadas = 0, mesasConservadas = 0;
+    for (const doc of mesasSnap.docs) {
+      const data = doc.data();
+      const tieneJugadores = (data.jugadores||[]).length > 0;
+      if (tieneJugadores) {
+        // Marcar como desactualizada pero conservar jugadores
+        batchDel.update(doc.ref, {
+          estado: 'desactualizada',
+          proximaFecha: null,
+          todasLasFechas: [],
+          eventosIds: [],
+          actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(`  ⚠ Conservada (tiene jugadores): "${data.nombre}"`);
+        mesasConservadas++;
+      } else {
+        batchDel.delete(doc.ref);
+        mesasEliminadas++;
+      }
+    }
+    if (mesasSnap.docs.length > 0) await batchDel.commit();
+    console.log(`  ${mesasEliminadas} mesas eliminadas, ${mesasConservadas} conservadas con jugadores`);
+
     await eliminarColeccion('actividades');
     console.log('\nLeyendo eventos futuros...');
     const eventos = await leerEventosFuturos();
