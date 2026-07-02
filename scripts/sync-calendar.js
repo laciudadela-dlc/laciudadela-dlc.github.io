@@ -86,6 +86,9 @@ function parseDesc(raw) {
     const m = line.match(/^(nombre de partida|juego|sistema|modalidad|periodicidad|sinopsis|narra|narrador|dm|director|game master|cupos)\s*:\s*(.+)$/i);
     if (!m) continue;
     const k = m[1].toLowerCase(), v = m[2].trim();
+    // Ignorar valores placeholder
+    const esPlaceholder = /^(\?+|tbd|a confirmar|sin confirmar|por confirmar|-+|n\/a)$/i.test(v.trim());
+    if (esPlaceholder) continue;
     if (['juego','sistema'].includes(k))                         out.sistema    = v;
     if (['narra','narrador','dm','director','game master'].includes(k)) out.dm = v;
     if (['modalidad','periodicidad'].includes(k))                out.periodicidad = v;
