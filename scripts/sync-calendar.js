@@ -81,8 +81,19 @@ function resolveSys(texto) {
 function parseDesc(raw) {
   const out = { sistema:'', dm:'', cupos:'', periodicidad:'', sinopsis:'' };
   if (!raw) return out;
-  const text = raw.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&');
-  for (const line of text.split('\n')) {
+  // Reemplazar tags de párrafo y saltos con newlines ANTES de quitar tags
+  const text = raw
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<p[^>]*>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+  // Normalizar: punto seguido de mayúscula → salto de línea
+  const textNorm = text.replace(/\.\s*([A-ZÁÉÍÓÚÑ])/g, '.\n$1');
+  for (const line of textNorm.split('\n')) {
     const m = line.match(/^(nombre de partida|juego|sistema|modalidad|periodicidad|sinopsis|narra|narrador|dm|director|game master|cupos)\s*:\s*(.+)$/i);
     if (!m) continue;
     const k = m[1].toLowerCase(), v = m[2].trim();
