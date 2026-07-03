@@ -41,8 +41,10 @@ function detectarSubtipo(periodicidad) {
   return null;
 }
 
-function mesaKey(title) {
-  return (title||'').toLowerCase().trim().replace(/\s+/g,' ');
+function mesaKey(title, dm) {
+  const t = (title||'').toLowerCase().trim().replace(/\s+/g,' ');
+  const d = (dm||'').toLowerCase().trim();
+  return d ? `${t}||${d}` : t;
 }
 
 function proximaFecha(fechas) {
@@ -102,7 +104,7 @@ async function crearDesdeEventos(eventos) {
     const cupos       = (ev.cupos||'').toString().trim();
     const tipo        = detectarTipo(periodicidad);
     const subtipo     = detectarSubtipo(periodicidad);
-    const key         = mesaKey(nombre);
+    const key         = mesaKey(nombre, dm);
 
     const grupos = tipo === 'actividad' ? gruposAct : gruposMesas;
     if (!grupos.has(key)) {

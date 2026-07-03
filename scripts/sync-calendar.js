@@ -196,8 +196,10 @@ async function syncEventos(year, month, items) {
 const CAMPOS_MINIMOS = ['nombre','sistema','dm','periodicidad','sinopsis'];
 
 function mesaKey(title, dm) {
-  // Usar solo el título para deduplicar — evita duplicados cuando cambia el DM
-  return (title||'').toLowerCase().trim().replace(/\s+/g,' ');
+  const t = (title||'').toLowerCase().trim().replace(/\s+/g,' ');
+  const d = (dm||'').toLowerCase().trim();
+  // Si hay DM, incluirlo en la key para permitir dos mesas con el mismo nombre y distinto DM
+  return d ? `${t}||${d}` : t;
 }
 
 function proximaFecha(fechas) {
