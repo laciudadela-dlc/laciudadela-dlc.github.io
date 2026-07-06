@@ -250,6 +250,43 @@ input[type=color]{width:36px;height:32px;padding:2px;border:1px solid var(--brd)
 .admin-chat-send{font-family:"Cinzel",serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;background:var(--gold);color:var(--bg-dark);border:none;padding:10px 14px;cursor:pointer;align-self:flex-end;}
 .admin-chat-send:hover{background:#e8bc38;}
 .chat-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#444;font-family:"Cinzel",serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
+
+/* Modal edición de mesa */
+.mesa-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.mesa-modal-overlay.open{display:flex;}
+.mesa-modal{background:var(--bg);border-radius:12px;width:90%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.mesa-modal-header{padding:18px 20px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px;}
+.mesa-modal-title{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--ink);flex:1;}
+.mesa-modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:4px;}
+.mesa-modal-body{padding:20px;overflow-y:auto;flex:1;}
+.mesa-modal-section{margin-bottom:20px;}
+.mesa-modal-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;}
+.mesa-user-search{width:100%;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--brd);border-radius:6px;background:var(--bg2);color:var(--ink);outline:none;}
+.mesa-user-search:focus{border-color:var(--ink2);}
+.mesa-user-results{margin-top:4px;border:1px solid var(--brd);border-radius:6px;overflow:hidden;display:none;}
+.mesa-user-results.open{display:block;}
+.mesa-user-result-item{padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--brd);}
+.mesa-user-result-item:last-child{border-bottom:none;}
+.mesa-user-result-item:hover{background:var(--bg2);}
+.mesa-user-result-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;}
+.mesa-user-result-name{font-weight:600;color:var(--ink);}
+.mesa-user-result-roles{font-size:11px;color:var(--muted);}
+.mesa-user-result-warn{font-size:11px;color:#B45309;font-weight:600;}
+.mesa-dm-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;margin-top:8px;}
+.mesa-dm-card-info{flex:1;}
+.mesa-dm-card-name{font-size:13px;font-weight:600;color:var(--ink);}
+.mesa-dm-card-sub{font-size:11px;color:var(--muted);}
+.mesa-dm-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;}
+.mesa-dm-remove:hover{color:var(--red);}
+.mesa-jugadores-list{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
+.mesa-jug-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;}
+.mesa-jug-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.mesa-jug-info{flex:1;}
+.mesa-jug-name{font-size:13px;font-weight:600;color:var(--ink);}
+.mesa-jug-sub{font-size:11px;color:var(--muted);}
+.mesa-jug-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;flex-shrink:0;}
+.mesa-jug-remove:hover{color:var(--red);}
+.mesa-modal-footer{padding:14px 20px;border-top:1px solid var(--brd);display:flex;justify-content:flex-end;}
 </style>
 </head>
 <body>
@@ -996,6 +1033,9 @@ function renderMesasAdmin() {
           + 'font-size:11px;font-weight:600;background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;'
           + 'padding:4px 8px;border-radius:6px;cursor:pointer;">✕</button>'
         : '')
+      + '<button onclick="window.abrirModalMesa(\''+m.id+'\')" style="font-family:\"DM Sans\",sans-serif;'
+      + 'font-size:11px;font-weight:600;background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);'
+      + 'padding:4px 10px;border-radius:6px;cursor:pointer;margin-left:4px;">👥 Jugadores</button>'
       + '</div>';
   }).join('');
 }
@@ -1227,6 +1267,196 @@ window.eliminarImagenMesa = function(mesaId) {
   });
 };
 
+// ── Modal edición de mesa ─────────────────────────────────
+var _mesaEditId = null;
+
+window.abrirModalMesa = function(mesaId) {
+  _mesaEditId = mesaId;
+  var mesa = _todasMesas.find(function(m){ return m.id === mesaId; });
+  if (!mesa) return;
+  document.getElementById('mesaModalTitle').textContent = mesa.nombre;
+  document.getElementById('dmSearch').value = '';
+  document.getElementById('jugSearch').value = '';
+  document.getElementById('dmResults').classList.remove('open');
+  document.getElementById('jugResults').classList.remove('open');
+  renderModalDM(mesa);
+  renderModalJugadores(mesa);
+  document.getElementById('mesaEditModal').classList.add('open');
+};
+
+window.cerrarModalMesa = function() {
+  document.getElementById('mesaEditModal').classList.remove('open');
+  _mesaEditId = null;
+};
+
+// Cerrar modal al clickear overlay
+document.getElementById('mesaEditModal').addEventListener('click', function(e) {
+  if (e.target === this) window.cerrarModalMesa();
+});
+
+function getMesaActual() {
+  return _todasMesas.find(function(m){ return m.id === _mesaEditId; });
+}
+
+function getAvatarUrl(u) {
+  return u.photoURL || ('https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||u.email||'U')+'&background=E8E6E0&color=111110&size=28');
+}
+
+function renderModalDM(mesa) {
+  var wrap = document.getElementById('dmActual');
+  var dmJug = (mesa.jugadores||[]).find(function(j){ return j.rol === 'dm'; });
+  if (!dmJug) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:8px;">Sin DM asignado</div>';
+    return;
+  }
+  var u = allUsers.find(function(u){ return u.uid === dmJug.uid; }) || {};
+  wrap.innerHTML = '<div class="mesa-dm-card">'
+    + '<img class="mesa-user-result-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src='https://ui-avatars.com/api/?name=DM'">'
+    + '<div class="mesa-dm-card-info">'
+    +   '<div class="mesa-dm-card-name">'+(u.displayName||dmJug.nombre||'Usuario')+'</div>'
+    +   '<div class="mesa-dm-card-sub">'+(u.email||'')+'</div>'
+    + '</div>'
+    + '<button class="mesa-dm-remove" onclick="window.removerDM()" title="Remover DM">✕</button>'
+    + '</div>';
+}
+
+function renderModalJugadores(mesa) {
+  var list = document.getElementById('jugadoresList');
+  var jugs = (mesa.jugadores||[]).filter(function(j){ return j.rol !== 'dm'; });
+  if (!jugs.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);">Sin jugadores asignados</div>';
+    return;
+  }
+  list.innerHTML = jugs.map(function(j) {
+    var u = allUsers.find(function(u){ return u.uid === j.uid; }) || {};
+    return '<div class="mesa-jug-item">'
+      + '<img class="mesa-jug-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src='https://ui-avatars.com/api/?name=J'">'
+      + '<div class="mesa-jug-info">'
+      +   '<div class="mesa-jug-name">'+(u.displayName||j.nombre||'Usuario')+'</div>'
+      +   '<div class="mesa-jug-sub">'+(u.email||'')+' · '+(j.estadoSesion||j.estado||'confirmado')+'</div>'
+      + '</div>'
+      + '<button class="mesa-jug-remove" onclick="window.removerJugador(\''+j.uid+'\')" title="Remover jugador">✕</button>'
+      + '</div>';
+  }).join('');
+}
+
+// Búsqueda de usuarios
+window.buscarUsuarioModal = function(tipo, q) {
+  var term = (q||'').toLowerCase().trim();
+  var resEl = document.getElementById(tipo === 'dm' ? 'dmResults' : 'jugResults');
+  if (!term || term.length < 2) { resEl.classList.remove('open'); return; }
+
+  var filtered = allUsers.filter(function(u) {
+    return (u.displayName||'').toLowerCase().includes(term)
+      || (u.email||'').toLowerCase().includes(term);
+  }).slice(0, 6);
+
+  if (!filtered.length) { resEl.classList.remove('open'); return; }
+
+  var mesa = getMesaActual();
+  var asignadosUids = (mesa.jugadores||[]).map(function(j){ return j.uid; });
+
+  resEl.innerHTML = filtered.map(function(u) {
+    var roles = u.roles || [];
+    var yaAsignado = asignadosUids.includes(u.uid);
+    var tieneRolDM  = roles.includes('dm');
+    var tieneRolJug = roles.includes('jugador');
+
+    var warn = '';
+    if (tipo === 'dm' && !tieneRolDM) warn = '⚠ No tiene rol DM';
+    if (tipo === 'jug' && !tieneRolJug) warn = '⚠ No tiene rol Jugador';
+    if (yaAsignado) warn = '✓ Ya en la mesa';
+
+    return '<div class="mesa-user-result-item" onclick="window.asignarUsuario(\''+tipo+'\',\''+u.uid+'\')">'
+      + '<img class="mesa-user-result-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src='https://ui-avatars.com/api/?name=U'">'
+      + '<div style="flex:1;">'
+      +   '<div class="mesa-user-result-name">'+(u.displayName||u.email||u.uid)+'</div>'
+      +   '<div class="mesa-user-result-roles">'+roles.join(', ')+'</div>'
+      + '</div>'
+      + (warn ? '<span class="mesa-user-result-warn">'+warn+'</span>' : '')
+      + '</div>';
+  }).join('');
+
+  resEl.classList.add('open');
+};
+
+window.asignarUsuario = function(tipo, uid) {
+  var mesa = getMesaActual();
+  if (!mesa) return;
+  var u = allUsers.find(function(u){ return u.uid === uid; });
+  if (!u) return;
+
+  var roles = u.roles || [];
+
+  if (tipo === 'dm') {
+    if (!roles.includes('dm')) {
+      if (!confirm('⚠ '+( u.displayName||u.email)+' no tiene rol DM. ¿Asignar igual?')) return;
+    }
+    // Quitar DM anterior y poner el nuevo
+    var jugadores = (mesa.jugadores||[]).filter(function(j){ return j.rol !== 'dm'; });
+    jugadores.unshift({ uid: u.uid, nombre: u.displayName||u.email||'', rol: 'dm', estado: 'aprobado', estadoSesion: 'confirmado', unidoEn: new Date().toISOString() });
+    guardarJugadoresMesa(mesa.id, jugadores, u, 'asignado como DM');
+    document.getElementById('dmSearch').value = '';
+    document.getElementById('dmResults').classList.remove('open');
+  } else {
+    if (!roles.includes('jugador')) {
+      if (!confirm('⚠ '+(u.displayName||u.email)+' no tiene rol Jugador. ¿Agregar igual?')) return;
+    }
+    var yaEsta = (mesa.jugadores||[]).some(function(j){ return j.uid === uid; });
+    if (yaEsta) { showToastAdmin('Ya está en la mesa'); return; }
+    var jugs = (mesa.jugadores||[]).concat([{ uid: u.uid, nombre: u.displayName||u.email||'', rol: 'jugador', estado: 'aprobado', estadoSesion: 'pendiente', unidoEn: new Date().toISOString() }]);
+    guardarJugadoresMesa(mesa.id, jugs, u, 'agregado como jugador');
+    document.getElementById('jugSearch').value = '';
+    document.getElementById('jugResults').classList.remove('open');
+  }
+};
+
+window.removerDM = function() {
+  var mesa = getMesaActual();
+  if (!mesa) return;
+  if (!confirm('¿Remover el DM de esta mesa?')) return;
+  var jugadores = (mesa.jugadores||[]).filter(function(j){ return j.rol !== 'dm'; });
+  guardarJugadoresMesa(mesa.id, jugadores, null, null);
+};
+
+window.removerJugador = function(uid) {
+  var mesa = getMesaActual();
+  if (!mesa) return;
+  var u = allUsers.find(function(u){ return u.uid === uid; });
+  if (!confirm('¿Remover a '+(u && u.displayName ? u.displayName : uid)+' de la mesa?')) return;
+  var jugadores = (mesa.jugadores||[]).filter(function(j){ return j.uid !== uid; });
+  guardarJugadoresMesa(mesa.id, jugadores, u, 'removido de la mesa');
+};
+
+function guardarJugadoresMesa(mesaId, jugadores, usuarioNotif, accion) {
+  db.collection('mesas').doc(mesaId).update({ jugadores: jugadores })
+    .then(function() {
+      // Actualizar cache local
+      var mesa = _todasMesas.find(function(m){ return m.id === mesaId; });
+      if (mesa) mesa.jugadores = jugadores;
+      renderModalDM(mesa);
+      renderModalJugadores(mesa);
+      renderMesasAdmin();
+      // Notificar al usuario si corresponde
+      if (usuarioNotif && accion) {
+        var mesaNombre = (mesa && mesa.nombre) || mesaId;
+        db.collection('notificaciones').doc(usuarioNotif.uid).collection('items').add({
+          tipo:    'mesa_asignacion',
+          titulo:  'Fuiste '+accion,
+          cuerpo:  'Te asignaron a la mesa "'+mesaNombre+'"',
+          mesaId:  mesaId, leida: false,
+          creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function(){});
+      }
+      showToastAdmin('✓ Mesa actualizada');
+    })
+    .catch(function(e) {
+      console.error(e);
+      showToastAdmin('Error al actualizar', true);
+    });
+}
+
+
 window.toggleGpsOverride = async function() {
   try {
     var snap    = await db.collection('meta').doc('config').get();
@@ -1245,5 +1475,37 @@ window.toggleGpsOverride = async function() {
 };
 
 </script>
+
+<!-- Modal edición de mesa -->
+<div class="mesa-modal-overlay" id="mesaEditModal">
+  <div class="mesa-modal">
+    <div class="mesa-modal-header">
+      <span class="mesa-modal-title" id="mesaModalTitle">Editar mesa</span>
+      <button class="mesa-modal-close" onclick="window.cerrarModalMesa()">✕</button>
+    </div>
+    <div class="mesa-modal-body">
+
+      <!-- DM -->
+      <div class="mesa-modal-section">
+        <span class="mesa-modal-label">🎲 Director / Narrador (DM)</span>
+        <input class="mesa-user-search" id="dmSearch" type="text" placeholder="Buscar usuario con rol DM…" oninput="window.buscarUsuarioModal('dm', this.value)" autocomplete="off">
+        <div class="mesa-user-results" id="dmResults"></div>
+        <div id="dmActual"></div>
+      </div>
+
+      <!-- Jugadores -->
+      <div class="mesa-modal-section">
+        <span class="mesa-modal-label">👥 Jugadores</span>
+        <input class="mesa-user-search" id="jugSearch" type="text" placeholder="Buscar usuario para agregar…" oninput="window.buscarUsuarioModal('jug', this.value)" autocomplete="off">
+        <div class="mesa-user-results" id="jugResults"></div>
+        <div class="mesa-jugadores-list" id="jugadoresList"></div>
+      </div>
+
+    </div>
+    <div class="mesa-modal-footer">
+      <button onclick="window.cerrarModalMesa()" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);padding:8px 20px;border-radius:6px;cursor:pointer;">Cerrar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
