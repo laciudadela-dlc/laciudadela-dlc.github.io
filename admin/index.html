@@ -1289,10 +1289,16 @@ window.cerrarModalMesa = function() {
   _mesaEditId = null;
 };
 
-// Cerrar modal al clickear overlay
-document.getElementById('mesaEditModal').addEventListener('click', function(e) {
-  if (e.target === this) window.cerrarModalMesa();
-});
+// Cerrar modal al clickear overlay — usar DOMContentLoaded por si el HTML carga después
+// El modal HTML está después del script — usar setTimeout para esperar el DOM
+setTimeout(function() {
+  var overlay = document.getElementById('mesaEditModal');
+  if (overlay) {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) window.cerrarModalMesa();
+    });
+  }
+}, 0);
 
 function getMesaActual() {
   return _todasMesas.find(function(m){ return m.id === _mesaEditId; });
