@@ -1311,7 +1311,7 @@ function renderModalDM(mesa) {
   }
   var u = allUsers.find(function(u){ return u.uid === dmJug.uid; }) || {};
   wrap.innerHTML = '<div class="mesa-dm-card">'
-    + '<img class="mesa-user-result-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src='https://ui-avatars.com/api/?name=DM'">'
+    + '<img class="mesa-user-result-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src=&quot;https://ui-avatars.com/api/?name=DM&quot;">'
     + '<div class="mesa-dm-card-info">'
     +   '<div class="mesa-dm-card-name">'+(u.displayName||dmJug.nombre||'Usuario')+'</div>'
     +   '<div class="mesa-dm-card-sub">'+(u.email||'')+'</div>'
@@ -1330,7 +1330,7 @@ function renderModalJugadores(mesa) {
   list.innerHTML = jugs.map(function(j) {
     var u = allUsers.find(function(u){ return u.uid === j.uid; }) || {};
     return '<div class="mesa-jug-item">'
-      + '<img class="mesa-jug-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src='https://ui-avatars.com/api/?name=J'">'
+      + '<img class="mesa-jug-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src=&quot;https://ui-avatars.com/api/?name=J&quot;">'
       + '<div class="mesa-jug-info">'
       +   '<div class="mesa-jug-name">'+(u.displayName||j.nombre||'Usuario')+'</div>'
       +   '<div class="mesa-jug-sub">'+(u.email||'')+' · '+(j.estadoSesion||j.estado||'confirmado')+'</div>'
@@ -1368,7 +1368,7 @@ window.buscarUsuarioModal = function(tipo, q) {
     if (yaAsignado) warn = '✓ Ya en la mesa';
 
     return '<div class="mesa-user-result-item" onclick="window.asignarUsuario(\''+tipo+'\',\''+u.uid+'\')">'
-      + '<img class="mesa-user-result-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src='https://ui-avatars.com/api/?name=U'">'
+      + '<img class="mesa-user-result-avatar" src="'+getAvatarUrl(u)+'" onerror="this.src=&quot;https://ui-avatars.com/api/?name=U&quot;">'
       + '<div style="flex:1;">'
       +   '<div class="mesa-user-result-name">'+(u.displayName||u.email||u.uid)+'</div>'
       +   '<div class="mesa-user-result-roles">'+roles.join(', ')+'</div>'
