@@ -486,20 +486,20 @@ async function dibujarFlyer(mesa, imgUrl) {
   // ── Sinopsis ──
   const SIN_Y = IMG_Y + IMG_H + 48;
   ctx.fillStyle = "#1a0e05";
-  ctx.font = "bold 24px 'Oswald', sans-serif";
+  ctx.font = "bold 30px 'Oswald', sans-serif";
   ctx.textAlign = "left";
-  const sinTrunc = (mesa.sinopsis || "Sin sinopsis disponible").substring(0, 180);
+  const sinTrunc = (mesa.sinopsis || "Sin sinopsis disponible").substring(0, 220);
   ctx.fillText("BREVE SINOPSIS", 50, SIN_Y);
 
-  ctx.font = "400 22px 'DM Sans', sans-serif";
+  ctx.font = "400 28px 'DM Sans', sans-serif";
   ctx.fillStyle = "#2a1a08";
   const palabras = sinTrunc.split(" ");
-  let linea = "", y2 = SIN_Y + 30, maxW = W-100;
+  let linea = "", y2 = SIN_Y + 38, maxW = W-100;
   for (const p of palabras) {
     const prueba = linea ? linea+" "+p : p;
     if (ctx.measureText(prueba).width > maxW) {
-      ctx.fillText(linea, 50, y2); y2+=28; linea=p;
-      if (y2 > SIN_Y+90) { ctx.fillText(linea+"…", 50, y2); linea=""; break; }
+      ctx.fillText(linea, 50, y2); y2+=36; linea=p;
+      if (y2 > SIN_Y+115) { ctx.fillText(linea+"…", 50, y2); linea=""; break; }
     } else { linea = prueba; }
   }
   if (linea) ctx.fillText(linea, 50, y2);
