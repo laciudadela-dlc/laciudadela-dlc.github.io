@@ -41,9 +41,16 @@ function detectarSubtipo(periodicidad) {
   return null;
 }
 
+function normalizeKey(s) {
+  return (s||'').toLowerCase().trim()
+    .replace(/\.$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function mesaKey(title, dm) {
-  const t = (title||'').toLowerCase().trim().replace(/\s+/g,' ');
-  const d = (dm||'').toLowerCase().trim();
+  const t = normalizeKey(title);
+  const d = normalizeKey(dm);
   return d ? `${t}||${d}` : t;
 }
 

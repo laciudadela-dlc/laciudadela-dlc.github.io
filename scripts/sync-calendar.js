@@ -195,10 +195,16 @@ async function syncEventos(year, month, items) {
 // ── Sync Mesas (inline) ──────────────────────────────────
 const CAMPOS_MINIMOS = ['nombre','sistema','dm','periodicidad','sinopsis'];
 
+function normalizeKey(s) {
+  return (s||'').toLowerCase().trim()
+    .replace(/\.$/, '')      // quitar punto final
+    .replace(/\s+/g, ' ')    // normalizar espacios
+    .trim();
+}
+
 function mesaKey(title, dm) {
-  const t = (title||'').toLowerCase().trim().replace(/\s+/g,' ');
-  const d = (dm||'').toLowerCase().trim();
-  // Si hay DM, incluirlo en la key para permitir dos mesas con el mismo nombre y distinto DM
+  const t = normalizeKey(title);
+  const d = normalizeKey(dm);
   return d ? `${t}||${d}` : t;
 }
 
@@ -270,8 +276,8 @@ async function syncMesas() {
     const estado    = faltantes.length === 0 ? 'activa' : 'incompleta';
     const proxFecha = proximaFecha(g.fechas);
     const data = {
-      _key: key, nombre: g.nombre, sistema: g.sistema||'',
-      dm: g.dm||'', periodicidad: g.periodicidad||'',
+      _key: key, nombre: g.nombre.replace(/\.$/, '').trim(), sistema: g.sistema||'',
+      dm: (g.dm||'').replace(/\.$/, '').trim(), periodicidad: g.periodicidad||'',
       sinopsis: g.sinopsis||'', cupos: g.cupos||'',
       estado, camposFaltantes: faltantes,
       proximaFecha: proxFecha, todasLasFechas: g.fechas.sort(),
