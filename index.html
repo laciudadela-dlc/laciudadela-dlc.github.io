@@ -432,6 +432,31 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
 .timbre-toast.ok{background:#166534;}
 .timbre-toast.err{background:#B91C1C;}
 .timbre-toast.warn{background:#92400E;}
+
+/* Modal auth */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg);border-radius:14px;padding:28px 24px 24px;width:92%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-logo{height:44px;margin-bottom:12px;}
+.modal-title{font-family:'Cinzel',serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+.auth-tabs{display:flex;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+.auth-tab{flex:1;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:none;background:var(--bg2);color:var(--muted);cursor:pointer;transition:all .15s;}
+.auth-tab.active{background:var(--ink);color:#fff;}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;transition:background .12s;}
+.google-btn:hover{background:var(--bg2);}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
+.auth-form{display:flex;flex-direction:column;gap:10px;text-align:left;}
+.auth-input{width:100%;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--brd);border-radius:7px;background:var(--bg2);color:var(--ink);outline:none;}
+.auth-input:focus{border-color:var(--ink2);}
+.auth-input-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px;display:block;}
+.auth-submit{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;}
+.auth-submit:disabled{opacity:.4;cursor:default;}
+.auth-error{font-size:12px;color:var(--red);text-align:center;display:none;padding:6px;background:var(--red-light);border-radius:6px;}
+.auth-error.show{display:block;}
+.modal-cancel{display:block;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -1049,6 +1074,78 @@ function stopListeners(){
   if(unsubMsg){unsubMsg();unsubMsg=null;}
   document.getElementById('authZone').innerHTML=`<button class="auth-btn" onclick="window.AUTH.openLogin()">Ingresar</button>`;
 }
+
+  // ── Auth modal (email + Google) ── compat ────────────
+  window._authTab = function(tab) {
+    document.querySelectorAll('.auth-tab').forEach(function(t,i){ t.classList.toggle('active',(i===0)===(tab==='google')); });
+    document.getElementById('authPanelGoogle').classList.toggle('active', tab==='google');
+    document.getElementById('authPanelEmail').classList.toggle('active', tab==='email');
+    document.getElementById('authError').classList.remove('show');
+  };
+  window._emailTab = function(tab) {
+    var isLogin = tab==='login';
+    document.getElementById('formLogin').style.display    = isLogin ? 'flex' : 'none';
+    document.getElementById('formRegister').style.display = isLogin ? 'none' : 'flex';
+    document.getElementById('btnTabLogin').style.background    = isLogin ? 'var(--ink)' : 'var(--bg2)';
+    document.getElementById('btnTabLogin').style.color         = isLogin ? '#fff' : 'var(--muted)';
+    document.getElementById('btnTabRegister').style.background = isLogin ? 'var(--bg2)' : 'var(--ink)';
+    document.getElementById('btnTabRegister').style.color      = isLogin ? 'var(--muted)' : '#fff';
+    document.getElementById('authError').classList.remove('show');
+  };
+  function _showAuthError(msg, isOk) {
+    var el = document.getElementById('authError');
+    el.textContent = msg;
+    el.style.background = isOk ? 'var(--green-light)' : 'var(--red-light)';
+    el.style.color = isOk ? 'var(--green)' : 'var(--red)';
+    el.classList.add('show');
+  }
+  function _validatePassword(pwd) {
+    if (pwd.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+    if (!/[A-Z]/.test(pwd)) return 'Debe incluir al menos una mayúscula.';
+    if (!/[0-9]/.test(pwd)) return 'Debe incluir al menos un número.';
+    return null;
+  }
+  function doEmailLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var pwd   = document.getElementById('loginPassword').value;
+    if (!email || !pwd) { _showAuthError('Completá todos los campos.'); return; }
+    var btn = document.querySelector('#formLogin .auth-submit');
+    btn.disabled=true; btn.textContent='Ingresando…';
+    auth.signInWithEmailAndPassword(email, pwd)
+      .then(function(){ closeLogin(); })
+      .catch(function(e) {
+        var msgs = {'auth/user-not-found':'No existe una cuenta con ese email.','auth/wrong-password':'Contraseña incorrecta.','auth/invalid-credential':'Email o contraseña incorrectos.','auth/too-many-requests':'Demasiados intentos.','auth/user-disabled':'Cuenta desactivada.'};
+        _showAuthError(msgs[e.code]||'Error al ingresar.');
+        btn.disabled=false; btn.textContent='Ingresar';
+      });
+  }
+  function doRegister() {
+    var name  = document.getElementById('regName').value.trim();
+    var email = document.getElementById('regEmail').value.trim();
+    var pwd   = document.getElementById('regPassword').value;
+    var pwd2  = document.getElementById('regPassword2').value;
+    if (!name||!email||!pwd||!pwd2) { _showAuthError('Completá todos los campos.'); return; }
+    if (pwd!==pwd2) { _showAuthError('Las contraseñas no coinciden.'); return; }
+    var err = _validatePassword(pwd);
+    if (err) { _showAuthError(err); return; }
+    var btn = document.querySelector('#formRegister .auth-submit');
+    btn.disabled=true; btn.textContent='Creando cuenta…';
+    auth.createUserWithEmailAndPassword(email, pwd)
+      .then(function(cred) { return cred.user.updateProfile({ displayName: name }); })
+      .then(function(){ closeLogin(); })
+      .catch(function(e) {
+        var msgs = {'auth/email-already-in-use':'Ya existe una cuenta con ese email.','auth/invalid-email':'Email no válido.','auth/weak-password':'Contraseña muy débil.'};
+        _showAuthError(msgs[e.code]||'Error al crear la cuenta.');
+        btn.disabled=false; btn.textContent='Crear cuenta';
+      });
+  }
+  function doResetPassword() {
+    var email = document.getElementById('loginEmail').value.trim();
+    if (!email) { _showAuthError('Ingresá tu email primero.'); return; }
+    auth.sendPasswordResetEmail(email)
+      .then(function(){ _showAuthError('✓ Te enviamos un email para restablecer la contraseña.', true); })
+      .catch(function(){ _showAuthError('No encontramos una cuenta con ese email.'); });
+  }
 </script>
 </body>
 </html>
