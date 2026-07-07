@@ -20,80 +20,84 @@
 }
 html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;}
 
+/* Header */
 .header{background:var(--bg);border-bottom:1px solid var(--brd);padding:0 20px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.header-back{font-size:13px;font-weight:600;color:var(--ink2);border:1px solid var(--brd);padding:6px 14px;border-radius:6px;text-decoration:none;white-space:nowrap;}
+.header-back{font-size:13px;font-weight:600;color:var(--ink2);border:1px solid var(--brd);padding:6px 14px;border-radius:6px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
 .header-back:hover{background:var(--bg2);}
 .header-logo{height:34px;width:auto;object-fit:contain;flex-shrink:0;}
 .header-wordmark{font-family:"Cinzel",serif;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.02em;flex:1;}
 .header-user{display:flex;align-items:center;gap:8px;}
 .header-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--brd);object-fit:cover;}
+.header-logout{font-size:11px;font-weight:600;border:1px solid var(--brd);background:transparent;padding:4px 10px;border-radius:6px;cursor:pointer;color:var(--muted);}
 
+/* Guard */
 .guard{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;}
 .guard.show{display:flex;}
 .guard-icon{font-size:48px;opacity:.3;}
 .guard-title{font-family:"Cinzel",serif;font-size:20px;font-weight:700;}
 .guard-sub{font-size:14px;color:var(--muted);max-width:360px;line-height:1.6;}
-.guard-btn{font-size:13px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block;}
+.guard-btn{font-size:13px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;}
 
+/* Layout */
 .page-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 60px);}
 @media(max-width:767px){.page-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
 
+/* Sidebar */
 .sidebar{background:var(--bg);border-right:1px solid var(--brd);padding:20px 16px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;}
 .sidebar-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:block;}
 .sidebar-section{margin-bottom:20px;}
-
 .tipo-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .1s;border-left:3px solid transparent;}
 .tipo-item:hover{background:var(--bg2);}
 .tipo-item.active{background:var(--bg3);border-left-color:var(--ink2);}
 .tipo-icon{font-size:16px;flex-shrink:0;}
 .tipo-nombre{font-size:13px;color:var(--ink2);flex:1;}
 .tipo-count{font-size:11px;color:var(--muted);font-weight:600;}
-
 .sidebar-info{margin-top:auto;padding-top:20px;border-top:1px solid var(--brd);}
 .sidebar-info p{font-size:11px;color:var(--muted);line-height:1.5;}
 
-.main{padding:0;}
+/* Top bar */
 .top-bar{background:var(--bg);border-bottom:1px solid var(--brd);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.top-bar-title{font-family:"Cinzel",serif;font-size:16px;font-weight:700;color:var(--ink);flex:1;}
+.top-bar-title{font-family:"Cinzel",serif;font-size:16px;font-weight:700;color:var(--ink);}
 .top-bar-count{font-size:13px;color:var(--muted);}
+.top-bar-search{flex:1;max-width:260px;padding:7px 10px;font-family:"DM Sans",sans-serif;font-size:12px;border:1px solid var(--brd);border-radius:6px;background:var(--bg2);color:var(--ink);outline:none;}
+.top-bar-search:focus{border-color:var(--ink2);}
 
+/* Cards */
 .act-grid{display:flex;flex-direction:column;}
 .act-card{background:var(--bg);border-bottom:1px solid var(--brd);padding:20px;transition:background .1s;}
-.act-card:hover{background:var(--bg2);}
+.act-card:hover{background:#FAFAF8;}
 .act-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.act-nombre{font-family:"Cinzel",serif;font-size:16px;font-weight:700;color:var(--ink);flex:1;line-height:1.3;}
 .act-tipo-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
 .tipo-taller{background:var(--amber-light);color:var(--amber);}
 .tipo-evento{background:var(--blue-light);color:var(--blue);}
 .tipo-ludoteca{background:var(--purple-light);color:var(--purple);}
-.act-nombre{font-size:16px;font-weight:700;color:var(--ink);flex:1;line-height:1.3;}
 .act-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--muted);margin-bottom:8px;}
 .act-fecha{color:var(--ink);font-weight:600;}
 .act-costo{font-size:12px;font-weight:700;color:var(--green);background:var(--green-light);padding:2px 8px;border-radius:20px;}
-.act-sinopsis{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.act-sinopsis{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px;}
 .act-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .act-inscriptos{font-size:12px;color:var(--muted);}
-
 .btn-inscribir{font-size:12px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:7px 18px;border-radius:20px;cursor:pointer;transition:opacity .12s;}
 .btn-inscribir:hover{opacity:.85;}
 .btn-inscribir:disabled{opacity:.4;cursor:default;}
-
-.status-badge{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;}
-.st-inscripto{background:var(--green-light);color:var(--green);}
-.st-pendiente{background:var(--amber-light);color:var(--amber);}
-
+.btn-cancelar{font-size:12px;font-weight:600;background:var(--bg3);color:var(--muted);border:1px solid var(--brd);padding:6px 14px;border-radius:20px;cursor:pointer;}
+.st-inscripto{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;background:var(--green-light);color:var(--green);}
 .empty-state{padding:60px 24px;text-align:center;color:var(--muted);font-size:14px;}
 .empty-icon{font-size:40px;opacity:.2;margin-bottom:12px;}
 
+/* Modal login */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
 .modal-overlay.open{display:flex;}
 .modal-box{background:var(--bg);border-radius:12px;padding:28px 24px;width:90%;max-width:360px;text-align:center;}
-.modal-title{font-family:"Cinzel",serif;font-size:16px;font-weight:700;margin-bottom:8px;color:var(--ink);}
+.modal-title{font-family:"Cinzel",serif;font-size:16px;font-weight:700;margin-bottom:8px;}
 .modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
 .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;font-size:14px;font-weight:600;}
 .google-btn:hover{background:var(--bg2);}
 .google-btn svg{width:18px;height:18px;flex-shrink:0;}
 .modal-cancel{display:block;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;}
 
+/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.err{background:var(--red);}
@@ -134,7 +138,7 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 <div class="page-layout">
   <aside class="sidebar">
     <div class="sidebar-section">
-      <span class="sidebar-label">Tipo de actividad</span>
+      <span class="sidebar-label">Tipo</span>
       <div id="tipoFilters">
         <div class="tipo-item active" data-tipo="todos" onclick="window.setTipoFilter('todos')">
           <span class="tipo-icon">🎪</span>
@@ -163,10 +167,11 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
     </div>
   </aside>
 
-  <main class="main">
+  <main>
     <div class="top-bar">
-      <span class="top-bar-title">Próximas actividades</span>
+      <span class="top-bar-title">Actividades</span>
       <span class="top-bar-count" id="topBarCount"></span>
+      <input class="top-bar-search" type="text" placeholder="Buscar…" oninput="window.buscarActividades(this.value)">
     </div>
     <div class="act-grid" id="actGrid">
       <div class="empty-state"><div class="empty-icon">🎪</div>Cargando actividades…</div>
@@ -175,9 +180,9 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc,
-         deleteDoc, addDoc, query, where, arrayUnion, arrayRemove, serverTimestamp }
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc,
+         arrayUnion, arrayRemove, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -186,19 +191,18 @@ const app = initializeApp({
   apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
   authDomain:"ciudadela-portal-88111.firebaseapp.com",
   projectId:"ciudadela-portal-88111",
-  storageBucket:"ciudadela-portal-88111.firebasestorage.app",
   messagingSenderId:"629290273583",
   appId:"1:629290273583:web:47e321d389fb0e49a6afda"
 });
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-let ME = null, MY_PROFILE = null;
+let ME = null;
 let ALL_ACTS = [];
 let tipoFilter = 'todos';
+let searchTerm = '';
 
 const TIPO_LABELS = { taller:'Taller', evento:'Evento', ludoteca:'Ludoteca' };
-const TIPO_ICONS  = { taller:'📚', evento:'🎉', ludoteca:'🎲' };
 
 function formatFecha(iso) {
   if (!iso) return "Sin fecha";
@@ -221,7 +225,7 @@ function showToast(msg, err) {
   setTimeout(()=>{ t.className="toast"; }, 3500);
 }
 
-// ── Auth ──────────────────────────────────────────────
+// ── Auth ─────────────────────────────────────────────
 document.getElementById("guardLoginBtn").addEventListener("click", ()=>{
   document.getElementById("loginModal").classList.add("open");
 });
@@ -242,8 +246,6 @@ onAuthStateChanged(auth, async user => {
     return;
   }
   document.getElementById("guard").classList.remove("show");
-  const snap = await getDoc(doc(db, "usuarios", ME.uid));
-  MY_PROFILE = snap.exists() ? snap.data() : { roles:["jugador"] };
   renderHeader();
   await loadActividades();
 });
@@ -254,7 +256,7 @@ function renderHeader() {
   const name = (ME.displayName||ME.email||"").split(" ")[0];
   const av   = ME.photoURL || ("https://ui-avatars.com/api/?name="+encodeURIComponent(name)+"&background=E8E6E0&color=111110&size=32");
   el.innerHTML = '<img class="header-avatar" src="'+av+'" alt="">'
-    +'<button onclick="window.doLogout()" style="font-size:11px;font-weight:600;border:1px solid var(--brd);background:transparent;padding:4px 10px;border-radius:6px;cursor:pointer;color:var(--muted);">Salir</button>';
+    +'<button class="header-logout" onclick="window.doLogout()">Salir</button>';
 }
 
 window.doLogout = async () => { await signOut(auth); location.href = "../"; };
@@ -275,14 +277,10 @@ async function loadActividades() {
 }
 
 function updateCounts() {
-  const todos     = ALL_ACTS.length;
-  const talleres  = ALL_ACTS.filter(a => a.tipo === "taller").length;
-  const eventos   = ALL_ACTS.filter(a => a.tipo === "evento").length;
-  const ludoteca  = ALL_ACTS.filter(a => a.tipo === "ludoteca").length;
-  document.getElementById("countTodos").textContent    = todos;
-  document.getElementById("countTaller").textContent   = talleres;
-  document.getElementById("countEvento").textContent   = eventos;
-  document.getElementById("countLudoteca").textContent = ludoteca;
+  document.getElementById("countTodos").textContent    = ALL_ACTS.length;
+  document.getElementById("countTaller").textContent   = ALL_ACTS.filter(a=>a.tipo==="taller").length;
+  document.getElementById("countEvento").textContent   = ALL_ACTS.filter(a=>a.tipo==="evento").length;
+  document.getElementById("countLudoteca").textContent = ALL_ACTS.filter(a=>a.tipo==="ludoteca").length;
 }
 
 window.setTipoFilter = (tipo) => {
@@ -293,13 +291,23 @@ window.setTipoFilter = (tipo) => {
   render();
 };
 
-function render() {
-  let acts = tipoFilter === "todos"
-    ? ALL_ACTS
-    : ALL_ACTS.filter(a => a.tipo === tipoFilter);
+window.buscarActividades = (q) => {
+  searchTerm = (q||'').toLowerCase().trim();
+  render();
+};
 
-  document.getElementById("topBarCount").textContent =
-    acts.length + " actividad" + (acts.length !== 1 ? "es" : "");
+function render() {
+  let acts = tipoFilter === 'todos' ? ALL_ACTS : ALL_ACTS.filter(a => a.tipo === tipoFilter);
+  if (searchTerm) {
+    acts = acts.filter(a =>
+      (a.nombre||'').toLowerCase().includes(searchTerm) ||
+      (a.sinopsis||'').toLowerCase().includes(searchTerm) ||
+      (a.dm||'').toLowerCase().includes(searchTerm)
+    );
+  }
+
+  const count = acts.length;
+  document.getElementById("topBarCount").textContent = count + " actividad" + (count !== 1 ? "es" : "");
 
   const grid = document.getElementById("actGrid");
   if (!acts.length) {
@@ -308,19 +316,18 @@ function render() {
   }
 
   grid.innerHTML = acts.map(a => {
-    const tipo      = a.tipo || "evento";
-    const tipoCls   = "tipo-" + tipo;
-    const tipoLabel = TIPO_LABELS[tipo] || tipo;
+    const tipo       = a.tipo || "evento";
+    const tipoCls    = "tipo-" + tipo;
+    const tipoLabel  = TIPO_LABELS[tipo] || tipo;
     const inscriptos = a.inscriptos || [];
-    const yaInscripto = inscriptos.some(i => i.uid === ME?.uid);
+    const yaInscripto = ME ? inscriptos.some(i => i.uid === ME.uid) : false;
     const countLabel  = inscriptos.length + " inscripto" + (inscriptos.length !== 1 ? "s" : "");
 
     let actionHtml = "";
     if (ME) {
       if (yaInscripto) {
-        actionHtml = '<span class="status-badge st-inscripto">✓ Inscripto/a</span>'
-          + ' <button class="btn-inscribir" style="background:var(--bg3);color:var(--muted);border:1px solid var(--brd);" '
-          + 'onclick="window.desinscribirse(\'' + a.id + '\')">Cancelar inscripción</button>';
+        actionHtml = '<span class="st-inscripto">✓ Inscripto/a</span>'
+          + ' <button class="btn-cancelar" onclick="window.desinscribirse(\'' + a.id + '\')">Cancelar</button>';
       } else {
         actionHtml = '<button class="btn-inscribir" onclick="window.inscribirse(\'' + a.id + '\')">+ Inscribirme</button>';
       }
@@ -333,8 +340,9 @@ function render() {
       + '</div>'
       + '<div class="act-meta">'
       +   '<span class="act-fecha">📅 ' + formatFecha(a.proximaFecha) + '</span>'
-      +   (a.dm ? '<span>Coord: ' + esc(a.dm) + '</span>' : '')
+      +   (a.dm ? '<span>Organizador: ' + esc(a.dm) + '</span>' : '')
       +   (a.cupos ? '<span>Cupos: ' + esc(a.cupos) + '</span>' : '')
+      +   (a.periodicidad ? '<span>' + esc(a.periodicidad) + '</span>' : '')
       +   (a.costo ? '<span class="act-costo">💰 ' + esc(a.costo) + '</span>' : '')
       + '</div>'
       + (a.sinopsis ? '<div class="act-sinopsis">' + esc(a.sinopsis) + '</div>' : '')
@@ -346,32 +354,23 @@ function render() {
   }).join("");
 }
 
-// ── Inscripción directa (sin aprobación) ─────────────
+// ── Inscripción ───────────────────────────────────────
 window.inscribirse = async (actId) => {
   if (!ME) return;
   try {
-    const actRef = doc(db, "actividades", actId);
-    await updateDoc(actRef, {
+    await updateDoc(doc(db, "actividades", actId), {
       inscriptos: arrayUnion({
-        uid:    ME.uid,
-        nombre: ME.displayName || ME.email || "",
-        email:  ME.email || "",
+        uid:         ME.uid,
+        nombre:      ME.displayName || ME.email || "",
+        email:       ME.email || "",
         inscriptoEn: new Date().toISOString()
       })
     });
-    // Actualizar cache local
     const act = ALL_ACTS.find(a => a.id === actId);
-    if (act) {
-      act.inscriptos = [...(act.inscriptos||[]), {
-        uid: ME.uid, nombre: ME.displayName||"", email: ME.email||""
-      }];
-    }
+    if (act) act.inscriptos = [...(act.inscriptos||[]), { uid:ME.uid, nombre:ME.displayName||"", email:ME.email||"" }];
     render();
     showToast("✓ ¡Inscripción confirmada!");
-  } catch(e) {
-    console.error(e);
-    showToast("Error al inscribirse", true);
-  }
+  } catch(e) { console.error(e); showToast("Error al inscribirse", true); }
 };
 
 window.desinscribirse = async (actId) => {
@@ -381,15 +380,11 @@ window.desinscribirse = async (actId) => {
     if (!act) return;
     const yo = (act.inscriptos||[]).find(i => i.uid === ME.uid);
     if (!yo) return;
-    const actRef = doc(db, "actividades", actId);
-    await updateDoc(actRef, { inscriptos: arrayRemove(yo) });
-    if (act) act.inscriptos = (act.inscriptos||[]).filter(i => i.uid !== ME.uid);
+    await updateDoc(doc(db, "actividades", actId), { inscriptos: arrayRemove(yo) });
+    act.inscriptos = (act.inscriptos||[]).filter(i => i.uid !== ME.uid);
     render();
     showToast("Inscripción cancelada");
-  } catch(e) {
-    console.error(e);
-    showToast("Error al cancelar", true);
-  }
+  } catch(e) { console.error(e); showToast("Error al cancelar", true); }
 };
 </script>
 </body>
