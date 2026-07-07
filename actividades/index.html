@@ -101,6 +101,32 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.err{background:var(--red);}
+
+/* Modal auth */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg);border-radius:14px;padding:28px 24px 24px;width:92%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-logo{height:44px;margin-bottom:12px;}
+.modal-title{font-family:'Cinzel',serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+.auth-tabs{display:flex;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+.auth-tab{flex:1;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:none;background:var(--bg2);color:var(--muted);cursor:pointer;transition:all .15s;}
+.auth-tab.active{background:var(--ink);color:#fff;}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;transition:background .12s;}
+.google-btn:hover{background:var(--bg2);}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
+.auth-form{display:flex;flex-direction:column;gap:10px;text-align:left;}
+.auth-input{width:100%;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--brd);border-radius:7px;background:var(--bg2);color:var(--ink);outline:none;transition:border-color .15s;}
+.auth-input:focus{border-color:var(--ink2);}
+.auth-input-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px;display:block;}
+.auth-submit{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .12s;margin-top:4px;}
+.auth-submit:hover{opacity:.88;}
+.auth-submit:disabled{opacity:.4;cursor:default;}
+.auth-error{font-size:12px;color:var(--red);text-align:center;display:none;padding:6px;background:var(--red-light);border-radius:6px;}
+.auth-error.show{display:block;}
+.modal-cancel{display:block;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -115,14 +141,60 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 
 <div class="modal-overlay" id="loginModal">
   <div class="modal-box">
-    <img src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="" style="height:48px;margin-bottom:14px;">
+    <img class="modal-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="">
     <div class="modal-title">La Ciudadela</div>
-    <p class="modal-sub">Ingresá con tu cuenta de Google.</p>
-    <button class="google-btn" id="googleBtn">
-      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Continuar con Google
-    </button>
-    <span class="modal-cancel" id="cancelLoginBtn">Cancelar</span>
+    <p class="modal-sub">Ingresá para continuar.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="window._authTab('google')">Google</button>
+      <button class="auth-tab" onclick="window._authTab('email')">Email</button>
+    </div>
+
+    <div class="auth-panel active" id="authPanelGoogle">
+      <button class="google-btn" onclick="window.loginGoogle()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+
+    <div class="auth-panel" id="authPanelEmail">
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button id="btnTabLogin" onclick="window._emailTab('login')"
+          style="flex:1;padding:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:1px solid var(--brd);border-radius:6px;cursor:pointer;background:var(--ink);color:#fff;">
+          Ingresar
+        </button>
+        <button id="btnTabRegister" onclick="window._emailTab('register')"
+          style="flex:1;padding:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:1px solid var(--brd);border-radius:6px;cursor:pointer;background:var(--bg2);color:var(--muted);">
+          Registrarse
+        </button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div id="formLogin" class="auth-form">
+        <div><span class="auth-input-label">Email</span>
+          <input class="auth-input" id="loginEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+        <div><span class="auth-input-label">Contraseña</span>
+          <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="auth-submit" onclick="window.doEmailLogin()">Ingresar</button>
+        <div style="text-align:center;margin-top:4px;">
+          <span onclick="window.doResetPassword()" style="font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;">¿Olvidaste tu contraseña?</span>
+        </div>
+      </div>
+      <div id="formRegister" class="auth-form" style="display:none;">
+        <div><span class="auth-input-label">Nombre completo</span>
+          <input class="auth-input" id="regName" type="text" placeholder="Tu nombre" autocomplete="name"></div>
+        <div><span class="auth-input-label">Email</span>
+          <input class="auth-input" id="regEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+        <div><span class="auth-input-label">Contraseña</span>
+          <input class="auth-input" id="regPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"></div>
+        <div><span class="auth-input-label">Confirmar contraseña</span>
+          <input class="auth-input" id="regPassword2" type="password" placeholder="Repetir contraseña" autocomplete="new-password"></div>
+        <div style="font-size:11px;color:var(--muted);padding:6px 8px;background:var(--bg2);border-radius:6px;line-height:1.6;">
+          Mínimo 8 caracteres, una mayúscula y un número.
+        </div>
+        <button class="auth-submit" onclick="window.doRegister()">Crear cuenta</button>
+      </div>
+    </div>
+    <span class="modal-cancel" onclick="window.closeLogin()">Cancelar</span>
   </div>
 </div>
 
@@ -185,7 +257,10 @@ import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc,
          arrayUnion, arrayRemove, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  ;,
+         createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         sendPasswordResetEmail, updateProfile }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
 
 const app = initializeApp({
   apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
