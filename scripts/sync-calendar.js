@@ -18,6 +18,17 @@ const db = admin.firestore();
 const GOOGLE_API_KEY = process.env.GOOGLE_CALENDAR_API_KEY || 'AIzaSyDzOx_J54fC6L1-O1hzyeTmg9U4LROB3nk';
 const CALENDAR_ID    = 'laciudadeladelosconfines@gmail.com';
 
+// Los datos de calendario anteriores a esta fecha tienen errores conocidos
+// (cargas incompletas, nombres de DM mal escritos, etc.) y NUNCA deben
+// sincronizarse ni usarse para armar mesas, aunque caigan dentro de la
+// ventana de "mes anterior".
+const CUTOFF_DATE = new Date('2026-07-01T00:00:00');
+
+function monthEndsBeforeCutoff(year, month) {
+  const monthEnd = new Date(year, month + 1, 0, 23, 59, 59);
+  return monthEnd < CUTOFF_DATE;
+}
+
 const SISTEMAS = {
   'dnd':'D&D 5e (2014)', 'd55':'D&D 5e (2024)', 'pf':'Pathfinder 2e',
   'vam':'Vampiro: La Mascarada', 'hw':'Hombre Lobo: El Apocalipsis',
@@ -196,9 +207,13 @@ async function syncEventos(year, month, items) {
 const CAMPOS_MINIMOS = ['nombre','sistema','dm','periodicidad','sinopsis'];
 
 function normalizeKey(s) {
-  return (s||'').toLowerCase().trim()
-    .replace(/\.$/, '')      // quitar punto final
-    .replace(/\s+/g, ' ')    // normalizar espacios
+  return (s||'')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // sin acentos (evita duplicar por tildes)
+    .trim()
+    .replace(/\s*\([^)]*\)\s*$/, '')  // quitar anotaciones finales entre paréntesis, ej: "(@proteus100)"
+    .replace(/[.\s]+$/, '')          // quitar puntos/espacios sueltos al final, ej: "Armin."
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -219,7 +234,9 @@ async function syncMesas() {
   const eventos = [];
   for (let i = -1; i <= 4; i++) {
     const d = new Date(ahora); d.setMonth(d.getMonth()+i);
-    const colId = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const y = d.getFullYear(), m = d.getMonth();
+    if (monthEndsBeforeCutoff(y, m)) continue;
+    const colId = `${y}-${String(m+1).padStart(2,'0')}`;
     try {
       const snap = await db.collection('eventos').doc(colId).collection('items').get();
       snap.docs.forEach(doc => eventos.push({ id:doc.id, ...doc.data() }));
@@ -369,9 +386,14 @@ async function main() {
   let totalEventos = 0;
 
   // Sincronizar mes anterior, actual y 4 meses adelante
+  // (salvo que el "mes anterior" caiga antes del corte de julio 2026)
   for (let i = -1; i <= 4; i++) {
     const d = new Date(ahora); d.setMonth(d.getMonth()+i);
     const y = d.getFullYear(), m = d.getMonth();
+    if (monthEndsBeforeCutoff(y, m)) {
+      console.log(`\nSalteando ${y}-${String(m+1).padStart(2,'0')} (anterior al corte de julio 2026)`);
+      continue;
+    }
     console.log(`\nFetching Google Calendar ${y}-${String(m+1).padStart(2,'0')}...`);
     try {
       const items = await fetchGCalMonth(y, m);
@@ -385,12 +407,14 @@ async function main() {
 
   console.log(`\nTotal eventos actualizados: ${totalEventos}`);
 
-  // Limpiar meses fuera del rango sincronizado (más de 1 mes atrás o más de 4 adelante)
+  // Limpiar meses fuera del rango sincronizado (más de 1 mes atrás o más de 4 adelante,
+  // y nunca antes del corte de julio 2026 aunque caigan dentro del rango de "1 mes atrás")
   console.log('\nLimpiando meses fuera del rango...');
   const mesesSnap = await db.collection('eventos').get();
-  const ahora2    = new Date();
-  const minMes    = new Date(ahora2); minMes.setMonth(minMes.getMonth() - 1);
-  const maxMes    = new Date(ahora2); maxMes.setMonth(maxMes.getMonth() + 4);
+  const ahora2      = new Date();
+  const minMesRaw   = new Date(ahora2); minMesRaw.setMonth(minMesRaw.getMonth() - 1);
+  const minMes      = minMesRaw < CUTOFF_DATE ? CUTOFF_DATE : minMesRaw;
+  const maxMes      = new Date(ahora2); maxMes.setMonth(maxMes.getMonth() + 4);
   const minKey    = `${minMes.getFullYear()}-${String(minMes.getMonth()+1).padStart(2,'0')}`;
   const maxKey    = `${maxMes.getFullYear()}-${String(maxMes.getMonth()+1).padStart(2,'0')}`;
   let mesesEliminados = 0;
