@@ -395,6 +395,83 @@ window.doLogout = async () => {
   document.getElementById('guard').classList.add('show');
 };
 
+window._authTab = function(tab) {
+  document.querySelectorAll(".auth-tab").forEach((t,i)=>{ t.classList.toggle("active",(i===0)===(tab==="google")); });
+  document.getElementById("authPanelGoogle").classList.toggle("active", tab==="google");
+  document.getElementById("authPanelEmail").classList.toggle("active", tab==="email");
+  document.getElementById("authError").classList.remove("show");
+};
+
+window._emailTab = function(tab) {
+  const isLogin = tab==="login";
+  document.getElementById("formLogin").style.display    = isLogin ? "flex" : "none";
+  document.getElementById("formRegister").style.display = isLogin ? "none" : "flex";
+  document.getElementById("btnTabLogin").style.background    = isLogin ? "var(--ink)" : "var(--bg2)";
+  document.getElementById("btnTabLogin").style.color         = isLogin ? "#fff" : "var(--muted)";
+  document.getElementById("btnTabRegister").style.background = isLogin ? "var(--bg2)" : "var(--ink)";
+  document.getElementById("btnTabRegister").style.color      = isLogin ? "var(--muted)" : "#fff";
+  document.getElementById("authError").classList.remove("show");
+};
+
+function _showAuthError(msg, isOk) {
+  const el = document.getElementById("authError");
+  el.textContent = msg;
+  el.style.background = isOk ? "var(--green-light)" : "var(--red-light)";
+  el.style.color = isOk ? "var(--green)" : "var(--red)";
+  el.classList.add("show");
+}
+
+function _validatePassword(pwd) {
+  if (pwd.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+  if (!/[A-Z]/.test(pwd)) return "Debe incluir al menos una mayúscula.";
+  if (!/[0-9]/.test(pwd)) return "Debe incluir al menos un número.";
+  return null;
+}
+
+window.doEmailLogin = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pwd   = document.getElementById("loginPassword").value;
+  if (!email || !pwd) { _showAuthError("Completá todos los campos."); return; }
+  const btn = document.querySelector("#formLogin .auth-submit");
+  btn.disabled = true; btn.textContent = "Ingresando…";
+  signInWithEmailAndPassword(auth, email, pwd)
+    .then(()=>{ window.closeLogin(); })
+    .catch(e=>{
+      const msgs = {"auth/user-not-found":"No existe una cuenta con ese email.","auth/wrong-password":"Contraseña incorrecta.","auth/invalid-credential":"Email o contraseña incorrectos.","auth/too-many-requests":"Demasiados intentos.","auth/user-disabled":"Cuenta desactivada."};
+      _showAuthError(msgs[e.code]||"Error al ingresar.");
+      btn.disabled = false; btn.textContent = "Ingresar";
+    });
+};
+
+window.doRegister = () => {
+  const name  = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const pwd   = document.getElementById("regPassword").value;
+  const pwd2  = document.getElementById("regPassword2").value;
+  if (!name||!email||!pwd||!pwd2) { _showAuthError("Completá todos los campos."); return; }
+  if (pwd!==pwd2) { _showAuthError("Las contraseñas no coinciden."); return; }
+  const err = _validatePassword(pwd);
+  if (err) { _showAuthError(err); return; }
+  const btn = document.querySelector("#formRegister .auth-submit");
+  btn.disabled = true; btn.textContent = "Creando cuenta…";
+  createUserWithEmailAndPassword(auth, email, pwd)
+    .then(cred => updateProfile(cred.user, { displayName: name }))
+    .then(()=>{ window.closeLogin(); })
+    .catch(e=>{
+      const msgs = {"auth/email-already-in-use":"Ya existe una cuenta con ese email.","auth/invalid-email":"Email no válido.","auth/weak-password":"Contraseña muy débil."};
+      _showAuthError(msgs[e.code]||"Error al crear la cuenta.");
+      btn.disabled = false; btn.textContent = "Crear cuenta";
+    });
+};
+
+window.doResetPassword = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  if (!email) { _showAuthError("Ingresá tu email primero."); return; }
+  sendPasswordResetEmail(auth, email)
+    .then(()=>{ _showAuthError("✓ Te enviamos un email para restablecer la contraseña.", true); })
+    .catch(()=>{ _showAuthError("No encontramos una cuenta con ese email."); });
+};
+
 // ── Cargar mesas ────────────────────────────────────────
 async function loadMesas() {
   const [snap, usersSnap] = await Promise.all([
