@@ -418,12 +418,9 @@ async function loadActividades() {
   const snap = await getDocs(collection(db, "actividades"));
   ALL_ACTS = snap.docs.map(d => ({ id:d.id, ...d.data() }))
     .filter(a => a.estado !== "cancelada")
-    .sort((a,b) => {
-      if (!a.proximaFecha && !b.proximaFecha) return 0;
-      if (!a.proximaFecha) return 1;
-      if (!b.proximaFecha) return -1;
-      return new Date(a.proximaFecha) - new Date(b.proximaFecha);
-    });
+    .filter(a => a.estado !== "incompleta")   // ocultar actividades con datos faltantes
+    .filter(a => !!a.proximaFecha)            // ocultar actividades sin fecha próxima (ya pasaron o no tienen fecha)
+    .sort((a,b) => new Date(a.proximaFecha) - new Date(b.proximaFecha));
   updateCounts();
   render();
 }
