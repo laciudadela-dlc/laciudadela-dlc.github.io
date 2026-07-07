@@ -298,11 +298,10 @@ html,body{min-height:100%;background:var(--bg2);font-family:'DM Sans',sans-serif
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-  ;,
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
          createUserWithEmailAndPassword, signInWithEmailAndPassword,
          sendPasswordResetEmail, updateProfile }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const app  = initializeApp({
   apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
