@@ -205,6 +205,7 @@ async function syncEventos(year, month, items) {
 
 // ── Sync Mesas (inline) ──────────────────────────────────
 const CAMPOS_MINIMOS = ['nombre','sistema','dm','periodicidad','sinopsis'];
+const CAMPOS_MINIMOS_ACT = ['nombre','dm','sinopsis'];
 
 function normalizeKey(s) {
   return (s||'')
@@ -353,12 +354,14 @@ async function syncMesas() {
   const batchAct = db.batch();
   let actCreadas = 0, actActualizadas = 0;
   for (const [key, g] of gruposActividades) {
+    const faltantesAct = CAMPOS_MINIMOS_ACT.filter(c => !g[c]||g[c].toString().trim()==='');
+    const estadoAct    = faltantesAct.length === 0 ? 'activa' : 'incompleta';
     const proxFecha = proximaFecha(g.fechas);
     const data = {
       _key: key, nombre: g.nombre, tipo: g.subtipo || g.tipo,
       dm: g.dm||'', periodicidad: g.periodicidad||'',
       sinopsis: g.sinopsis||'', cupos: g.cupos||'',
-      costo: '', estado: 'activa',
+      costo: '', estado: estadoAct, camposFaltantes: faltantesAct,
       proximaFecha: proxFecha, todasLasFechas: g.fechas.sort(),
       eventosIds: g.eventosIds, creadaDe: 'calendario',
       actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
@@ -376,6 +379,36 @@ async function syncMesas() {
   }
   await batchAct.commit();
   console.log(`Actividades: ${actCreadas} creadas, ${actActualizadas} actualizadas`);
+
+  // Detectar actividades que ya no tienen eventos en el calendario
+  let actDesactualizadas = 0, actEliminadas = 0;
+  const existActData = new Map();
+  existActSnap.docs.forEach(d => { const k=d.data()._key; if(k) existActData.set(k, d.data()); });
+  const keysActActivas = new Set(gruposActividades.keys());
+  const batchActObsoletas = db.batch();
+  for (const [key, ref] of existAct) {
+    if (!keysActActivas.has(key)) {
+      const data = existActData.get(key);
+      const tieneInscriptos = (data.inscriptos||[]).length > 0;
+      if (tieneInscriptos) {
+        batchActObsoletas.update(ref, {
+          estado: 'desactualizada',
+          proximaFecha: null,
+          todasLasFechas: [],
+          eventosIds: [],
+          actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(`  ⚠ Actividad desactualizada (tiene inscriptos): "${data.nombre}"`);
+        actDesactualizadas++;
+      } else {
+        batchActObsoletas.delete(ref);
+        console.log(`  ✗ Actividad eliminada (sin inscriptos): "${data.nombre}"`);
+        actEliminadas++;
+      }
+    }
+  }
+  if (actDesactualizadas + actEliminadas > 0) await batchActObsoletas.commit();
+  console.log(`Actividades obsoletas: ${actDesactualizadas} desactualizadas, ${actEliminadas} eliminadas`);
 }
 
 async function main() {
