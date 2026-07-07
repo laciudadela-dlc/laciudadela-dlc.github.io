@@ -469,11 +469,64 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
   <div class="modal-box">
     <img class="modal-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela">
     <div class="modal-title">La Ciudadela</div>
-    <p class="modal-sub">Ingresá con tu cuenta de Google para acceder a mesas, perfil y más.</p>
-    <button class="google-btn" onclick="window.AUTH.loginGoogle()">
-      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Continuar con Google
-    </button>
+    <p class="modal-sub">Ingresá para acceder a mesas, perfil y más.</p>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" onclick="window._authTab('google')">Google</button>
+      <button type="button" class="auth-tab" onclick="window._authTab('email')">Email</button>
+    </div>
+
+    <!-- Panel Google -->
+    <div class="auth-panel active" id="authPanelGoogle">
+      <button class="google-btn" onclick="window.AUTH.loginGoogle()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+
+    <!-- Panel Email -->
+    <div class="auth-panel" id="authPanelEmail">
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <button type="button" id="btnTabLogin" onclick="window._emailTab('login')" style="flex:1;padding:7px;border:none;border-radius:6px;background:var(--ink);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">Ingresar</button>
+        <button type="button" id="btnTabRegister" onclick="window._emailTab('register')" style="flex:1;padding:7px;border:none;border-radius:6px;background:var(--bg2);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">Crear cuenta</button>
+      </div>
+
+      <div class="auth-error" id="authError"></div>
+
+      <div class="auth-form" id="formLogin" style="display:flex;">
+        <div>
+          <label class="auth-input-label">Email</label>
+          <input class="auth-input" type="email" id="loginEmail" placeholder="tu@email.com">
+        </div>
+        <div>
+          <label class="auth-input-label">Contraseña</label>
+          <input class="auth-input" type="password" id="loginPassword" placeholder="••••••••">
+        </div>
+        <button class="auth-submit" onclick="doEmailLogin()">Ingresar</button>
+        <a style="font-size:11px;color:var(--muted);text-align:center;cursor:pointer;margin-top:2px;" onclick="doResetPassword()">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <div class="auth-form" id="formRegister" style="display:none;">
+        <div>
+          <label class="auth-input-label">Nombre</label>
+          <input class="auth-input" type="text" id="regName" placeholder="Tu nombre">
+        </div>
+        <div>
+          <label class="auth-input-label">Email</label>
+          <input class="auth-input" type="email" id="regEmail" placeholder="tu@email.com">
+        </div>
+        <div>
+          <label class="auth-input-label">Contraseña</label>
+          <input class="auth-input" type="password" id="regPassword" placeholder="Mín. 8 caracteres">
+        </div>
+        <div>
+          <label class="auth-input-label">Repetir contraseña</label>
+          <input class="auth-input" type="password" id="regPassword2" placeholder="••••••••">
+        </div>
+        <button class="auth-submit" onclick="doRegister()">Crear cuenta</button>
+      </div>
+    </div>
+
     <a class="modal-cancel" onclick="window.AUTH.closeLogin()">Cancelar</a>
   </div>
 </div>
@@ -1112,7 +1165,7 @@ function stopListeners(){
     var btn = document.querySelector('#formLogin .auth-submit');
     btn.disabled=true; btn.textContent='Ingresando…';
     auth.signInWithEmailAndPassword(email, pwd)
-      .then(function(){ closeLogin(); })
+      .then(function(){ window.AUTH.closeLogin(); })
       .catch(function(e) {
         var msgs = {'auth/user-not-found':'No existe una cuenta con ese email.','auth/wrong-password':'Contraseña incorrecta.','auth/invalid-credential':'Email o contraseña incorrectos.','auth/too-many-requests':'Demasiados intentos.','auth/user-disabled':'Cuenta desactivada.'};
         _showAuthError(msgs[e.code]||'Error al ingresar.');
@@ -1132,7 +1185,7 @@ function stopListeners(){
     btn.disabled=true; btn.textContent='Creando cuenta…';
     auth.createUserWithEmailAndPassword(email, pwd)
       .then(function(cred) { return cred.user.updateProfile({ displayName: name }); })
-      .then(function(){ closeLogin(); })
+      .then(function(){ window.AUTH.closeLogin(); })
       .catch(function(e) {
         var msgs = {'auth/email-already-in-use':'Ya existe una cuenta con ese email.','auth/invalid-email':'Email no válido.','auth/weak-password':'Contraseña muy débil.'};
         _showAuthError(msgs[e.code]||'Error al crear la cuenta.');
