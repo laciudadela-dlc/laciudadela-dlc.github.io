@@ -470,8 +470,46 @@ async function main() {
   console.log('\nSincronizando mesas...');
   await syncMesas();
 
+  console.log('\nEnviando notificaciones de asistencia...');
+  await enviarNotificacionesAsistencia();
+
   console.log('\n=== Sync completo ===');
   process.exit(0);
+}
+
+async function enviarNotificacionesAsistencia() {
+  const ahora  = new Date();
+  const en7dias = new Date(ahora);
+  en7dias.setDate(en7dias.getDate() + 7);
+  const mesasSnap = await db.collection('mesas').where('estado','==','activa').get();
+  let notifEnviadas = 0;
+  for (const mesaDoc of mesasSnap.docs) {
+    const mesa = mesaDoc.data();
+    if (!mesa.proximaFecha) continue;
+    const proxFecha = new Date(mesa.proximaFecha);
+    if (proxFecha < ahora || proxFecha > en7dias) continue;
+    for (const jugador of (mesa.jugadores || [])) {
+      if (jugador.estado !== 'pendiente') continue;
+      const hoy      = ahora.toISOString().slice(0,10);
+      const notifKey = `asistencia_${mesaDoc.id}_${hoy}`;
+      const existente = await db.collection('notificaciones').doc(jugador.uid)
+        .collection('items').where('notifKey','==',notifKey).limit(1).get();
+      if (!existente.empty) continue;
+      const fechaStr = proxFecha.toLocaleDateString('es-AR',
+        { weekday:'long', day:'numeric', month:'long' });
+      await db.collection('notificaciones').doc(jugador.uid).collection('items').add({
+        tipo: 'confirmar_asistencia',
+        titulo: `¿Vas a la mesa del ${fechaStr}?`,
+        cuerpo: `Confirmá tu asistencia a "${mesa.nombre}" con ${mesa.dm}.`,
+        mesaId: mesaDoc.id, mesaNombre: mesa.nombre,
+        proxFecha: mesa.proximaFecha, notifKey, leida: false,
+        creadoEn: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      notifEnviadas++;
+    }
+  }
+  console.log(`Notificaciones de asistencia enviadas: ${notifEnviadas}`);
+  return notifEnviadas;
 }
 
 main().catch(e => { console.error('ERROR:', e); process.exit(1); });

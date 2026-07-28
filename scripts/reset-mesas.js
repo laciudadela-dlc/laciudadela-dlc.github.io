@@ -1,10 +1,14 @@
 /**
  * reset-mesas.js
- * Limpieza completa y recarga de mesas desde cero.
- * 1. Elimina TODOS los documentos de mesas y actividades
- * 2. Lee eventos de Firestore desde HOY en adelante (4 meses)
- * 3. Crea mesas y actividades limpias
- * USAR SOLO EN PREPRODUCCION
+ * Sincroniza mesas y actividades desde los eventos futuros del calendario.
+ * A diferencia de versiones anteriores, NO borra y recrea los documentos:
+ * hace upsert por _key, así se conservan campos custom (ej. imágenes subidas
+ * a mano) y solo se eliminan/marcan-desactualizadas las mesas/actividades
+ * que ya no tienen eventos vigentes en el calendario.
+ * 1. Lee eventos de Firestore desde HOY en adelante (4 meses)
+ * 2. Upsert de mesas y actividades por _key (título + DM normalizados)
+ * 3. Marca como "desactualizada" (o elimina si no tiene jugadores/inscriptos)
+ *    las mesas/actividades que ya no aparecen en el calendario
  */
 
 const admin = require('firebase-admin');
@@ -23,6 +27,7 @@ const SISTEMAS = {
 };
 
 const CAMPOS_MINIMOS = ['nombre','sistema','dm','periodicidad','sinopsis'];
+const CAMPOS_MINIMOS_ACT = ['nombre','dm','sinopsis'];
 const TIPO_ACTIVIDAD = ['taller', 'evento', 'ludoteca'];
 
 function detectarTipo(periodicidad) {
@@ -42,8 +47,12 @@ function detectarSubtipo(periodicidad) {
 }
 
 function normalizeKey(s) {
-  return (s||'').toLowerCase().trim()
-    .replace(/\.$/, '')
+  return (s||'')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // sin acentos (evita duplicar por tildes)
+    .trim()
+    .replace(/\s*\([^)]*\)\s*$/, '')  // quitar anotaciones finales entre paréntesis, ej: "(@proteus100)"
+    .replace(/[.\s]+$/, '')          // quitar puntos/espacios sueltos al final, ej: "Armin."
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -58,23 +67,6 @@ function proximaFecha(fechas) {
   const ahora = new Date();
   return fechas.map(f => new Date(f)).filter(f => f >= ahora)
     .sort((a,b) => a-b)[0]?.toISOString() || null;
-}
-
-async function eliminarColeccion(nombre) {
-  console.log(`\nEliminando ${nombre}...`);
-  const snap = await db.collection(nombre).get();
-  if (snap.empty) { console.log('  Ya estaba vacía'); return 0; }
-  const chunks = [];
-  for (let i = 0; i < snap.docs.length; i += 499) chunks.push(snap.docs.slice(i, i+499));
-  let total = 0;
-  for (const chunk of chunks) {
-    const batch = db.batch();
-    chunk.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-    total += chunk.length;
-  }
-  console.log(`  ${total} documentos eliminados`);
-  return total;
 }
 
 async function leerEventosFuturos() {
@@ -129,85 +121,136 @@ async function crearDesdeEventos(eventos) {
 
   console.log(`\nGrupos: ${gruposMesas.size} mesas, ${gruposAct.size} actividades`);
 
-  // Crear mesas
-  let mc = 0;
+  // ── Mesas: upsert (nunca borra+recrea, así se conservan campos custom como imágenes) ──
+  const existMesasSnap = await db.collection('mesas').get();
+  const existMesas = new Map();
+  existMesasSnap.docs.forEach(d => { const k=d.data()._key; if(k) existMesas.set(k, d); });
+
+  let mesasCreadas = 0, mesasActualizadas = 0;
+  const batchMesas = db.batch();
   for (const [key, g] of gruposMesas) {
     const faltantes = CAMPOS_MINIMOS.filter(c => !g[c] || g[c].toString().trim() === '');
     const estado    = faltantes.length === 0 ? 'activa' : 'incompleta';
-    await db.collection('mesas').add({
+    const mesaData  = {
       _key: key, nombre: g.nombre, sistema: g.sistema||'',
       dm: g.dm||'', periodicidad: g.periodicidad||'',
       sinopsis: g.sinopsis||'', cupos: g.cupos||'',
       estado, camposFaltantes: faltantes,
       proximaFecha: proximaFecha(g.fechas),
       todasLasFechas: g.fechas.sort(),
-      eventosIds: g.eventosIds, creadaDe: 'calendario', jugadores: [],
-      creadaEn: admin.firestore.FieldValue.serverTimestamp(),
+      eventosIds: g.eventosIds, creadaDe: 'calendario',
       actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
     if (faltantes.length > 0) console.log(`  ⚠ Incompleta: "${g.nombre}" — faltan: ${faltantes.join(', ')}`);
-    mc++;
+    if (existMesas.has(key)) {
+      batchMesas.update(existMesas.get(key).ref, mesaData);
+      mesasActualizadas++;
+    } else {
+      const ref = db.collection('mesas').doc();
+      mesaData.creadaEn  = admin.firestore.FieldValue.serverTimestamp();
+      mesaData.jugadores = [];
+      batchMesas.set(ref, mesaData);
+      mesasCreadas++;
+    }
   }
-  console.log(`Mesas creadas: ${mc}`);
+  await batchMesas.commit();
+  console.log(`Mesas: ${mesasCreadas} creadas, ${mesasActualizadas} actualizadas`);
 
-  // Crear actividades
-  let ac = 0;
+  // Mesas obsoletas: ya no tienen eventos en el calendario
+  const keysMesasActivas = new Set(gruposMesas.keys());
+  const batchMesasObs = db.batch();
+  let mesasDesactualizadas = 0, mesasEliminadas = 0;
+  for (const [key, doc] of existMesas) {
+    if (keysMesasActivas.has(key)) continue;
+    const data = doc.data();
+    const tieneJugadores = (data.jugadores||[]).length > 0;
+    if (tieneJugadores) {
+      batchMesasObs.update(doc.ref, {
+        estado: 'desactualizada', proximaFecha: null, todasLasFechas: [], eventosIds: [],
+        actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.log(`  ⚠ Mesa desactualizada (tiene jugadores): "${data.nombre}"`);
+      mesasDesactualizadas++;
+    } else {
+      batchMesasObs.delete(doc.ref);
+      mesasEliminadas++;
+    }
+  }
+  if (mesasDesactualizadas + mesasEliminadas > 0) await batchMesasObs.commit();
+  console.log(`Mesas obsoletas: ${mesasDesactualizadas} desactualizadas, ${mesasEliminadas} eliminadas`);
+
+  // ── Actividades: mismo patrón de upsert, respeta las que tienen inscriptos ──
+  const existActSnap = await db.collection('actividades').get();
+  const existAct = new Map();
+  existActSnap.docs.forEach(d => { const k=d.data()._key; if(k) existAct.set(k, d); });
+
+  let actCreadas = 0, actActualizadas = 0;
+  const batchAct = db.batch();
   for (const [key, g] of gruposAct) {
-    await db.collection('actividades').add({
+    const faltantesAct = CAMPOS_MINIMOS_ACT.filter(c => !g[c] || g[c].toString().trim() === '');
+    const estadoAct    = faltantesAct.length === 0 ? 'activa' : 'incompleta';
+    const actData = {
       _key: key, nombre: g.nombre, tipo: g.subtipo||'evento',
       dm: g.dm||'', periodicidad: g.periodicidad||'',
       sinopsis: g.sinopsis||'', cupos: g.cupos||'',
-      costo: '', estado: 'activa',
+      costo: '', estado: estadoAct, camposFaltantes: faltantesAct,
       proximaFecha: proximaFecha(g.fechas),
       todasLasFechas: g.fechas.sort(),
-      eventosIds: g.eventosIds, creadaDe: 'calendario', inscriptos: [],
-      creadaEn: admin.firestore.FieldValue.serverTimestamp(),
+      eventosIds: g.eventosIds, creadaDe: 'calendario',
       actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    ac++;
+    };
+    if (existAct.has(key)) {
+      batchAct.update(existAct.get(key).ref, actData);
+      actActualizadas++;
+    } else {
+      const ref = db.collection('actividades').doc();
+      actData.creadaEn   = admin.firestore.FieldValue.serverTimestamp();
+      actData.inscriptos = [];
+      batchAct.set(ref, actData);
+      actCreadas++;
+    }
   }
-  console.log(`Actividades creadas: ${ac}`);
-  return { mc, ac };
+  await batchAct.commit();
+  console.log(`Actividades: ${actCreadas} creadas, ${actActualizadas} actualizadas`);
+
+  // Actividades obsoletas: ya no tienen eventos en el calendario
+  const keysActActivas = new Set(gruposAct.keys());
+  const batchActObs = db.batch();
+  let actDesactualizadas = 0, actEliminadas = 0;
+  for (const [key, doc] of existAct) {
+    if (keysActActivas.has(key)) continue;
+    const data = doc.data();
+    const tieneInscriptos = (data.inscriptos||[]).length > 0;
+    if (tieneInscriptos) {
+      batchActObs.update(doc.ref, {
+        estado: 'desactualizada', proximaFecha: null, todasLasFechas: [], eventosIds: [],
+        actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.log(`  ⚠ Actividad desactualizada (tiene inscriptos): "${data.nombre}"`);
+      actDesactualizadas++;
+    } else {
+      batchActObs.delete(doc.ref);
+      actEliminadas++;
+    }
+  }
+  if (actDesactualizadas + actEliminadas > 0) await batchActObs.commit();
+  console.log(`Actividades obsoletas: ${actDesactualizadas} desactualizadas, ${actEliminadas} eliminadas`);
+
+  return { mesasCreadas, mesasActualizadas, mesasEliminadas, mesasDesactualizadas,
+            actCreadas, actActualizadas, actEliminadas, actDesactualizadas };
 }
 
 async function main() {
   console.log('=== reset-mesas.js ===');
   console.log(`Timestamp: ${new Date().toISOString()}`);
   try {
-    // Mesas: respetar las que tienen jugadores
-    console.log('\nRevisando mesas existentes...');
-    const mesasSnap = await db.collection('mesas').get();
-    const batchDel = db.batch();
-    let mesasEliminadas = 0, mesasConservadas = 0;
-    for (const doc of mesasSnap.docs) {
-      const data = doc.data();
-      const tieneJugadores = (data.jugadores||[]).length > 0;
-      if (tieneJugadores) {
-        // Marcar como desactualizada pero conservar jugadores
-        batchDel.update(doc.ref, {
-          estado: 'desactualizada',
-          proximaFecha: null,
-          todasLasFechas: [],
-          eventosIds: [],
-          actualizadaEn: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        console.log(`  ⚠ Conservada (tiene jugadores): "${data.nombre}"`);
-        mesasConservadas++;
-      } else {
-        batchDel.delete(doc.ref);
-        mesasEliminadas++;
-      }
-    }
-    if (mesasSnap.docs.length > 0) await batchDel.commit();
-    console.log(`  ${mesasEliminadas} mesas eliminadas, ${mesasConservadas} conservadas con jugadores`);
-
-    await eliminarColeccion('actividades');
     console.log('\nLeyendo eventos futuros...');
     const eventos = await leerEventosFuturos();
     console.log(`Total: ${eventos.length} eventos futuros`);
-    console.log('\nCreando mesas y actividades limpias...');
+    console.log('\nSincronizando mesas y actividades (upsert, sin perder imágenes ni inscriptos)...');
     const r = await crearDesdeEventos(eventos);
-    console.log(`\n=== Reset completo: ${r.mc} mesas, ${r.ac} actividades ===`);
+    console.log('\n=== Reset completo ===');
+    console.log(JSON.stringify(r, null, 2));
     process.exit(0);
   } catch(e) { console.error('ERROR:', e); process.exit(1); }
 }
