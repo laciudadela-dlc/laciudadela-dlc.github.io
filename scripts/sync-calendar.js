@@ -89,6 +89,8 @@ function resolveSys(texto) {
   return null;
 }
 
+const FIELD_LABELS = ['nombre de partida','juego','sistema','modalidad','periodicidad','sinopsis','narra','narrador','dm','director','game master','cupos'];
+
 function parseDesc(raw) {
   const out = { sistema:'', dm:'', cupos:'', periodicidad:'', sinopsis:'' };
   if (!raw) return out;
@@ -102,8 +104,15 @@ function parseDesc(raw) {
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>');
-  // Normalizar: punto seguido de mayúscula → salto de línea
-  const textNorm = text.replace(/\.\s*([A-ZÁÉÍÓÚÑ])/g, '.\n$1');
+  // Insertar un salto de línea ANTES de cada etiqueta reconocida, sin importar qué la precede.
+  // Esto es más robusto que adivinar por "punto seguido de mayúscula": ese heurístico fallaba
+  // cuando dos campos quedaban pegados sin ese patrón exacto (ej. "casera.Sinopsis:" sin espacio,
+  // típico cuando Google Calendar junta párrafos en <div> sin separador), Y además cortaba
+  // cualquier sinopsis de más de una oración a la primera oración, porque cada punto seguido
+  // de mayúscula normal del texto narrativo generaba una línea que no matcheaba ninguna
+  // etiqueta y se descartaba en silencio.
+  const labelPattern = FIELD_LABELS.map(l => l.replace(/\s+/g, '\\s+')).join('|');
+  const textNorm = text.replace(new RegExp(`(${labelPattern})\\s*:`, 'gi'), '\n$1:');
   for (const line of textNorm.split('\n')) {
     const m = line.match(/^(nombre de partida|juego|sistema|modalidad|periodicidad|sinopsis|narra|narrador|dm|director|game master|cupos)\s*:\s*(.+)$/i);
     if (!m) continue;
