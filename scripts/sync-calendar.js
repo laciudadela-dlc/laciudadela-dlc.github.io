@@ -29,6 +29,60 @@ function monthEndsBeforeCutoff(year, month) {
   return monthEnd < CUTOFF_DATE;
 }
 
+// ── Deduplicación de documentos con la misma _key ─────────────────────────
+// Los upserts (acá y en reset-mesas.js) buscan la mesa/actividad existente
+// usando un Map indexado por _key. Si por algún bug anterior (ej. scripts
+// viejos con otra lógica de key) llegaron a crearse DOS documentos distintos
+// con la MISMA _key, el Map solo puede "ver" uno de los dos al construirse
+// (el último que recorre pisa al anterior en el Map) — el otro queda
+// invisible para siempre: nunca se actualiza, nunca se marca obsoleto,
+// nunca se borra. Sigue existiendo y duplicando la vista.
+// Esta función corre ANTES de todo lo demás y limpia esos duplicados reales,
+// fusionando las listas de jugadores/inscriptos para no perder anotaciones.
+async function deduplicarPorKey(coleccion, campoLista) {
+  const snap = await db.collection(coleccion).get();
+  const porKey = new Map();
+  snap.docs.forEach(d => {
+    const k = d.data()._key;
+    if (!k) return;
+    if (!porKey.has(k)) porKey.set(k, []);
+    porKey.get(k).push(d);
+  });
+
+  let eliminados = 0;
+  for (const [key, docs] of porKey) {
+    if (docs.length <= 1) continue;
+    // Elegir cuál conservar: primero el que tenga fecha próxima (refleja el calendario
+    // vigente), y recién como desempate el que tenga más anotados
+    docs.sort((a, b) => {
+      const fa = a.data().proximaFecha ? 1 : 0, fb = b.data().proximaFecha ? 1 : 0;
+      if (fa !== fb) return fb - fa;
+      const la = (a.data()[campoLista]||[]).length, lb = (b.data()[campoLista]||[]).length;
+      return lb - la;
+    });
+    const [ganador, ...perdedores] = docs;
+    // Fusionar jugadores/inscriptos de los perdedores en el ganador, sin duplicar por uid
+    const listaGanador = ganador.data()[campoLista] || [];
+    const uids = new Set(listaGanador.map(j => j.uid));
+    const listaFusionada = [...listaGanador];
+    for (const perdedor of perdedores) {
+      for (const j of (perdedor.data()[campoLista] || [])) {
+        if (!uids.has(j.uid)) { listaFusionada.push(j); uids.add(j.uid); }
+      }
+    }
+    if (listaFusionada.length !== listaGanador.length) {
+      await ganador.ref.update({ [campoLista]: listaFusionada });
+    }
+    const batch = db.batch();
+    perdedores.forEach(p => batch.delete(p.ref));
+    await batch.commit();
+    eliminados += perdedores.length;
+    console.log(`  🗑 "${ganador.data().nombre}" (${coleccion}): eliminados ${perdedores.length} duplicado(s) con la misma _key`);
+  }
+  console.log(`Deduplicación de ${coleccion}: ${eliminados} documento(s) duplicado(s) eliminado(s)`);
+  return eliminados;
+}
+
 const SISTEMAS = {
   'dnd':'D&D 5e (2014)', 'd55':'D&D 5e (2024)', 'pf':'Pathfinder 2e',
   'vam':'Vampiro: La Mascarada', 'hw':'Hombre Lobo: El Apocalipsis',
@@ -423,6 +477,10 @@ async function syncMesas() {
 async function main() {
   console.log('=== sync-calendar.js ===');
   console.log(`Timestamp: ${new Date().toISOString()}`);
+
+  console.log('\nDeduplicando mesas/actividades con la misma _key...');
+  await deduplicarPorKey('mesas', 'jugadores');
+  await deduplicarPorKey('actividades', 'inscriptos');
 
   const ahora = new Date();
   let totalEventos = 0;

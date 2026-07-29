@@ -28,6 +28,53 @@ const SISTEMAS = {
 
 const CAMPOS_MINIMOS = ['nombre','sistema','dm','periodicidad','sinopsis'];
 const CAMPOS_MINIMOS_ACT = ['nombre','dm','sinopsis'];
+
+// ── Deduplicación de documentos con la misma _key ─────────────────────────
+// Ver la misma función en sync-calendar.js para la explicación completa:
+// si por bugs anteriores llegaron a crearse dos documentos distintos con la
+// misma _key, el Map de upsert solo puede "ver" uno — el otro queda
+// invisible para siempre. Esta función limpia esos duplicados reales,
+// fusionando jugadores/inscriptos para no perder anotaciones.
+async function deduplicarPorKey(coleccion, campoLista) {
+  const snap = await db.collection(coleccion).get();
+  const porKey = new Map();
+  snap.docs.forEach(d => {
+    const k = d.data()._key;
+    if (!k) return;
+    if (!porKey.has(k)) porKey.set(k, []);
+    porKey.get(k).push(d);
+  });
+
+  let eliminados = 0;
+  for (const [key, docs] of porKey) {
+    if (docs.length <= 1) continue;
+    docs.sort((a, b) => {
+      const fa = a.data().proximaFecha ? 1 : 0, fb = b.data().proximaFecha ? 1 : 0;
+      if (fa !== fb) return fb - fa;
+      const la = (a.data()[campoLista]||[]).length, lb = (b.data()[campoLista]||[]).length;
+      return lb - la;
+    });
+    const [ganador, ...perdedores] = docs;
+    const listaGanador = ganador.data()[campoLista] || [];
+    const uids = new Set(listaGanador.map(j => j.uid));
+    const listaFusionada = [...listaGanador];
+    for (const perdedor of perdedores) {
+      for (const j of (perdedor.data()[campoLista] || [])) {
+        if (!uids.has(j.uid)) { listaFusionada.push(j); uids.add(j.uid); }
+      }
+    }
+    if (listaFusionada.length !== listaGanador.length) {
+      await ganador.ref.update({ [campoLista]: listaFusionada });
+    }
+    const batch = db.batch();
+    perdedores.forEach(p => batch.delete(p.ref));
+    await batch.commit();
+    eliminados += perdedores.length;
+    console.log(`  🗑 "${ganador.data().nombre}" (${coleccion}): eliminados ${perdedores.length} duplicado(s) con la misma _key`);
+  }
+  console.log(`Deduplicación de ${coleccion}: ${eliminados} documento(s) duplicado(s) eliminado(s)`);
+  return eliminados;
+}
 const TIPO_ACTIVIDAD = ['taller', 'evento', 'ludoteca'];
 
 function detectarTipo(periodicidad) {
@@ -244,6 +291,10 @@ async function main() {
   console.log('=== reset-mesas.js ===');
   console.log(`Timestamp: ${new Date().toISOString()}`);
   try {
+    console.log('\nDeduplicando mesas/actividades con la misma _key...');
+    await deduplicarPorKey('mesas', 'jugadores');
+    await deduplicarPorKey('actividades', 'inscriptos');
+
     console.log('\nLeyendo eventos futuros...');
     const eventos = await leerEventosFuturos();
     console.log(`Total: ${eventos.length} eventos futuros`);
