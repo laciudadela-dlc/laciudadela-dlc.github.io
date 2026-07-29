@@ -1540,13 +1540,13 @@ function renderActividadesAdmin(lista) {
       + '<div style="width:40px;height:40px;border-radius:6px;background:var(--bg2);border:1px solid var(--brd);'
       +      'display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">'+icon+'</div>'
       + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
+      +   '<div style="font-family:DM Sans,sans-serif;font-weight:600;font-size:13px;color:var(--ink);'
       +        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escA(a.nombre) + '</div>'
-      +   '<div style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
+      +   '<div style="font-family:DM Sans,sans-serif;font-size:11px;color:var(--muted);margin-top:2px;">'
       +     escA(a.tipo||'evento') + (orgName ? ' · Org: '+escA(orgName) : '') + ' · ' + partCount + ' participantes'
       +   '</div>'
       + '</div>'
-      + '<button onclick="window.abrirModalActividad(''+a.id+'')" style="font-family:'DM Sans',sans-serif;'
+      + '<button onclick="window.abrirModalActividad(\''+a.id+'\')" style="font-family:DM Sans,sans-serif;'
       + 'font-size:11px;font-weight:600;background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);'
       + 'padding:4px 10px;border-radius:6px;cursor:pointer;">👥 Participantes</button>'
       + '</div>';
@@ -1628,7 +1628,7 @@ function renderModalParticipantes(act) {
       +   '<div class="mesa-jug-name">'+(u.displayName||p.nombre||'Usuario')+'</div>'
       +   '<div class="mesa-jug-sub">'+(u.email||p.email||'')+'</div>'
       + '</div>'
-      + '<button class="mesa-jug-remove" onclick="window.removerParticipante(''+p.uid+'')" title="Remover">✕</button>'
+      + '<button class="mesa-jug-remove" onclick="window.removerParticipante(\''+p.uid+'\')" title="Remover">✕</button>'
       + '</div>';
   }).join('');
 }
