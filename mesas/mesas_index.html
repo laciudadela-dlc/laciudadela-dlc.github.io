@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesas · La Ciudadela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#FFFFFF; --bg2:#F4F3F0; --bg3:#E8E7E3;
+  --ink:#111110; --ink2:#383836; --muted:#6B6A67;
+  --brd:#DDDBD4; --brd-dark:#C4C2BA;
+  --red:#B91C1C; --red-light:#FEF2F2;
+}
+html,body{min-height:100%;background:var(--bg2);font-family:'DM Sans',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+/* ── HEADER ── */
+.header{background:var(--bg);border-bottom:1px solid var(--brd);padding:0 20px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.header-logo{height:34px;width:auto;object-fit:contain;flex-shrink:0;}
+.header-wordmark{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.02em;flex:1;}
+.header-back{font-size:13px;font-weight:600;color:var(--ink2);border:1px solid var(--brd);padding:6px 14px;border-radius:6px;text-decoration:none;transition:background .12s;white-space:nowrap;}
+.header-back:hover{background:var(--bg2);}
+.header-user{display:flex;align-items:center;gap:8px;}
+.header-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--brd);object-fit:cover;}
+.header-name{font-size:13px;font-weight:500;color:var(--ink);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── GUARD ── */
+.guard{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;}
+.guard.show{display:flex;}
+.guard-icon{font-size:48px;opacity:.3;}
+.guard-title{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--ink);}
+.guard-sub{font-size:14px;color:var(--muted);max-width:360px;line-height:1.6;}
+.guard-btn{font-size:13px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block;margin-top:8px;}
+.guard-btn:hover{opacity:.85;}
+
+/* ── LAYOUT ── */
+.page-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 60px);}
+@media(max-width:767px){.page-layout{grid-template-columns:1fr;}.sidebar{display:none;}.mobile-filter-bar{display:flex;}}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--bg);border-right:1px solid var(--brd);padding:20px 16px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;align-self:start;}
+.sidebar-section{margin-bottom:20px;}
+.sidebar-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:block;}
+.filter-item{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background .1s;border-left:2px solid transparent;}
+.filter-item:hover{background:var(--bg2);}
+.filter-item.active{background:var(--bg3);border-left-color:var(--ink2);}
+.filter-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.filter-name{font-size:13px;color:var(--ink2);flex:1;}
+.filter-count{font-size:11px;color:var(--muted);font-weight:600;}
+.filter-check{width:14px;height:14px;border:1.5px solid var(--brd-dark);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.filter-item.active .filter-check{background:var(--ink);border-color:var(--ink);color:#fff;}
+.show-all-btn{font-size:11px;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;padding:4px 6px;text-decoration:underline;}
+.show-all-btn:hover{color:var(--ink);}
+
+/* Subtabs modalidad */
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.subtab{font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--brd-dark);border-radius:20px;cursor:pointer;background:transparent;color:var(--muted);transition:all .12s;}
+.subtab:hover{background:var(--bg3);color:var(--ink);}
+.subtab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* Sidebar info */
+.sidebar-info{margin-top:auto;padding-top:20px;border-top:1px solid var(--brd);}
+.sidebar-info p{font-size:11px;color:var(--muted);line-height:1.5;}
+.sidebar-info a{color:var(--ink2);text-decoration:none;}
+
+/* ── MOBILE FILTER BAR ── */
+.mobile-filter-bar{display:none;background:var(--bg);border-bottom:1px solid var(--brd);padding:10px 16px;gap:8px;align-items:center;overflow-x:auto;}
+.mobile-filter-btn{font-size:11px;font-weight:600;padding:5px 12px;border:1px solid var(--brd-dark);border-radius:20px;cursor:pointer;background:transparent;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.mobile-filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* ── MAIN ── */
+.main{padding:0;}
+
+/* ── TOP BAR ── */
+.top-bar{background:var(--bg);border-bottom:1px solid var(--brd);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.top-bar-title{font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--ink);flex:1;}
+.top-bar-count{font-size:13px;color:var(--muted);}
+.top-bar-subtabs{display:flex;gap:0;}
+.top-subtab{font-size:11px;font-weight:600;padding:6px 14px;border:1px solid var(--brd-dark);background:transparent;color:var(--muted);cursor:pointer;transition:all .12s;}
+.top-subtab:first-child{border-radius:6px 0 0 6px;}
+.top-subtab:last-child{border-radius:0 6px 6px 0;border-left:none;}
+.top-subtab:not(:first-child):not(:last-child){border-left:none;}
+.top-subtab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* ── MESAS LIST ── */
+.mesas-content{padding:0;}
+.group-header{display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--ink2);position:sticky;top:60px;z-index:5;}
+.group-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.group-name{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;flex:1;}
+.group-count{font-size:11px;color:rgba(255,255,255,.6);}
+
+/* ── MESA CARD ── */
+.mesa-card{background:var(--bg);border-bottom:1px solid var(--brd);padding:16px 20px;transition:background .1s;}
+.mesa-card:hover{background:var(--bg2);}
+.mesa-card.incompleta{border-left:3px solid var(--red);}
+.card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.card-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.card-nombre{font-size:15px;font-weight:700;color:var(--ink);flex:1;line-height:1.3;}
+.card-badges{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.badge-perio{background:var(--bg3);color:var(--ink2);}
+.badge-inc{background:var(--red);color:#fff;}
+.badge-new{background:var(--ink);color:#fff;}
+.card-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--muted);margin-bottom:8px;}
+.card-sys{font-weight:600;color:var(--ink2);}
+.card-prox{color:var(--ink);font-weight:500;}
+.card-sinopsis{font-size:13px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;}
+.card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.btn-solicitar{font-size:12px;font-weight:700;background:var(--ink);color:#fff;border:none;padding:6px 16px;border-radius:20px;cursor:pointer;transition:opacity .12s;}
+.btn-solicitar:hover{opacity:.85;}
+.status-badge{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;}
+.status-pendiente{background:#FEF3C7;color:#92400E;}
+.status-aprobado{background:#DCFCE7;color:#166534;}
+.status-rechazado{background:var(--red-light);color:var(--red);}
+.status-miembro{background:#EEF2FF;color:#3730A3;}
+
+/* ── EMPTY / LOADING ── */
+.state-msg{padding:48px 24px;text-align:center;color:var(--muted);font-size:14px;}
+.state-msg-icon{font-size:40px;opacity:.25;margin-bottom:12px;}
+
+/* ── MODAL LOGIN ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg);border-radius:16px;padding:36px 28px;width:90%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.12);}
+.modal-logo{height:52px;margin-bottom:16px;}
+.modal-title{font-family:'Cinzel',serif;font-size:18px;font-weight:700;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;font-size:14px;font-weight:600;transition:background .12s;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.google-btn:hover{background:var(--bg2);}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
+.modal-cancel{display:block;margin-top:14px;font-size:12px;color:var(--muted);cursor:pointer;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:var(--red);}
+
+/* Modal auth */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--bg);border-radius:14px;padding:28px 24px 24px;width:92%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-logo{height:44px;margin-bottom:12px;}
+.modal-title{font-family:'Cinzel',serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+.auth-tabs{display:flex;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+.auth-tab{flex:1;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:none;background:var(--bg2);color:var(--muted);cursor:pointer;transition:all .15s;}
+.auth-tab.active{background:var(--ink);color:#fff;}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--brd);border-radius:8px;padding:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;transition:background .12s;}
+.google-btn:hover{background:var(--bg2);}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
+.auth-form{display:flex;flex-direction:column;gap:10px;text-align:left;}
+.auth-input{width:100%;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--brd);border-radius:7px;background:var(--bg2);color:var(--ink);outline:none;transition:border-color .15s;}
+.auth-input:focus{border-color:var(--ink2);}
+.auth-input-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px;display:block;}
+.auth-submit{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .12s;margin-top:4px;}
+.auth-submit:hover{opacity:.88;}
+.auth-submit:disabled{opacity:.4;cursor:default;}
+.auth-error{font-size:12px;color:var(--red);text-align:center;display:none;padding:6px;background:var(--red-light);border-radius:6px;}
+.auth-error.show{display:block;}
+.modal-cancel{display:block;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- Guard: solo logueados -->
+<div class="guard" id="guard">
+  <div class="guard-icon">🎲</div>
+  <div class="guard-title">Inscripción a Mesas</div>
+  <div class="guard-sub">Para ver las campañas activas y solicitar unirte necesitás iniciar sesión con tu cuenta de Google.</div>
+  <button class="guard-btn" onclick="openLogin()">Ingresar con Google</button>
+  <a href="../" style="margin-top:8px;font-size:12px;color:var(--muted);">← Volver al portal</a>
+</div>
+
+<!-- Modal login -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <img class="modal-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="">
+    <div class="modal-title">La Ciudadela</div>
+    <p class="modal-sub">Ingresá para continuar.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="window._authTab('google')">Google</button>
+      <button class="auth-tab" onclick="window._authTab('email')">Email</button>
+    </div>
+
+    <div class="auth-panel active" id="authPanelGoogle">
+      <button class="google-btn" onclick="window.loginGoogle()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+
+    <div class="auth-panel" id="authPanelEmail">
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button id="btnTabLogin" onclick="window._emailTab('login')"
+          style="flex:1;padding:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:1px solid var(--brd);border-radius:6px;cursor:pointer;background:var(--ink);color:#fff;">
+          Ingresar
+        </button>
+        <button id="btnTabRegister" onclick="window._emailTab('register')"
+          style="flex:1;padding:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border:1px solid var(--brd);border-radius:6px;cursor:pointer;background:var(--bg2);color:var(--muted);">
+          Registrarse
+        </button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div id="formLogin" class="auth-form">
+        <div><span class="auth-input-label">Email</span>
+          <input class="auth-input" id="loginEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+        <div><span class="auth-input-label">Contraseña</span>
+          <input class="auth-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="auth-submit" onclick="window.doEmailLogin()">Ingresar</button>
+        <div style="text-align:center;margin-top:4px;">
+          <span onclick="window.doResetPassword()" style="font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;">¿Olvidaste tu contraseña?</span>
+        </div>
+      </div>
+      <div id="formRegister" class="auth-form" style="display:none;">
+        <div><span class="auth-input-label">Nombre completo</span>
+          <input class="auth-input" id="regName" type="text" placeholder="Tu nombre" autocomplete="name"></div>
+        <div><span class="auth-input-label">Email</span>
+          <input class="auth-input" id="regEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+        <div><span class="auth-input-label">Contraseña</span>
+          <input class="auth-input" id="regPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"></div>
+        <div><span class="auth-input-label">Confirmar contraseña</span>
+          <input class="auth-input" id="regPassword2" type="password" placeholder="Repetir contraseña" autocomplete="new-password"></div>
+        <div style="font-size:11px;color:var(--muted);padding:6px 8px;background:var(--bg2);border-radius:6px;line-height:1.6;">
+          Mínimo 8 caracteres, una mayúscula y un número.
+        </div>
+        <button class="auth-submit" onclick="window.doRegister()">Crear cuenta</button>
+      </div>
+    </div>
+    <span class="modal-cancel" onclick="window.closeLogin()">Cancelar</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Header -->
+<header class="header">
+  <a class="header-back" href="../">← Portal</a>
+  <img class="header-logo" src="https://laciudadela-dlc.github.io/img/Logo_CDLC.png" onerror="this.style.display='none'" alt="La Ciudadela">
+  <span class="header-wordmark">Inscripción a Mesas</span>
+    <div class="header-user" id="headerUser"></div>
+</header>
+
+<!-- Mobile filter bar -->
+<div class="mobile-filter-bar" id="mobileFilterBar"></div>
+
+<!-- Layout -->
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <span class="sidebar-label">Filtrar por sistema</span>
+      <div id="sysFilters"></div>
+      <button class="show-all-btn" id="showAllBtn" onclick="toggleShowAll()">Mostrar todos</button>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Vista</span>
+      <div class="subtabs" id="subtabsSidebar">
+        <button class="subtab active" data-sub="sistema" onclick="setSubView('sistema')">Por sistema</button>
+        <button class="subtab" data-sub="dm" onclick="setSubView('dm')">Por DM</button>
+        <button class="subtab" data-sub="modalidad" onclick="setSubView('modalidad')">Por modalidad</button>
+      </div>
+    </div>
+    <div class="sidebar-info">
+      <p>Lima 575, CABA<br><a href="#">@laciudadela.dlc</a></p>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="top-bar">
+      <span class="top-bar-title">Campañas activas</span>
+      <span class="top-bar-count" id="topBarCount"></span>
+      <input id="mesaSearch" type="text" placeholder="Buscar…"
+        oninput="buscarMesas(this.value)"
+        style="flex:1;max-width:220px;padding:6px 10px;font-family:'DM Sans',sans-serif;
+        font-size:12px;border:1px solid var(--brd);border-radius:6px;
+        background:var(--bg2);color:var(--ink);outline:none;">
+      <div class="top-bar-subtabs" id="topSubtabs">
+        <button class="top-subtab active" data-sub="sistema" onclick="setSubView('sistema')">Por sistema</button>
+        <button class="top-subtab" data-sub="dm" onclick="setSubView('dm')">Por DM</button>
+        <button class="top-subtab" data-sub="modalidad" onclick="setSubView('modalidad')">Por modalidad</button>
+      </div>
+    </div>
+    <div class="mesas-content" id="mesasContent">
+      <div class="state-msg"><div class="state-msg-icon">🎲</div>Cargando mesas…</div>
+    </div>
+  </main>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+         createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         sendPasswordResetEmail, updateProfile }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const app  = initializeApp({
+  apiKey:"AIzaSyC90qr4C7V68upNyUrWcbLEtCCTZDZhUy0",
+  authDomain:"ciudadela-portal-88111.firebaseapp.com",
+  projectId:"ciudadela-portal-88111",
+  storageBucket:"ciudadela-portal-88111.firebasestorage.app",
+  messagingSenderId:"629290273583",
+  appId:"1:629290273583:web:47e321d389fb0e49a6afda"
+});
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ── Estado ─────────────────────────────────────────────
+let ME = null, MY_PROFILE = null;
+let ALL_USERS = [];
+let ALL_MESAS = [];
+let MIS_SOLICITUDES = {}; // mesaId → estado
+let subView = 'sistema';
+let sysFilter = {}; // código → bool
+let showAllSys = false;
+
+const SYS_DOT = {
+  dnd:'#7a1515', d55:'#7a4a0a', pf:'#1a4a8a',
+  vam:'#4a1a5a', hw:'#1a4a1a', mag:'#1a1a6a',
+  hun:'#6a3a0a', oth:'#555'
+};
+const SYS_LABELS = {
+  dnd:'D&D 5e (2014)', d55:'D&D 5e (2024)', pf:'Pathfinder 2e',
+  vam:'Vampiro: La Mascarada', hw:'Hombre Lobo',
+  mag:'Mago: La Ascensión', hun:'Hunter', oth:'Otro sistema'
+};
+const SYS_ORDER = ['dnd','d55','pf','vam','hw','mag','hun','oth'];
+
+function sistemaToCode(s) {
+  if (!s) return 'oth';
+  const n = s.toLowerCase();
+  if (n.includes('d&d 5.5') || n.includes('5.5e') || n.includes('2024') || n.includes('one d&d')) return 'd55';
+  if (n.includes('d&d') || n.includes('dnd'))       return 'dnd';
+  if (n.includes('pathfinder'))                       return 'pf';
+  if (n.includes('vampiro'))                          return 'vam';
+  if (n.includes('hombre lobo'))                      return 'hw';
+  if (n.includes('mago'))                             return 'mag';
+  if (n.includes('hunter'))                           return 'hun';
+  return 'oth';
+}
+
+function formatFecha(iso) {
+  if (!iso) return 'Sin fecha próxima';
+  const d = new Date(iso);
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return dias[d.getDay()] + ' ' + d.getDate() + ' ' + meses[d.getMonth()]
+    + ' · ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + 'hs';
+}
+
+// ── Auth ───────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  ME = user;
+  if (user) {
+    document.getElementById('guard').classList.remove('show');
+    const snap = await getDoc(doc(db, 'usuarios', user.uid));
+    MY_PROFILE = snap.exists() ? snap.data() : { roles:['jugador'] };
+    renderHeader();
+    await loadMesas();
+  } else {
+    document.getElementById('guard').classList.add('show');
+    renderHeader();
+  }
+});
+
+function renderHeader() {
+  const el = document.getElementById('headerUser');
+  if (!ME) { el.innerHTML = ''; return; }
+  const name = (ME.displayName || ME.email || '').split(' ')[0];
+  el.innerHTML = `
+    <img class="header-avatar" src="${ME.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E8E6E0&color=111110&size=32`}" alt="">
+    <span class="header-name">${esc(name)}</span>
+    <button onclick="doLogout()" style="font-size:11px;font-weight:600;border:1px solid var(--brd);background:transparent;padding:4px 10px;border-radius:6px;cursor:pointer;color:var(--muted);">Salir</button>`;
+}
+
+window.openLogin  = () => document.getElementById('loginModal').classList.add('open');
+window.closeLogin = () => document.getElementById('loginModal').classList.remove('open');
+window.loginGoogle = async () => {
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+    closeLogin();
+  } catch(e) { console.error(e); }
+};
+window.doLogout = async () => {
+  await signOut(auth);
+  document.getElementById('guard').classList.add('show');
+};
+
+window._authTab = function(tab) {
+  document.querySelectorAll(".auth-tab").forEach((t,i)=>{ t.classList.toggle("active",(i===0)===(tab==="google")); });
+  document.getElementById("authPanelGoogle").classList.toggle("active", tab==="google");
+  document.getElementById("authPanelEmail").classList.toggle("active", tab==="email");
+  document.getElementById("authError").classList.remove("show");
+};
+
+window._emailTab = function(tab) {
+  const isLogin = tab==="login";
+  document.getElementById("formLogin").style.display    = isLogin ? "flex" : "none";
+  document.getElementById("formRegister").style.display = isLogin ? "none" : "flex";
+  document.getElementById("btnTabLogin").style.background    = isLogin ? "var(--ink)" : "var(--bg2)";
+  document.getElementById("btnTabLogin").style.color         = isLogin ? "#fff" : "var(--muted)";
+  document.getElementById("btnTabRegister").style.background = isLogin ? "var(--bg2)" : "var(--ink)";
+  document.getElementById("btnTabRegister").style.color      = isLogin ? "var(--muted)" : "#fff";
+  document.getElementById("authError").classList.remove("show");
+};
+
+function _showAuthError(msg, isOk) {
+  const el = document.getElementById("authError");
+  el.textContent = msg;
+  el.style.background = isOk ? "var(--green-light)" : "var(--red-light)";
+  el.style.color = isOk ? "var(--green)" : "var(--red)";
+  el.classList.add("show");
+}
+
+function _validatePassword(pwd) {
+  if (pwd.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+  if (!/[A-Z]/.test(pwd)) return "Debe incluir al menos una mayúscula.";
+  if (!/[0-9]/.test(pwd)) return "Debe incluir al menos un número.";
+  return null;
+}
+
+window.doEmailLogin = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pwd   = document.getElementById("loginPassword").value;
+  if (!email || !pwd) { _showAuthError("Completá todos los campos."); return; }
+  const btn = document.querySelector("#formLogin .auth-submit");
+  btn.disabled = true; btn.textContent = "Ingresando…";
+  signInWithEmailAndPassword(auth, email, pwd)
+    .then(()=>{ window.closeLogin(); })
+    .catch(e=>{
+      const msgs = {"auth/user-not-found":"No existe una cuenta con ese email.","auth/wrong-password":"Contraseña incorrecta.","auth/invalid-credential":"Email o contraseña incorrectos.","auth/too-many-requests":"Demasiados intentos.","auth/user-disabled":"Cuenta desactivada."};
+      _showAuthError(msgs[e.code]||"Error al ingresar.");
+      btn.disabled = false; btn.textContent = "Ingresar";
+    });
+};
+
+window.doRegister = () => {
+  const name  = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const pwd   = document.getElementById("regPassword").value;
+  const pwd2  = document.getElementById("regPassword2").value;
+  if (!name||!email||!pwd||!pwd2) { _showAuthError("Completá todos los campos."); return; }
+  if (pwd!==pwd2) { _showAuthError("Las contraseñas no coinciden."); return; }
+  const err = _validatePassword(pwd);
+  if (err) { _showAuthError(err); return; }
+  const btn = document.querySelector("#formRegister .auth-submit");
+  btn.disabled = true; btn.textContent = "Creando cuenta…";
+  createUserWithEmailAndPassword(auth, email, pwd)
+    .then(cred => updateProfile(cred.user, { displayName: name }))
+    .then(()=>{ window.closeLogin(); })
+    .catch(e=>{
+      const msgs = {"auth/email-already-in-use":"Ya existe una cuenta con ese email.","auth/invalid-email":"Email no válido.","auth/weak-password":"Contraseña muy débil."};
+      _showAuthError(msgs[e.code]||"Error al crear la cuenta.");
+      btn.disabled = false; btn.textContent = "Crear cuenta";
+    });
+};
+
+window.doResetPassword = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  if (!email) { _showAuthError("Ingresá tu email primero."); return; }
+  sendPasswordResetEmail(auth, email)
+    .then(()=>{ _showAuthError("✓ Te enviamos un email para restablecer la contraseña.", true); })
+    .catch(()=>{ _showAuthError("No encontramos una cuenta con ese email."); });
+};
+
+// ── Cargar mesas ────────────────────────────────────────
+async function loadMesas() {
+  const [snap, usersSnap] = await Promise.all([
+    getDocs(collection(db, 'mesas')),
+    getDocs(collection(db, 'usuarios')).catch(() => ({ docs: [] }))
+  ]);
+  ALL_USERS = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  ALL_MESAS = snap.docs.map(d => ({ id:d.id, ...d.data() }))
+    .sort((a,b) => {
+      if (!a.proximaFecha && !b.proximaFecha) return 0;
+      if (!a.proximaFecha) return 1;
+      if (!b.proximaFecha) return -1;
+      return new Date(a.proximaFecha) - new Date(b.proximaFecha);
+    });
+
+  // Cargar mis solicitudes — parallel getDoc por cada mesa
+  if (ME) {
+    await Promise.all(ALL_MESAS.map(async m => {
+      try {
+        const s = await getDoc(doc(db, 'mesas', m.id, 'solicitudes', ME.uid));
+        if (s.exists()) MIS_SOLICITUDES[m.id] = s.data().estado;
+      } catch(e) {}
+    }));
+  }
+
+  buildSysFilters();
+  render();
+}
+
+// ── Filtros ─────────────────────────────────────────────
+function buildSysFilters() {
+  const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
+  console.log('render() ME:', ME?.uid, 'isAdmin:', isAdmin, 'MY_PROFILE:', MY_PROFILE?.roles);
+  const mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa' && !!m.proximaFecha);
+
+  // Contar por sistema
+  const counts = {};
+  SYS_ORDER.forEach(c => { counts[c] = 0; });
+  mesas.forEach(m => {
+    const c = sistemaToCode(m.sistema);
+    counts[c] = (counts[c]||0) + 1;
+    if (c === 'd55') console.log('d55 mesa:', m.nombre, 'sistema:', m.sistema);
+  });
+
+  // Sidebar
+  const sysFiltersEl = document.getElementById('sysFilters');
+  const mobileBar    = document.getElementById('mobileFilterBar');
+  sysFiltersEl.innerHTML = '';
+  mobileBar.innerHTML = '';
+
+  SYS_ORDER.forEach((code, i) => {
+    if (!showAllSys && i >= 5 && counts[code] === 0) return;
+    const active = sysFilter[code];
+    const item = document.createElement('div');
+    item.className = 'filter-item' + (active ? ' active' : '');
+    item.innerHTML = `
+      <div class="filter-dot" style="background:${SYS_DOT[code]}"></div>
+      <span class="filter-name">${SYS_LABELS[code]}</span>
+      <span class="filter-count">${counts[code]}</span>
+      <div class="filter-check">${active ? '✓' : ''}</div>`;
+    item.onclick = () => toggleSysFilter(code);
+    sysFiltersEl.appendChild(item);
+
+    if (counts[code] > 0) {
+      const btn = document.createElement('button');
+      btn.className = 'mobile-filter-btn' + (active ? ' active' : '');
+      btn.textContent = SYS_LABELS[code];
+      btn.onclick = () => toggleSysFilter(code);
+      mobileBar.appendChild(btn);
+    }
+  });
+}
+
+window.toggleSysFilter = function(code) {
+  sysFilter[code] = !sysFilter[code];
+  buildSysFilters();
+  render();
+};
+
+function toggleShowAll() {
+  showAllSys = !showAllSys;
+  document.getElementById('showAllBtn').textContent = showAllSys ? 'Mostrar menos' : 'Mostrar todos';
+  buildSysFilters();
+}
+
+window.setSubView = (sub) => {
+  subView = sub;
+  document.querySelectorAll('.subtab, .top-subtab').forEach(el => {
+    el.classList.toggle('active', el.dataset.sub === sub);
+  });
+  render();
+};
+
+// ── Render ──────────────────────────────────────────────
+// ── Búsqueda ─────────────────────────────────────────
+let searchTerm = '';
+
+window.buscarMesas = function(q) {
+  searchTerm = (q || '').toLowerCase().trim();
+  render();
+};
+
+
+function render() {
+  const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
+  console.log('render() ME:', ME?.uid, 'isAdmin:', isAdmin, 'MY_PROFILE:', MY_PROFILE?.roles);
+  let mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa' && !!m.proximaFecha);
+
+  // Filtrar por sistema
+  const active = Object.keys(sysFilter).filter(k => sysFilter[k]);
+  if (active.length > 0) {
+    mesas = mesas.filter(m => active.includes(sistemaToCode(m.sistema)));
+  }
+
+  // Filtrar por búsqueda de texto
+  if (searchTerm) {
+    mesas = mesas.filter(m =>
+      (m.nombre||'').toLowerCase().includes(searchTerm) ||
+      (m.sistema||'').toLowerCase().includes(searchTerm) ||
+      (m.dm||'').toLowerCase().includes(searchTerm) ||
+      (m.sinopsis||'').toLowerCase().includes(searchTerm)
+    );
+  }
+
+  document.getElementById('topBarCount').textContent = mesas.length + ' mesa' + (mesas.length !== 1 ? 's' : '');
+
+  const content = document.getElementById('mesasContent');
+  if (!mesas.length) {
+    content.innerHTML = `<div class="state-msg"><div class="state-msg-icon">🎲</div>No hay mesas activas para los filtros seleccionados.</div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (subView === 'sistema') {
+    const grupos = {};
+    SYS_ORDER.forEach(c => { grupos[c] = []; });
+    mesas.forEach(m => {
+      const c = sistemaToCode(m.sistema);
+      (grupos[c] || grupos.oth).push(m);
+    });
+    SYS_ORDER.forEach(code => {
+      if (!grupos[code]?.length) return;
+      html += makeGroupHeader(SYS_DOT[code], SYS_LABELS[code], grupos[code].length);
+      grupos[code].forEach(m => { html += makeCard(m, isAdmin); });
+    });
+
+  } else if (subView === 'dm') {
+    const dmMap = {};
+    mesas.forEach(m => {
+      const k = m.dm || '';
+      if (!dmMap[k]) dmMap[k] = [];
+      dmMap[k].push(m);
+    });
+    Object.keys(dmMap).sort((a,b) => {
+      if (!a) return 1; if (!b) return -1;
+      return a.localeCompare(b, 'es');
+    }).forEach(k => {
+      html += makeGroupHeader('var(--ink2)', k || 'Director a confirmar', dmMap[k].length);
+      dmMap[k].forEach(m => { html += makeCard(m, isAdmin); });
+    });
+
+  } else {
+    const MODAL = [
+      {k:'semanal', l:'Semanal'}, {k:'quincenal', l:'Quincenal'},
+      {k:'mensual', l:'Mensual'}, {k:'one-shot', l:'One-Shot'},
+      {k:'evento', l:'Evento'}, {k:'taller', l:'Taller'}, {k:'', l:'A confirmar'}
+    ];
+    const mMap = {};
+    MODAL.forEach(m => { mMap[m.k] = []; });
+    mesas.forEach(m => {
+      const p = (m.periodicidad||'').toLowerCase();
+      let key = '';
+      if (p.includes('semanal'))   key = 'semanal';
+      else if (p.includes('quincenal')) key = 'quincenal';
+      else if (p.includes('mensual'))   key = 'mensual';
+      else if (p.includes('one')||p.includes('shot')) key = 'one-shot';
+      else if (p.includes('evento'))    key = 'evento';
+      else if (p.includes('taller'))    key = 'taller';
+      (mMap[key] || mMap['']).push(m);
+    });
+    MODAL.forEach(({k, l}) => {
+      if (!mMap[k]?.length) return;
+      html += makeGroupHeader('var(--ink2)', l, mMap[k].length);
+      mMap[k].forEach(m => { html += makeCard(m, isAdmin); });
+    });
+  }
+
+  content.innerHTML = html;
+}
+
+function makeGroupHeader(dot, label, count) {
+  return `<div class="group-header">
+    <div class="group-dot" style="background:${dot}"></div>
+    <span class="group-name">${esc(label)}</span>
+    <span class="group-count">${count} mesa${count!==1?'s':''}</span>
+  </div>`;
+}
+
+function makeCard(mesa, isAdmin) {
+  const code = sistemaToCode(mesa.sistema);
+  const dot  = SYS_DOT[code] || '#888';
+  const inc  = mesa.estado === 'incompleta';
+
+  const perioBadge = mesa.periodicidad
+    ? `<span class="badge badge-perio">${esc(mesa.periodicidad)}</span>` : '';
+  const incBadge = inc && isAdmin
+    ? `<span class="badge badge-inc">Incompleta</span>` : '';
+
+  // Botón acción
+  let actionHtml = '';
+  console.log('makeCard:', mesa.nombre, 'ME:', ME?.uid, 'isAdmin:', isAdmin);
+  if (ME) {
+    const jugadores = mesa.jugadores || [];
+    const yaEsJugador = jugadores.some(j => j.uid === ME.uid);
+    const sol = MIS_SOLICITUDES[mesa.id];
+
+    if (yaEsJugador) {
+      actionHtml = `<span class="status-badge status-aprobado">✓ En esta mesa</span>`;
+    } else if (sol === 'pendiente') {
+      actionHtml = `<span class="status-badge status-pendiente">⏳ Solicitud pendiente</span>`;
+    } else if (sol === 'rechazada') {
+      actionHtml = `<span class="status-badge status-rechazado">✗ Solicitud rechazada</span>`;
+    } else {
+      actionHtml = `<button class="btn-solicitar" onclick="solicitarMesa('${mesa.id}')">+ Solicitar unirse</button>`;
+    }
+  } else {
+    // No logueado: mostrar botón que pide login
+    actionHtml = `<button class="btn-solicitar" onclick="openLogin()" style="background:var(--bg3);color:var(--ink2);border:1px solid var(--brd);">Ingresá para solicitar</button>`;
+  }
+
+  // Jugadores confirmados
+  const jugLista = (mesa.jugadores || []).filter(j => j.rol === 'jugador');
+  let jugadoresHtml = '';
+  if (jugLista.length > 0) {
+    const names = jugLista.map(j => {
+      const est   = j.estadoSesion || 'pendiente';
+      const icn   = est === 'confirmado' ? '🟢' : est === 'ausente' ? '🔴' : '⚪';
+      const uData = ALL_USERS.find(u => u.uid === j.uid) || {};
+      const uName = j.nombre || uData.displayName || (uData.email ? uData.email.split('@')[0] : '?');
+      return icn + ' ' + esc(uName);
+    }).join(' · ');
+    jugadoresHtml = '<div style="font-size:11px;color:var(--muted);margin-top:6px;">'
+      + '<span style="font-weight:600;color:var(--ink2);">Jugadores: </span>' + names + '</div>';
+  } else {
+    jugadoresHtml = '<div style="font-size:11px;color:var(--muted);margin-top:6px;">Sin jugadores aún.</div>';
+  }
+  const dmLine = '<div style="font-size:12px;color:var(--muted);margin-top:4px;">'
+    + '<span style="font-weight:600;color:var(--ink2);">DM: </span>' + esc(mesa.dm || 'A confirmar') + '</div>';
+
+  return `<div class="mesa-card${inc ? ' incompleta' : ''}">
+    <div class="card-top">
+      <div class="card-dot" style="background:${dot}"></div>
+      <span class="card-nombre">${esc(mesa.nombre)}</span>
+      <div class="card-badges">${perioBadge}${incBadge}</div>
+    </div>
+    <div class="card-meta">
+      <span class="card-sys">${esc(mesa.sistema||'Otro sistema')}</span>
+      <span class="card-prox">📅 ${formatFecha(mesa.proximaFecha)}</span>
+    </div>
+    ${mesa.sinopsis ? `<div class="card-sinopsis">${esc(mesa.sinopsis)}</div>` : ''}
+    ${dmLine}
+    ${jugadoresHtml}
+    ${actionHtml ? `<div class="card-actions">${actionHtml}</div>` : ''}
+  </div>`;
+}
+
+// ── Solicitar unirse ─────────────────────────────────────
+window.solicitarMesa = async (mesaId) => {
+  if (!ME) { openLogin(); return; }
+
+  const btn = document.querySelector(`button[onclick="solicitarMesa('${mesaId}')"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+
+  try {
+    const solRef = doc(db, 'mesas', mesaId, 'solicitudes', ME.uid);
+    await setDoc(solRef, {
+      uid:     ME.uid,
+      nombre:  ME.displayName || '',
+      email:   ME.email || '',
+      estado:  'pendiente',
+      mesaId,
+      creadaEn: serverTimestamp(),
+    });
+
+    // Notificar admins
+    const admins = await getDocs(query(collection(db, 'usuarios'), where('roles','array-contains','admin')));
+    const mesa = ALL_MESAS.find(m => m.id === mesaId) || {};
+    const nombre = ME.displayName || ME.email || 'Un usuario';
+    for (const a of admins.docs) {
+      await addDoc(collection(db, 'notificaciones', a.id, 'items'), {
+        tipo:   'solicitud_mesa',
+        titulo: `${nombre} quiere unirse a una mesa`,
+        cuerpo: `"${mesa.nombre || mesaId}"`,
+        mesaId, solUid: ME.uid, leida: false,
+        creadoEn: serverTimestamp()
+      });
+    }
+
+    MIS_SOLICITUDES[mesaId] = 'pendiente';
+    render();
+    showToast('¡Solicitud enviada! El admin te responderá pronto.');
+  } catch(e) {
+    console.error(e);
+    if (btn) { btn.disabled = false; btn.textContent = '+ Solicitar unirse'; }
+    showToast('Error al enviar. Intentá de nuevo.', true);
+  }
+};
+
+// ── Helpers ─────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
