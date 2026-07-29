@@ -505,7 +505,7 @@ async function loadMesas() {
 function buildSysFilters() {
   const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   console.log('render() ME:', ME?.uid, 'isAdmin:', isAdmin, 'MY_PROFILE:', MY_PROFILE?.roles);
-  const mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
+  const mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa' && !!m.proximaFecha);
 
   // Contar por sistema
   const counts = {};
@@ -578,7 +578,7 @@ window.buscarMesas = function(q) {
 function render() {
   const isAdmin = !!(MY_PROFILE && MY_PROFILE.roles && MY_PROFILE.roles.includes('admin'));
   console.log('render() ME:', ME?.uid, 'isAdmin:', isAdmin, 'MY_PROFILE:', MY_PROFILE?.roles);
-  let mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa');
+  let mesas = isAdmin ? ALL_MESAS : ALL_MESAS.filter(m => m.estado === 'activa' && !!m.proximaFecha);
 
   // Filtrar por sistema
   const active = Object.keys(sysFilter).filter(k => sysFilter[k]);
