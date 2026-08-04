@@ -75,6 +75,9 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 .empty-icon{font-size:48px;opacity:.2;margin-bottom:12px;}
 .empty-text{font-size:14px;}
 
+.newsletter-canvas-wrap{border:1px solid var(--brd);border-radius:8px;overflow:hidden;background:var(--parchment);}
+.newsletter-canvas-wrap canvas{width:100%;height:auto;display:block;}
+
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.err{background:var(--red);}
@@ -136,6 +139,13 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
           <div class="progress-fill" id="progressFill"></div>
         </div>
         <div class="progress-label" id="progressLabel"></div>
+
+        <span class="label" style="margin-top:8px;">Generar newsletter</span>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnNewsletter" onclick="generarNewsletter()" disabled>
+            📰 Generar Newsletter
+          </button>
+        </div>
       </div>
     </div>
 
@@ -148,6 +158,8 @@ html,body{min-height:100%;background:var(--bg2);font-family:"DM Sans",sans-serif
 
   <!-- Panel derecho: preview -->
   <div class="preview-area">
+    <div id="newsletterWrap" style="display:none;"></div>
+
     <div class="preview-header">
       <span class="preview-title">Flyers generados</span>
       <span class="preview-sub" id="flyerCount"></span>
@@ -295,6 +307,7 @@ function renderMesaList() {
   const count = SELECTED.size;
   document.getElementById("selCount").textContent = count > 0 ? `(${count} seleccionadas)` : "";
   document.getElementById("btnGenerar").disabled = count === 0;
+  document.getElementById("btnNewsletter").disabled = count === 0;
 }
 
 function toggleMesa(id) {
@@ -700,6 +713,289 @@ async function mostrarFlyers(mesas, job) {
   if (count > 0) showToast(`✓ ${count} flyer${count!==1?"s":""} listos para descargar`);
 }
 
+
+// ── Newsletter: página estilo periódico con todas las mesas seleccionadas ──
+// A diferencia de los flyers (que usan IA vía GitHub Actions y tardan 1-2 min
+// por mesa), el newsletter se dibuja íntegramente en el navegador con Canvas,
+// así que es instantáneo aunque se seleccionen muchas mesas.
+async function generarNewsletter() {
+  const mesasSelec = ALL_MESAS.filter(m => SELECTED.has(m.id)).sort((a,b) => {
+    if (!a.proximaFecha && !b.proximaFecha) return 0;
+    if (!a.proximaFecha) return 1;
+    if (!b.proximaFecha) return -1;
+    return new Date(a.proximaFecha) - new Date(b.proximaFecha);
+  });
+  if (!mesasSelec.length) return;
+
+  const btn = document.getElementById("btnNewsletter");
+  btn.disabled = true;
+  const textoOriginal = btn.textContent;
+  btn.textContent = "📰 Generando…";
+
+  try {
+    const canvas = await dibujarNewsletter(mesasSelec);
+    mostrarNewsletter(canvas, mesasSelec.length);
+    showToast(`✓ Newsletter con ${mesasSelec.length} mesa${mesasSelec.length!==1?"s":""} generado`);
+  } catch(e) {
+    console.error("Error generando newsletter:", e);
+    showToast("Error al generar el newsletter", true);
+  } finally {
+    btn.textContent = textoOriginal;
+    btn.disabled = SELECTED.size === 0;
+  }
+}
+
+function mostrarNewsletter(canvas, count) {
+  const wrap = document.getElementById("newsletterWrap");
+  wrap.style.display = "block";
+  wrap.innerHTML = "";
+
+  const cWrap = document.createElement("div");
+  cWrap.className = "newsletter-canvas-wrap";
+  cWrap.appendChild(canvas);
+
+  const meta = document.createElement("div");
+  meta.className = "flyer-meta";
+  meta.style.marginTop = "8px";
+  meta.innerHTML = `<span class="flyer-name">📰 Newsletter · ${count} mesa${count!==1?"s":""}</span>
+    <button class="btn-download">↓ PNG</button>`;
+  const dlBtn = meta.querySelector(".btn-download");
+  dlBtn.addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "newsletter_ciudadela_" + new Date().toISOString().slice(0,10) + ".png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+
+  wrap.appendChild(cWrap);
+  wrap.appendChild(meta);
+  wrap.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+async function dibujarNewsletter(mesas) {
+  await document.fonts.ready;
+  await Promise.all([
+    document.fonts.load("bold 90px 'UnifrakturMaguntia'"),
+    document.fonts.load("bold 54px 'Oswald'"),
+    document.fonts.load("bold 26px 'Oswald'"),
+    document.fonts.load("600 13px 'DM Sans'"),
+    document.fonts.load("400 15px 'DM Sans'"),
+    document.fonts.load("500 20px 'DM Sans'"),
+  ]).catch(() => {});
+
+  const W        = 1200;
+  const MARGIN   = 50;
+  const COL_GAP  = 40;
+  const COL_W    = (W - MARGIN*2 - COL_GAP) / 2;
+  const COL_X    = [MARGIN, MARGIN + COL_W + COL_GAP];
+  const MASTHEAD_H = 254;
+  const FOOTER_H   = 80;
+
+  // Fuentes y espaciados — se usan los MISMOS valores en la medición y en el
+  // dibujo final, para que la altura calculada de cada artículo coincida
+  // exactamente con lo que después se dibuja.
+  const HEADLINE_FONT = "bold 26px 'Oswald', sans-serif";
+  const BYLINE_FONT   = "600 13px 'DM Sans', sans-serif";
+  const BODY_FONT     = "400 15px 'DM Sans', sans-serif";
+  const HEADLINE_LH      = 30;
+  const BODY_LH          = 21;
+  const GAP_HL_BYLINE    = 20;
+  const GAP_BYLINE_BODY  = 18;
+  const RULE_GAP         = 16;
+  const ART_GAP          = 26;
+
+  function wrapLines(ctx, texto, maxW) {
+    const palabras = (texto||"").split(" ");
+    const lineas = [];
+    let linea = "";
+    for (const p of palabras) {
+      const prueba = linea ? linea+" "+p : p;
+      if (ctx.measureText(prueba).width > maxW && linea) {
+        lineas.push(linea); linea = p;
+      } else {
+        linea = prueba;
+      }
+    }
+    if (linea) lineas.push(linea);
+    return lineas;
+  }
+
+  // ── Pasada 1: medir cada artículo con un canvas temporal ──
+  const mCanvas = document.createElement("canvas");
+  const mctx    = mCanvas.getContext("2d");
+
+  const articulos = mesas.map(mesa => {
+    mctx.font = HEADLINE_FONT;
+    const headlineLines = wrapLines(mctx, (mesa.nombre||"Sin título").toUpperCase(), COL_W);
+    mctx.font = BODY_FONT;
+    const sinopsisTxt = (mesa.sinopsis || "Sin sinopsis disponible.").substring(0, 380);
+    const bodyLines = wrapLines(mctx, sinopsisTxt, COL_W);
+
+    const altura = headlineLines.length*HEADLINE_LH + GAP_HL_BYLINE + GAP_BYLINE_BODY
+      + bodyLines.length*BODY_LH + RULE_GAP;
+
+    return { mesa, headlineLines, bodyLines, altura };
+  });
+
+  // ── Balancear artículos entre las 2 columnas (greedy: a la columna más corta) ──
+  const columnas   = [[], []];
+  const alturasCol = [0, 0];
+  for (const art of articulos) {
+    const idx = alturasCol[0] <= alturasCol[1] ? 0 : 1;
+    columnas[idx].push(art);
+    alturasCol[idx] += art.altura + ART_GAP;
+  }
+
+  const contentH = Math.max(alturasCol[0], alturasCol[1]);
+  const H = Math.ceil(MASTHEAD_H + contentH + FOOTER_H + MARGIN);
+
+  const canvas = document.createElement("canvas");
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // ── Fondo pergamino (mismo estilo que el flyer) ──
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,   "#F5EDD8");
+  grad.addColorStop(0.3, "#EDE0C4");
+  grad.addColorStop(0.7, "#E8D8B8");
+  grad.addColorStop(1,   "#F0E6CC");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  const nGranos = Math.min(20000, Math.floor(W*H/130));
+  for (let i=0; i<nGranos; i++) {
+    const x = Math.random()*W, y = Math.random()*H;
+    const a = Math.random()*0.06;
+    ctx.fillStyle = `rgba(0,0,0,${a})`;
+    ctx.fillRect(x,y,1,1);
+  }
+
+  // ── Borde exterior ──
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(18,18,W-36,H-36);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(26,26,W-52,H-52);
+
+  // ── Masthead ──
+  ctx.fillStyle = "#1a0e05";
+  ctx.font = "bold 90px 'UnifrakturMaguntia', serif";
+  ctx.textAlign = "center";
+  ctx.fillText("La Ciudadela", W/2, 100);
+
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40,118); ctx.lineTo(W-40,118); ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40,124); ctx.lineTo(W-40,124); ctx.stroke();
+
+  ctx.font = "500 20px 'DM Sans', sans-serif";
+  ctx.fillStyle = "#2a1a08";
+  ctx.textAlign = "left";
+  ctx.fillText("EDICIÓN ESPECIAL", 50, 150);
+  ctx.textAlign = "center";
+  ctx.fillText("✦  LIMA 575 10° PISO · CABA  ✦", W/2, 150);
+  const mesAnio = new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"}).toUpperCase();
+  ctx.textAlign = "right";
+  ctx.fillText(mesAnio, W-50, 150);
+
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(40,165); ctx.lineTo(W-40,165); ctx.stroke();
+
+  ctx.fillStyle = "#1a0e05";
+  ctx.font = "bold 54px 'Oswald', sans-serif";
+  ctx.textAlign = "center";
+  const tituloEd = `${mesas.length} MESA${mesas.length!==1?"S":""} EN CARTELERA`;
+  ctx.fillText(tituloEd, W/2, 222);
+
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40,238); ctx.lineTo(W-40,238); ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40,244); ctx.lineTo(W-40,244); ctx.stroke();
+
+  // ── Línea divisoria vertical entre columnas ──
+  const dividerX = MARGIN + COL_W + COL_GAP/2;
+  ctx.strokeStyle = "rgba(42,26,8,0.4)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(dividerX, MASTHEAD_H);
+  ctx.lineTo(dividerX, MASTHEAD_H + contentH);
+  ctx.stroke();
+
+  // ── Dibujar los artículos de cada columna ──
+  const sysColors = {
+    dnd:"#7a1515",d55:"#7a4a0a",pf:"#1a4a8a",
+    vam:"#4a1a5a",hw:"#1a4a1a",mag:"#1a1a6a",hun:"#6a3a0a",oth:"#2a1a08"
+  };
+
+  columnas.forEach((col, colIdx) => {
+    let y = MASTHEAD_H;
+    const x = COL_X[colIdx];
+    col.forEach(art => {
+      const mesa = art.mesa;
+      const code = sistemaToCode(mesa.sistema);
+      const sysColor = sysColors[code] || "#2a1a08";
+
+      // Titular
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#1a0e05";
+      ctx.font = HEADLINE_FONT;
+      art.headlineLines.forEach(linea => {
+        y += HEADLINE_LH;
+        ctx.fillText(linea, x, y);
+      });
+
+      // Bajada: sistema · DM · fecha
+      y += GAP_HL_BYLINE;
+      ctx.font = BYLINE_FONT;
+      ctx.fillStyle = sysColor;
+      const fechaStr = formatFechaFlyer(mesa.proximaFecha);
+      let byline = `${(mesa.sistema||"Otro sistema").toUpperCase()} · DM: ${(mesa.dm||"A confirmar").toUpperCase()} · ${fechaStr}`;
+      while (ctx.measureText(byline).width > COL_W && byline.length > 10) {
+        byline = byline.substring(0, byline.length-4) + "…";
+      }
+      ctx.fillText(byline, x, y);
+
+      // Cuerpo: sinopsis
+      y += GAP_BYLINE_BODY;
+      ctx.font = BODY_FONT;
+      ctx.fillStyle = "#2a1a08";
+      art.bodyLines.forEach(linea => {
+        y += BODY_LH;
+        ctx.fillText(linea, x, y);
+      });
+
+      // Filete separador
+      y += RULE_GAP;
+      ctx.strokeStyle = "rgba(42,26,8,0.35)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x+COL_W, y);
+      ctx.stroke();
+
+      y += ART_GAP;
+    });
+  });
+
+  // ── Footer ──
+  const footY = MASTHEAD_H + contentH + 30;
+  ctx.strokeStyle = "#2a1a08";
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40, footY); ctx.lineTo(W-40, footY); ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, footY+7); ctx.lineTo(W-40, footY+7); ctx.stroke();
+
+  ctx.fillStyle = "#2a1a08";
+  ctx.font = "500 16px 'DM Sans', sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("laciudadela-dlc.github.io  ·  @laciudadela.dlc", W/2, footY+40);
+
+  return canvas;
+}
 
 function descargarFlyer(btn) {
   const canvas = btn._canvas;
